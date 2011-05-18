@@ -6,11 +6,11 @@ Gem::Specification.new do |s|
   s.name        = "closure-tree"
   s.version     = Closure::Tree::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["TODO: Write your name"]
-  s.email       = ["TODO: Write your email address"]
-  s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.authors     = ["Matthew McEachen"]
+  s.email       = ["matthew-closuretree@mceachen.org"]
+  s.homepage    = "http://matthew.mceachen.us/blog/tags/closure-tree"
+  s.summary     = %q{Hierarchical tagging for ActiveRecord models using a Closure Tree storage algorithm}
+  s.description = %q{A mostly-API-compatible replacement for the acts_as_tree and awesome_nested_set gems, but with much better mutation performance thanks to the Closure Tree storage algorithm.}
 
   s.rubyforge_project = "closure-tree"
 
