@@ -13,11 +13,9 @@ for a description of different tree storage algorithms.
 
 Note that closure-tree is being developed for Rails 3.0 and 3.1 (currently in beta).
 
-1.  Add this to your Gemfile:
-        gem 'closure-tree'
+1.  Add this to your Gemfile: ```gem 'closure-tree'```
 
-2.  Run
-        bundle install
+2.  Run ```bundle install```
 
 3.  Add ```acts_as_tree``` to your hierarchical model(s)
 
@@ -47,7 +45,7 @@ Note that closure-tree is being developed for Rails 3.0 and 3.1 (currently in be
     end
     ```
 
-5.  Remember to ```rake db:migrate```
+5.  Run ```rake db:migrate```
 
 6.  If you're migrating away from another system where your model already has a ```parent_id``` column, run
     ```Tag.rebuild!``` and the hierarchy will be built for you.
