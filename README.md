@@ -124,7 +124,7 @@ end
 * ```tag.self_and_descendants``` returns an array of all children, childrens' children, etc., including self.
 * ```tag.leaves``` returns an array of all descendants that have no children.
 
- ### Instance methods: Predicates (these don't need to hit the DB to respond)
+### Predicate instance methods (these don't hit the DB)
 
 * ```tag.root?``` returns  true if this is a root node
 * ```tag.child?``` returns  true if this is a child node. It has a parent.
