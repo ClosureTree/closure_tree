@@ -76,7 +76,7 @@ physics.move_to_child_of(science)
 Put another thing inside the "physics" node:
 
 ```ruby
-gravity = Category.create!(:name => ‘Gravity’)
+gravity = Category.create!(:name => 'Gravity')
 gravity.move_to_child_of(physics)
 ```
 
@@ -88,9 +88,9 @@ science.reload
 
 Now you should have something that resembles this:
 
-1.  science
-    1.  physics
-        1. gravity
+* science
+    * physics
+        * gravity
 
 
 ### Advanced Usage
