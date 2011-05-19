@@ -52,9 +52,7 @@ Note that closure-tree is being developed for Rails 3.0 and 3.1 (currently in be
 
 ## Usage
 
-It's just like your old friend, but less geriatric.
-
-(Based on [Bear Den Design's post](http://beardendesigns.com/blogs/permalink/56))
+*Based on [Bear Den Design's post](http://beardendesigns.com/blogs/permalink/56))*
 
 ### Creation
 
