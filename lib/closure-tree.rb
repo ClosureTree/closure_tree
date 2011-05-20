@@ -1,5 +1,3 @@
-module Closure
-  module Tree
-    # Your code goes here...
-  end
+module ClosureTree
+  # Your code goes here...
 end

@@ -11,9 +11,9 @@ for a description of different tree storage algorithms.
 
 ## Setup
 
-Note that closure-tree is being developed for Rails 3.0 and 3.1 (currently in beta).
+Note that closure_tree is being developed for Rails 3.0 and 3.1 (currently in beta).
 
-1.  Add this to your Gemfile: ```gem 'closure-tree'```
+1.  Add this to your Gemfile: ```gem 'closure_tree'```
 
 2.  Run ```bundle install```
 

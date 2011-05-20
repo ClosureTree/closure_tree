@@ -1,5 +1,7 @@
 *.gem
+*.log
 .bundle
-Gemfile.lock
-pkg/*
-.idea/
+.idea
+coverage
+pkg
+rdoc
