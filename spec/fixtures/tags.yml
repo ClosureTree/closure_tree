@@ -1,15 +1,15 @@
-people:
+people: {}
 
 # people has no children
 
-events:
+events: {}
 
 # events has only one child
 
 birthday:
   parent: events
 
-places:
+places: {}
 
 # places has many children, with many depths
 
