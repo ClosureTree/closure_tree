@@ -1,3 +1,0 @@
-module ClosureTree
-  # Your code goes here...
-end

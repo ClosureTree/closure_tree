@@ -11,7 +11,7 @@ require 'active_support'
 require 'active_model'
 require 'active_record'
 require 'action_controller'
-require 'factory_girl'
+#require 'factory_girl'
 #require 'database_cleaner'
 require 'ruby-debug'
 
@@ -24,7 +24,7 @@ ActiveRecord::Base.establish_connection(ENV["DB"] || "sqlite3mem")
 ActiveRecord::Migration.verbose = false
 load(File.join(plugin_test_dir, "db", "schema.rb"))
 
-require 'support/models'
+require 'models'
 
 require 'rspec/rails'
 RSpec.configure do |config|

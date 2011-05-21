@@ -1,3 +1,4 @@
+*.db
 *.gem
 *.log
 .bundle

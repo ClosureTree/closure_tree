@@ -14,12 +14,12 @@ task :release => :build do
   system "gem push closure_tree-#{ClosureTree::VERSION}.gem"
 end
 
-require 'rake/rdoctask'
-desc 'Generate documentation for the closure-tree plugin.'
-Rake::RDocTask.new(:rdoc) do |rdoc|
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title    = 'ClosureTree'
-  rdoc.options << '--line-numbers' << '--inline-source'
-  # rdoc.rdoc_files.include('README')
-  rdoc.rdoc_files.include('lib/**/*.rb')
-end
+#require 'rdoc/task'
+#desc 'Generate documentation for the closure-tree plugin.'
+#Rake::RDocTask.new(:rdoc) do |rdoc|
+#  rdoc.rdoc_dir = 'rdoc'
+#  rdoc.title    = 'ClosureTree'
+#  rdoc.options << '--line-numbers' << '--inline-source'
+#  # rdoc.rdoc_files.include('README')
+#  rdoc.rdoc_files.include('lib/**/*.rb')
+#end
