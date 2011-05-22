@@ -12,11 +12,11 @@ for a description of different tree storage algorithms.
 
 Note that closure_tree is being developed for Rails 3.1.0.beta1
 
-1.  Add this to your Gemfile: +gem 'closure_tree'+
+1.  Add this to your Gemfile: <code>gem 'closure_tree'</code>
 
-2.  Run +bundle install+
+2.  Run <code>bundle install</code>
 
-3.  Add +acts_as_tree+ to your hierarchical model(s)
+3.  Add <code>acts_as_tree</code> to your hierarchical model(s)
 
 4.  Add a database migration to store the hierarchy for your model. By
     convention the table name will be the model's table name, followed by
@@ -48,7 +48,7 @@ Note that closure_tree is being developed for Rails 3.1.0.beta1
 
 == Usage
 
-_Based on {Bear Den Design's post}[http://beardendesigns.com/blogs/permalink/56], just with less {Ella}[http://www.flickr.com/photos/ecbearden/3284964622/]_
+<em>Based on {Bear Den Design's post}[http://beardendesigns.com/blogs/permalink/56], just with less {Ella}[http://www.flickr.com/photos/ecbearden/3284964622/] </em>
 
 === Creation
 
