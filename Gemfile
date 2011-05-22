@@ -1,10 +1,13 @@
-source :rubygems
-gemspec
+source "http://rubygems.org"
 
-gem 'rails'
-gem 'sqlite3-ruby'
-gem 'mysql'
-gem 'rspec-rails'
-gem 'database_cleaner'
-gem 'ruby-debug19', :platforms => :ruby_19, :require => 'ruby-debug'
-gem 'ruby-debug',   :platforms => :ruby_18
+gem 'rails', :git => 'git://github.com/rails/rails.git'
+gem 'sprockets', :git => 'git://github.com/sstephenson/sprockets.git'
+
+#gem 'rails', '3.1.0.beta1'
+#gem 'sprockets', '2.0.0.beta.2'
+gem 'rdoc'
+gem 'mysql2'
+
+if RUBY_VERSION < '1.9'
+  gem "ruby-debug", ">= 0.10.3"
+end

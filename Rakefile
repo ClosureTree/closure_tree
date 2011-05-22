@@ -1,25 +1,29 @@
-require 'bundler'
-Bundler::GemHelper.install_tasks
-
-require "rspec/core/rake_task"
-RSpec::Core::RakeTask.new(:spec)
-
-task :default => :spec
-
-task :build do
-  system "gem build closure_tree.gemspec"
+#!/usr/bin/env rake
+begin
+  require 'bundler/setup'
+rescue LoadError
+  puts 'You must `gem install bundler` and `bundle install` to run rake tasks'
 end
 
-task :release => :build do
-  system "gem push closure_tree-#{ClosureTree::VERSION}.gem"
+require 'rdoc/task'
+
+RDoc::Task.new do |rdoc|
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title    = 'ClosureTree'
+  rdoc.options << '--line-numbers' << '--inline-source'
+  rdoc.rdoc_files.include('README.rdoc')
+  rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
-#require 'rdoc/task'
-#desc 'Generate documentation for the closure-tree plugin.'
-#Rake::RDocTask.new(:rdoc) do |rdoc|
-#  rdoc.rdoc_dir = 'rdoc'
-#  rdoc.title    = 'ClosureTree'
-#  rdoc.options << '--line-numbers' << '--inline-source'
-#  # rdoc.rdoc_files.include('README')
-#  rdoc.rdoc_files.include('lib/**/*.rb')
-#end
+
+require 'rake/testtask'
+
+Rake::TestTask.new(:test) do |t|
+  t.libs << 'lib'
+  t.libs << 'test'
+  t.pattern = 'test/**/*_test.rb'
+  t.verbose = false
+end
+
+
+task :default => :test

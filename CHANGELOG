@@ -1,3 +1,0 @@
-1.0.0
-* Integration tested only with rails 3.1.0.beta1
-* Limited API compatibility with acts_as_tree, ancestry, and acts_as_nested_set
