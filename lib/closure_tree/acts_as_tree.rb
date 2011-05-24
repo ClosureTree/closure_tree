@@ -37,6 +37,7 @@ module ClosureTree #:nodoc:
       end
 
       def parent_id= new_parent_id
+        ct_cache.clear
         self[parent_column_name] = new_parent_id
       end
 
@@ -53,8 +54,12 @@ module ClosureTree #:nodoc:
         !parent_id.nil?
       end
 
+      def level
+        ancestor_ids_with_generations.size - 1
+      end
+
       def ancestor_ids_with_generations
-        @ancestor_ids_with_generations ||= begin
+        ct_cache[:ancestor_ids_with_generations] ||= begin
           ancestors = connection.select_rows <<-SQL
             select ancestor_id, generations
             from #{quoted_hierarchy_table_name}
@@ -65,7 +70,7 @@ module ClosureTree #:nodoc:
       end
 
       def add_child child_node
-        child_node.parent_id = self.id
+        child_node.update_attribute :parent_id, self.id
         ancestor_ids_with_generations.each do |ancestor_id, generations|
           # TODO: should the hierarchy table be modeled by ActiveRecord?
           connection.execute <<-SQL
@@ -86,6 +91,12 @@ module ClosureTree #:nodoc:
         new_parent.add_child self
       end
 
+      private
+
+      def ct_cache
+        @ct_cache ||= {}
+      end
+
     end
 
     module ClassMethods
@@ -97,13 +108,13 @@ module ClosureTree #:nodoc:
         connection.execute <<-SQL
           DELETE FROM #{quoted_hierarchy_table_name}
         SQL
-        build_node_hier = lambda do |node|
-          node.parent.add_child node if node.parent
-          node.children.each { |child| build_node_hier child }
-        end
-        roots.each do |node|
-          build_node_hier node
-        end
+        roots.each { |n| rebuild_node_and_children n }
+      end
+
+      private
+      def rebuild_node_and_children node
+        node.parent.add_child node if node.parent
+        node.children.each { |child| rebuild_node_and_children child }
       end
     end
   end
