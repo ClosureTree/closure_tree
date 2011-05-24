@@ -1,7 +1,38 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
 
-one:
-  name: MyString
+people: {}
 
-two:
-  name: MyString
+# people has no children
+
+events: {}
+
+# events has only one child
+
+birthday:
+  parent: events
+
+places: {}
+
+# places has many children, with many depths
+
+home:
+  parent: places
+
+indoor:
+  parent: places
+
+outdoor:
+  parent: places
+
+museum:
+  parent: places
+
+united_states:
+  parent: places
+
+california:
+  parent: united_states
+
+san_francisco:
+  parent: california
+

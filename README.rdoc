@@ -18,32 +18,38 @@ Note that closure_tree is being developed for Rails 3.1.0.beta1
 
 3.  Add <code>acts_as_tree</code> to your hierarchical model(s)
 
-4.  Add a database migration to store the hierarchy for your model. By
+4.  Add a <code>parent_id</code> column to your hierarchical model, if it doesn't already have one.
+
+    If the column is null, the tag will be considered a root node. 
+
+      class AddParentIdToTag < ActiveRecord::Migration
+        def change
+          add_column :tag, :parent_id, :integer
+        end
+      end
+
+5.  Add a database migration to store the hierarchy for your model. By
     convention the table name will be the model's table name, followed by
     "_hierarchy":
       class CreateTagHierarchy < ActiveRecord::Migration
-        def self.up
+        def change
           create_table :tag_hierarchy do |t|
             t.integer  :ancestor_id, :null => false   # ID of the parent/grandparent/great-grandparent/... tag
             t.integer  :descendant_id, :null => false # ID of the target tag
             t.integer  :generations, :null => false   # Number of generations between the ancestor and the descendant. Parent/child = 1, for example.
           end
 
-          # For "all progeny of..." selects:
+            # For "all progeny of..." selects:
           add_index :tag_hierarchy, [:ancestor_id, :descendant_id], :unique => true
 
-          # For "all ancestors of..." selects
+            # For "all ancestors of..." selects
           add_index :tag_hierarchy, [:descendant_id]
-        end
-
-        def self.down
-          drop_table :tag_hierarchy
         end
       end
 
-5.  Run +rake db:migrate+
+6.  Run +rake db:migrate+
 
-6.  If you're migrating away from another system where your model already has a ```parent_id``` column, run
+7.  If you're migrating away from another system where your model already has a ```parent_id``` column, run
     +Tag.rebuild!+ and the hierarchy will be built for you.
 
 == Usage

@@ -19,4 +19,13 @@ ActiveRecord::Schema.define(:version => 20110522004834) do
     t.datetime "updated_at"
   end
 
+  create_table "tags_hierarchy", :force => true do |t|
+    t.integer "ancestor_id",   :null => false
+    t.integer "descendant_id", :null => false
+    t.integer "generations",   :null => false
+  end
+
+  add_index "tags_hierarchy", ["ancestor_id", "descendant_id"], :name => "index_tags_hierarchy_on_ancestor_id_and_descendant_id", :unique => true
+  add_index "tags_hierarchy", ["descendant_id"], :name => "index_tags_hierarchy_on_descendant_id"
+
 end
