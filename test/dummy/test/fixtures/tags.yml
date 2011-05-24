@@ -1,38 +1,49 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
 
-people: {}
+people:
+  name: people
 
 # people has no children
 
-events: {}
+events:
+  name: events
 
 # events has only one child
 
 birthday:
+  name: birthday
   parent: events
 
-places: {}
+places:
+  name: places
 
 # places has many children, with many depths
 
 home:
+  name: home
   parent: places
 
 indoor:
+  name: indoor
   parent: places
 
 outdoor:
+  name: outdoor
   parent: places
 
 museum:
+  name: museum
   parent: places
 
 united_states:
+  name: united_states
   parent: places
 
 california:
+  name: california
   parent: united_states
 
 san_francisco:
+  name: san_francisco
   parent: california
 

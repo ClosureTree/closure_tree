@@ -1,9 +1,8 @@
 source "http://rubygems.org"
 
 gem 'rails', :git => 'git://github.com/rails/rails.git'
-gem 'sprockets', :git => 'git://github.com/sstephenson/sprockets.git'
-
 #gem 'rails', '3.1.0.beta1'
+gem 'sprockets', :git => 'git://github.com/sstephenson/sprockets.git'
 #gem 'sprockets', '2.0.0.beta.2'
 gem 'rdoc'
 gem 'mysql2'
@@ -13,5 +12,6 @@ if RUBY_VERSION < '1.9'
 end
 
 group :test, :development do
-  gem "rspec-rails"
+#  gem 'rspec-rails', '>= 2.6.0'
+#  gem 'guard-rspec'
 end

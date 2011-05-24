@@ -55,21 +55,21 @@ module ClosureTree #:nodoc:
 
       def ancestor_ids_with_generations
         @ancestor_ids_with_generations ||= begin
-          result = [[self.id, 0]]
           ancestors = connection.select_rows <<-SQL
             select ancestor_id, generations
             from #{quoted_hierarchy_table_name}
             where descendant_id = #{self.id}
           SQL
-          ancestors.empty? ? result : result.concat(ancestors)
+          ancestors << [self.id, 0]
         end
       end
 
       def add_child child_node
         child_node.parent_id = self.id
         ancestor_ids_with_generations.each do |ancestor_id, generations|
+          # TODO: should the hierarchy table be modeled by ActiveRecord?
           connection.execute <<-SQL
-            INSERT IGNORE INTO #{quoted_hierarchy_table_name}
+            INSERT INTO #{quoted_hierarchy_table_name}
               (ancestor_id, descendant_id, generations)
             VALUES
               (#{ancestor_id}, #{child_node.id}, #{generations + 1})
