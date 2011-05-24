@@ -5,9 +5,9 @@ class TagTest < ActiveSupport::TestCase
 
   def test_roots
     roots = Tag.roots.to_a
-    roots.each{|r| p r}
-    assert_equal roots.size, 4
-    assert roots.include?(tags(:people))
+    assert(roots.include?(tags(:people)))
+    assert(roots.include?(tags(:events)))
+    assert(!roots.include?(tags(:child)))
   end
 
 end

@@ -1,5 +1,17 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
 
+grandparent:
+  name: grandparent
+
+parent:
+  name: parent
+  parent: grandparent
+
+child:
+  name: child
+  parent: parent
+
+
 people:
   name: people
 
