@@ -81,14 +81,6 @@ Now you should have something that resembles this:
   * physics
     * gravity
 
-=== Advanced Usage
-
-Accessing levels without a hit to the db:
-
-  Tag.each_with_level(Tag.root.self_and_descendants) do |Tag, level|
-    ...
-  end
-
 == Accessing Data
 
 === Class methods
