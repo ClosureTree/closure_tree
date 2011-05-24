@@ -39,18 +39,21 @@ Note that closure_tree is being developed for Rails 3.1.0.beta1
             t.integer  :generations, :null => false   # Number of generations between the ancestor and the descendant. Parent/child = 1, for example.
           end
 
-            # For "all progeny of..." selects:
+          # For "all progeny of..." selects:
           add_index :tag_hierarchy, [:ancestor_id, :descendant_id], :unique => true
 
-            # For "all ancestors of..." selects
+          # For "all ancestors of..." selects
           add_index :tag_hierarchy, [:descendant_id]
         end
       end
 
-6.  Run +rake db:migrate+
+6.  Run <code>rake db:migrate</code>
 
-7.  If you're migrating away from another system where your model already has a ```parent_id``` column, run
-    +Tag.rebuild!+ and the hierarchy will be built for you.
+7.  If you're migrating away from another system where your model already has a code>parent_id</code> column, run
+    <code>Tag.rebuild!</code> and the _hierarchy table will be rebuilt.
+
+    If you're starting from scratch with no prior data, you don't need to call rebuild, as long as you remember
+    to use the <code>add_child</code> or <code>move_to_child_of</code> methods.
 
 == Usage
 
@@ -65,23 +68,18 @@ Create a root node:
 Put a new thing inside this root node:
 
   physics = Tag.create!(:name => 'Physics')
-  physics.move_to_child_of(science)
+  science.add_child physics
 
 Put another thing inside the "physics" node:
 
   gravity = Tag.create!(:name => 'Gravity')
-  gravity.move_to_child_of(physics)
-
-Reload the root node:
-
-  science.reload
+  physics.add_child gravity
 
 Now you should have something that resembles this:
 
 * science
   * physics
     * gravity
-
 
 === Advanced Usage
 
