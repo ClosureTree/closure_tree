@@ -74,13 +74,10 @@ Or append to the <code>children</code> collection:
   child = Tag.create!(:name => 'Child')
   parent.children << child
 
-You should have something that resembles this:
+Then:
 
-  grandparent.self_and_descendants.collect{ |t| t.name }.join(" > ")
-
-* Grandparent
-  * Parent
-    * Child
+  puts grandparent.self_and_descendants.collect{ |t| t.name }.join(" > ")
+  "grandparent > parent > child"
 
 == Accessing Data
 
@@ -108,5 +105,5 @@ You should have something that resembles this:
 
 == Thanks to
 
-* https://github.com/collectiveidea/awesome_nested_set/
-* https://github.com/patshaughnessy/class_factory/
+* https://github.com/collectiveidea/awesome_nested_set
+* https://github.com/patshaughnessy/class_factory
