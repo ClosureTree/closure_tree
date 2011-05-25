@@ -34,7 +34,7 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
 
       class CreateTagHierarchy < ActiveRecord::Migration
         def change
-          create_table :tags_hierarchy do |t|
+          create_table :tags_hierarchy, :id => false do |t|
             t.integer  :ancestor_id, :null => false   # ID of the parent/grandparent/great-grandparent/... tag
             t.integer  :descendant_id, :null => false # ID of the target tag
             t.integer  :generations, :null => false   # Number of generations between the ancestor and the descendant. Parent/child = 1, for example.
