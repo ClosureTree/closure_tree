@@ -79,6 +79,18 @@ Then:
   puts grandparent.self_and_descendants.collect{ |t| t.name }.join(" > ")
   "grandparent > parent > child"
 
+  child.ancestry_names
+  ["grandparent", "parent", "child"]
+
+=== <code>find_or_create_by_path</code>
+
+If your model has a single string column that can build a given node (like a "name" or a "title"),
+you can use that to find_or_create:
+
+  Tag.find_or_create_by_path %w{one two three}
+
+You can customize the column name with the :name_column option in <code>acts_as_tree</code>.
+
 == Accessing Data
 
 === Class methods

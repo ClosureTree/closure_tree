@@ -56,6 +56,29 @@ class TagTest < ActiveSupport::TestCase
     assert_equal [tags(:child), tags(:parent), tags(:grandparent)], tags(:child).self_and_ancestors
   end
 
+  def test_ancestry_path
+    assert_equal %w{grandparent parent child}, tags(:child).ancestry_names
+  end
+
+  def test_find_by_path
+    # class method:
+    assert_equal tags(:child), Tag.find_by_path(%w{grandparent parent child})
+    assert_equal tags(:child), Tag.find_or_create_by_path(%w{grandparent parent child})
+    # instance method:
+    assert_equal tags(:child), tags(:parent).find_by_path(%w{child})
+    assert_equal tags(:child), tags(:grandparent).find_by_path(%w{parent child})
+    assert_nil tags(:parent).find_by_path(%w{child larvae})
+  end
+
+  def test_find_or_create_by_path
+    # class method:
+    assert_equal %w{events anniversary}, Tag.find_or_create_by_path(%w{events anniversary}).ancestry_names
+    a = Tag.find_or_create_by_path(%w{a})
+    assert_equal %w{a}, a.ancestry_names
+    # instance method:
+    assert_equal %w{a b c}, a.find_or_create_by_path(%w{b c}).ancestry_names
+  end
+
   def test_descendants
     assert_equal [tags(:child)], tags(:parent).descendants
     assert_equal [tags(:parent), tags(:child)], tags(:parent).self_and_descendants

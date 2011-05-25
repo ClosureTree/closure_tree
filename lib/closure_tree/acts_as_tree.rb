@@ -6,7 +6,8 @@ module ClosureTree #:nodoc:
       self.closure_tree_options = {
         :parent_column_name => 'parent_id',
         :dependent => :delete_all, # or :destroy
-        :hierarchy_table_suffix => '_hierarchies'
+        :hierarchy_table_suffix => '_hierarchies',
+        :name_column => 'name'
       }.merge(options)
 
       include ClosureTree::Columns
@@ -90,6 +91,12 @@ module ClosureTree #:nodoc:
         [self].concat ancestors.to_a
       end
 
+      # Returns an array, root first, of self_and_ancestors' +name_column+ values
+      # (so child.ancestry_names == +%w{grandparent parent child}+
+      def ancestry_names
+        self_and_ancestors.reverse.collect { |n| n.send name_column.to_sym }
+      end
+
       def self_and_descendants
         [self].concat descendants.to_a
       end
@@ -121,7 +128,25 @@ module ClosureTree #:nodoc:
         new_parent.add_child self
       end
 
+      # Find a child node whose +ancestry_names+ minus self.ancestry_names is +path+
+      def find_by_path path
+        _find_or_create_by_path path, "find_by_#{name_column}".to_sym
+      end
+
+      # Find a child node whose +ancestry_names+ minus self.ancestry_names is +path+
+      def find_or_create_by_path path
+        _find_or_create_by_path path, "find_or_create_by_#{name_column}".to_sym
+      end
+
       protected
+
+      def _find_or_create_by_path path, methodname
+        node = self
+        while (name = path.shift and node)
+          node = node.children.send(methodname, name)
+        end
+        node
+      end
 
       def without_self(scope)
         scope.where(["#{quoted_table_name}.#{self.class.primary_key} != ?", self])
@@ -145,6 +170,29 @@ module ClosureTree #:nodoc:
         nil
       end
 
+      # Find the node whose +ancestry_names+ is +path+
+      def find_by_path path
+        self.where(name_sym => path.last).each do |n|
+          return n if path == n.ancestry_names
+        end
+        nil
+      end
+
+      # Find or create nodes such that the +ancestry_names+ is +path+
+      def find_or_create_by_path path
+        # short-circuit if we can:
+        n = find_by_path path
+        return n if n
+
+        name = path.shift
+        node = roots.where(name_sym => name).first
+        node = create!(name_sym => name) unless node
+        while (name = path.shift)
+          node = node.children.send("find_or_create_by_#{name_column}".to_sym, name)
+        end
+        node
+      end
+
       private
       def rebuild_node_and_children node
         node.parent.add_child node if node.parent
@@ -160,6 +208,18 @@ module ClosureTree #:nodoc:
 
     def parent_column_name
       closure_tree_options[:parent_column_name]
+    end
+
+    def has_name?
+      ct_class.new.attributes.include? closure_tree_options[:name_column]
+    end
+
+    def name_column
+      closure_tree_options[:name_column]
+    end
+
+    def name_sym
+      name_column.to_sym
     end
 
     def hierarchy_table_name
