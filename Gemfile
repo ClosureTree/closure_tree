@@ -6,6 +6,7 @@ gem 'sprockets', :git => 'git://github.com/sstephenson/sprockets.git'
 #gem 'sprockets', '2.0.0.beta.2'
 gem 'rdoc'
 gem 'mysql2'
+gem 'sqlite3'
 gem 'awesome_print', :require => 'ap'
 
 
