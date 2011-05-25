@@ -19,7 +19,7 @@ ActiveRecord::Schema.define(:version => 20110522004834) do
     t.datetime "updated_at"
   end
 
-  create_table "tags_hierarchies", :force => true do |t|
+  create_table "tags_hierarchies", :id => false, :force => true do |t|
     t.integer "ancestor_id",   :null => false
     t.integer "descendant_id", :null => false
     t.integer "generations",   :null => false

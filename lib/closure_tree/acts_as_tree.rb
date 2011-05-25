@@ -63,10 +63,12 @@ module ClosureTree #:nodoc:
         self[parent_column_name] = new_parent_id
       end
 
+      # Returns true if this node has no parents.
       def root?
         parent_id.nil?
       end
 
+      # Returns true if this node has no children.
       def leaf?
         children.empty?
       end
@@ -75,13 +77,13 @@ module ClosureTree #:nodoc:
         self.class.scoped.includes(:descendants_hierarchy).where("#{hierarchy_table_name}.descendant_id is null and #{hierarchy_table_name}.ancestor_id = #{id}")
       end
 
-      # Returns true is this is a child node
+      # Returns true if this node has a parent, and is not a root.
       def child?
         !parent_id.nil?
       end
 
       def level
-        ancestors.count
+        ancestors.size
       end
 
       def self_and_ancestors
@@ -100,6 +102,8 @@ module ClosureTree #:nodoc:
         without_self(self_and_siblings)
       end
 
+      # You must use this method, or add child nodes to the +children+ association, to
+      # make the hierarchy table stay consistent.
       def add_child child_node
         child_node.update_attribute :parent_id, self.id
         self_and_ancestors.inject(1) do |gen, ancestor|
@@ -126,10 +130,13 @@ module ClosureTree #:nodoc:
     end
 
     module ClassMethods
+      # Returns an arbitrary node that has no parents.
       def root
         roots.first
       end
 
+      # Rebuilds the hierarchy table based on the parent_id column in the database.
+      # Note that the hierarchy table will be truncated.
       def rebuild!
         connection.execute <<-SQL
           DELETE FROM #{quoted_hierarchy_table_name}

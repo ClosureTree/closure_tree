@@ -16,7 +16,7 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
 
 2.  Run <code>bundle install</code>
 
-3.  Add <code>acts_as_tree</code> to your hierarchical model(s) in <code>app/models/</code>. Nothing else needs to be added to app/models/.
+3.  Add <code>acts_as_tree</code> to your hierarchical model(s).
 
 4.  Add a migration to add a <code>parent_id</code> column to the model you want to act_as_tree.
 
@@ -30,7 +30,8 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
 
 5.  Add a database migration to store the hierarchy for your model. By
     convention the table name will be the model's table name, followed by
-    "_hierarchy". Note that you do not need a model file to :
+    "_hierarchy". Note that by calling <code>acts_as_tree</code>, a "virtual model" (in this case, <code>TagsHierarchy</code>) will be added automatically, so you don't need to create it.
+
       class CreateTagHierarchy < ActiveRecord::Migration
         def change
           create_table :tags_hierarchy do |t|
@@ -49,10 +50,11 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
 
 6.  Run <code>rake db:migrate</code>
 
-7.  If you're migrating away from another system where your model already has a code>parent_id</code> column, run
-    <code>Tag.rebuild!</code> and the ..._hierarchy table will be rebuilt.
+7.  If you're migrating away from another system where your model already has a
+    <code>parent_id</code> column, run <code>Tag.rebuild!</code> and the
+    ..._hierarchy table will be truncated and rebuilt.
 
-    If you're starting from scratch with no prior data you won't need to call <code>rebuild!</code>.
+    If you're starting from scratch you don't need to call <code>rebuild!</code>.
 
 == Usage
 
@@ -62,25 +64,25 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
 
 Create a root node:
 
-  science = Tag.create!(:name => 'Science')
+  grandparent = Tag.create!(:name => 'Grandparent')
 
-Put a new thing inside this root node:
+Put a new thing inside this root node by calling <code>.add_child</code>:
 
-  physics = Tag.create!(:name => 'Physics')
-  science.add_child physics
+  parent = Tag.create!(:name => 'Parent')
+  grandparent.add_child parent
 
-Put another thing inside the "physics" node, but this time by appending to the <code>children</code> collection (which is equivalent to <code>.add_child</code>).
+Put another thing inside the "parent" node. This time we'll appending to the <code>children</code> collection (which is equivalent to <code>.add_child</code>).
 
-  gravity = Tag.create!(:name => 'Gravity')
-  physics.children << gravity
+  child = Tag.create!(:name => 'Child')
+  parent.children << child
 
 Now you should have something that resembles this:
 
-  science.self_and_descendants
+  grandparent.self_and_descendants
 
-* science
-  * physics
-    * gravity
+* Grandparent
+  * Parent
+    * Child
 
 == Accessing Data
 
@@ -93,6 +95,9 @@ Now you should have something that resembles this:
 === Instance methods
 
 [tag.root] returns the root for this node
+[tag.root?] returns true if this is a root node
+[tag.child?] returns true if this is a child node. It has a parent.
+[tag.leaf?] returns true if this is a leaf node. It has no children.
 [tag.level] returns the level, or "generation", for this node in the tree. A root node = 0
 [tag.parent] returns the node's immediate parent
 [tag.children] returns an array of immediate children (just those in the next level).
@@ -102,9 +107,6 @@ Now you should have something that resembles this:
 [tag.self_and_siblings] returns an array of brothers and sisters (all at that level), including self.
 [tag.descendants] returns an array of all children, childrens' children, etc., excluding self.
 [tag.self_and_descendants] returns an array of all children, childrens' children, etc., including self.
-[tag.root?] returns true if this is a root node
-[tag.child?] returns true if this is a child node. It has a parent.
-[tag.leaf?] returns true if this is a leaf node. It has no children.
 
 == Thanks to
 
