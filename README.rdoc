@@ -52,8 +52,7 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
 7.  If you're migrating away from another system where your model already has a code>parent_id</code> column, run
     <code>Tag.rebuild!</code> and the ..._hierarchy table will be rebuilt.
 
-    If you're starting from scratch with no prior data, you don't need to call rebuild, as long as you remember
-    to use the <code>add_child</code> or <code>move_to_child_of</code> methods.
+    If you're starting from scratch with no prior data you won't need to call <code>rebuild!</code>.
 
 == Usage
 
@@ -70,10 +69,10 @@ Put a new thing inside this root node:
   physics = Tag.create!(:name => 'Physics')
   science.add_child physics
 
-Put another thing inside the "physics" node:
+Put another thing inside the "physics" node, but this time by appending to the <code>children</code> collection (which is equivalent to <code>.add_child</code>).
 
   gravity = Tag.create!(:name => 'Gravity')
-  physics.add_child gravity
+  physics.children << gravity
 
 Now you should have something that resembles this:
 
@@ -87,6 +86,7 @@ Now you should have something that resembles this:
 
 [Tag.root] returns an arbitrary root node
 [Tag.roots] returns all root nodes
+[Tag.leaves] returns all leaf nodes
 
 === Instance methods
 
@@ -100,14 +100,11 @@ Now you should have something that resembles this:
 [tag.self_and_siblings] returns an array of brothers and sisters (all at that level), including self.
 [tag.descendants] returns an array of all children, childrens' children, etc., excluding self.
 [tag.self_and_descendants] returns an array of all children, childrens' children, etc., including self.
-[tag.leaves] returns an array of all descendants that have no children.
-
-=== Predicate instance methods (these don't hit the DB)
-
 [tag.root?] returns true if this is a root node
 [tag.child?] returns true if this is a child node. It has a parent.
-[tag.is_ancestor_of?(obj)] returns  true if nested by any obj
-[tag.is_or_is_ancestor_of?(obj)] returns  true if nested by any obj or self is obj
-[tag.is_descendant_of?(obj)] returns  true if self is nested under obj
-[tag.is_or_is_descendant_of?(obj)] returns  true if self is nested under obj or self is obj
-[tag.leaf?] returns  true if this is a leaf node. It has no children.
+[tag.leaf?] returns true if this is a leaf node. It has no children.
+
+== Thanks to
+
+* https://github.com/collectiveidea/awesome_nested_set/
+* https://github.com/patshaughnessy/class_factory/

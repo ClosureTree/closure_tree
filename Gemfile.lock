@@ -61,6 +61,7 @@ GEM
   remote: http://rubygems.org/
   specs:
     arel (2.1.1)
+    awesome_print (0.4.0)
     bcrypt-ruby (2.1.4)
     builder (3.0.0)
     erubis (2.7.0)
@@ -95,6 +96,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  awesome_print
   mysql2
   rails!
   rdoc

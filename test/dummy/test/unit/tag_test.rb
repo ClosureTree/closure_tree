@@ -20,14 +20,23 @@ class TagTest < ActiveSupport::TestCase
   def test_add_child
     sb = Tag.create!(:name => "Santa Barbara")
     assert sb.leaf?
-    ca = tags(:california)
-    ca.add_child sb
-    sb.reload
+    tags(:california).add_child sb
     assert sb.leaf?
-    sb_ancestors = sb.ancestor_ids_with_generations
-    assert_equal [[tags(:places).id, 3], [tags(:united_states).id, 2], [ca.id, 1], [sb.id, 0]], sb_ancestors
+    validate_city_tag sb
+  end
 
-    assert ca.children.include?(sb)
+  def validate_city_tag city
+    assert tags(:california).children.include?(city)
+    assert_equal [tags(:california), tags(:united_states), tags(:places)], city.ancestors
+    assert_equal [city, tags(:california), tags(:united_states), tags(:places)], city.self_and_ancestors
+  end
+
+  def test_add_through_children
+    eg = Tag.create!(:name => "El Granada")
+    assert eg.leaf?
+    tags(:california).children << eg
+    assert eg.leaf?
+    validate_city_tag eg
   end
 
   def test_level
@@ -46,6 +55,19 @@ class TagTest < ActiveSupport::TestCase
     assert tags(:grandparent).children.include? tags(:parent)
     assert tags(:parent).children.include? tags(:child)
     assert tags(:child).children.empty?
+  end
+
+  def test_ancestors
+    assert_equal [tags(:parent), tags(:grandparent)], tags(:child).ancestors
+    assert_equal [tags(:child), tags(:parent), tags(:grandparent)], tags(:child).self_and_ancestors
+  end
+
+  def test_descendants
+    assert_equal [tags(:child)], tags(:parent).descendants
+    assert_equal [tags(:parent), tags(:child)], tags(:parent).self_and_descendants
+
+    assert_equal [tags(:parent), tags(:child)], tags(:grandparent).descendants
+    assert_equal [tags(:grandparent), tags(:parent), tags(:child)], tags(:grandparent).self_and_descendants
   end
 
 end
