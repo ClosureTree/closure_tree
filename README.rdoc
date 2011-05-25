@@ -16,11 +16,11 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
 
 2.  Run <code>bundle install</code>
 
-3.  Add <code>acts_as_tree</code> to your hierarchical model(s)
+3.  Add <code>acts_as_tree</code> to your hierarchical model(s) in <code>app/models/</code>. Nothing else needs to be added to app/models/.
 
-4.  Add a <code>parent_id</code> column to your hierarchical model, if it doesn't already have one.
+4.  Add a migration to add a <code>parent_id</code> column to the model you want to act_as_tree.
 
-    If the column is null, the tag will be considered a root node. 
+    Note that if the column is null, the tag will be considered a root node.
 
       class AddParentIdToTag < ActiveRecord::Migration
         def change
@@ -30,7 +30,7 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
 
 5.  Add a database migration to store the hierarchy for your model. By
     convention the table name will be the model's table name, followed by
-    "_hierarchy":
+    "_hierarchy". Note that you do not need a model file to :
       class CreateTagHierarchy < ActiveRecord::Migration
         def change
           create_table :tags_hierarchy do |t|
@@ -75,6 +75,8 @@ Put another thing inside the "physics" node, but this time by appending to the <
   physics.children << gravity
 
 Now you should have something that resembles this:
+
+  science.self_and_descendants
 
 * science
   * physics
