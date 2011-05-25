@@ -25,12 +25,6 @@ class TagTest < ActiveSupport::TestCase
     validate_city_tag sb
   end
 
-  def validate_city_tag city
-    assert tags(:california).children.include?(city)
-    assert_equal [tags(:california), tags(:united_states), tags(:places)], city.ancestors
-    assert_equal [city, tags(:california), tags(:united_states), tags(:places)], city.self_and_ancestors
-  end
-
   def test_add_through_children
     eg = Tag.create!(:name => "El Granada")
     assert eg.leaf?
@@ -68,7 +62,14 @@ class TagTest < ActiveSupport::TestCase
 
     assert_equal [tags(:parent), tags(:child)], tags(:grandparent).descendants
     assert_equal [tags(:grandparent), tags(:parent), tags(:child)], tags(:grandparent).self_and_descendants
+
+    assert_equal "grandparent > parent > child", tags(:grandparent).self_and_descendants.collect { |t| t.name }.join(" > ")
   end
 
+  def validate_city_tag city
+    assert tags(:california).children.include?(city)
+    assert_equal [tags(:california), tags(:united_states), tags(:places)], city.ancestors
+    assert_equal [city, tags(:california), tags(:united_states), tags(:places)], city.self_and_ancestors
+  end
 end
 

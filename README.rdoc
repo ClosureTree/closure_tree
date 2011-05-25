@@ -58,27 +58,25 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
 
 == Usage
 
-<em>Based on {Bear Den Design's post}[http://beardendesigns.com/blogs/permalink/56], just with less {Ella}[http://www.flickr.com/photos/ecbearden/3284964622/] </em>
-
 === Creation
 
 Create a root node:
 
   grandparent = Tag.create!(:name => 'Grandparent')
 
-Put a new thing inside this root node by calling <code>.add_child</code>:
+There are two equivalent ways to add children. Either use the <code>add_child</code> method:
 
   parent = Tag.create!(:name => 'Parent')
   grandparent.add_child parent
 
-Put another thing inside the "parent" node. This time we'll appending to the <code>children</code> collection (which is equivalent to <code>.add_child</code>).
+Or append to the <code>children</code> collection:
 
   child = Tag.create!(:name => 'Child')
   parent.children << child
 
-Now you should have something that resembles this:
+You should have something that resembles this:
 
-  grandparent.self_and_descendants
+  grandparent.self_and_descendants.collect{ |t| t.name }.join(" > ")
 
 * Grandparent
   * Parent
