@@ -14,6 +14,7 @@ ActiveRecord::Schema.define(:version => 20110522004834) do
 
   create_table "tags", :force => true do |t|
     t.string   "name"
+    t.string   "title"
     t.integer  "parent_id"
     t.datetime "created_at"
     t.datetime "updated_at"

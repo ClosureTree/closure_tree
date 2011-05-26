@@ -91,10 +91,11 @@ module ClosureTree #:nodoc:
         [self].concat ancestors.to_a
       end
 
-      # Returns an array, root first, of self_and_ancestors' +name_column+ values
-      # (so child.ancestry_names == +%w{grandparent parent child}+
-      def ancestry_names
-        self_and_ancestors.reverse.collect { |n| n.send name_column.to_sym }
+      # Returns an array, root first, of self_and_ancestors' values of the +to_s_column+, which defaults
+      # to the +name_column+.
+      # (so child.ancestry_path == +%w{grandparent parent child}+
+      def ancestry_path to_s_column = name_column
+        self_and_ancestors.reverse.collect { |n| n.send to_s_column.to_sym }
       end
 
       def self_and_descendants
@@ -128,22 +129,25 @@ module ClosureTree #:nodoc:
         new_parent.add_child self
       end
 
-      # Find a child node whose +ancestry_names+ minus self.ancestry_names is +path+
-      def find_by_path path
-        _find_or_create_by_path path, "find_by_#{name_column}".to_sym
+      # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.
+      # If the first argument is a symbol, it will be used as the column to search by
+      def find_by_path *path
+        _find_or_create_by_path "find", path
       end
 
-      # Find a child node whose +ancestry_names+ minus self.ancestry_names is +path+
-      def find_or_create_by_path path
-        _find_or_create_by_path path, "find_or_create_by_#{name_column}".to_sym
+      # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
+      def find_or_create_by_path *path
+        _find_or_create_by_path "find_or_create", path
       end
 
       protected
 
-      def _find_or_create_by_path path, methodname
+      def _find_or_create_by_path method_prefix, path
+        to_s_column = path.first.is_a?(Symbol) ? path.shift.to_s : name_column
+        path.flatten!
         node = self
-        while (name = path.shift and node)
-          node = node.children.send(methodname, name)
+        while (s = path.shift and node)
+          node = node.children.send("#{method_prefix}_by_#{to_s_column}".to_sym, s)
         end
         node
       end
@@ -170,27 +174,29 @@ module ClosureTree #:nodoc:
         nil
       end
 
-      # Find the node whose +ancestry_names+ is +path+
-      def find_by_path path
-        self.where(name_sym => path.last).each do |n|
-          return n if path == n.ancestry_names
+      # Find the node whose +ancestry_path+ is +path+
+      # If the first argument is a symbol, it will be used as the column to search by
+      def find_by_path *path
+        to_s_column = path.first.is_a?(Symbol) ? path.shift.to_s : name_column
+        path.flatten!
+        self.where(to_s_column => path.last).each do |n|
+          return n if path == n.ancestry_path(to_s_column)
         end
         nil
       end
 
-      # Find or create nodes such that the +ancestry_names+ is +path+
-      def find_or_create_by_path path
+      # Find or create nodes such that the +ancestry_path+ is +path+
+      def find_or_create_by_path *path
         # short-circuit if we can:
         n = find_by_path path
         return n if n
 
-        name = path.shift
-        node = roots.where(name_sym => name).first
-        node = create!(name_sym => name) unless node
-        while (name = path.shift)
-          node = node.children.send("find_or_create_by_#{name_column}".to_sym, name)
-        end
-        node
+        column_sym = path.first.is_a?(Symbol) ? path.shift : name_sym
+        path.flatten!
+        s = path.shift
+        node = roots.where(column_sym => s).first
+        node = create!(column_sym => s) unless node
+        node.find_or_create_by_path column_sym, path
       end
 
       private

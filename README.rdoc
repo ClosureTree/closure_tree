@@ -79,17 +79,17 @@ Then:
   puts grandparent.self_and_descendants.collect{ |t| t.name }.join(" > ")
   "grandparent > parent > child"
 
-  child.ancestry_names
+  child.ancestry_path
   ["grandparent", "parent", "child"]
 
 === <code>find_or_create_by_path</code>
 
-If your model has a single string column that can build a given node (like a "name" or a "title"),
-you can use that to find_or_create:
+We can do all the node creation and add_child calls from the prior section with one method call:
+  child = Tag.find_or_create_by_path "grandparent", "parent", "child"
 
-  Tag.find_or_create_by_path %w{one two three}
+You can <code>find</code> as well as <code>find_or_create</code> by "ancestry paths". Ancestry paths may be built using any column in your model. The default column is <code>name</code>, which can be changed with the :name_column option provided to <code>acts_as_tree</code>.
 
-You can customize the column name with the :name_column option in <code>acts_as_tree</code>.
+Note that the other columns will be null if nodes are created, other than auto-generated columns like ID and created_at timestamp. Only the specified column will receive the path element value.
 
 == Accessing Data
 

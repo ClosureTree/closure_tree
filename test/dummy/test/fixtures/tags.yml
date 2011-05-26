@@ -2,15 +2,17 @@
 
 grandparent:
   name: grandparent
+  title: Nonnie
 
 parent:
   name: parent
   parent: grandparent
+  title: Mom
 
 child:
   name: child
   parent: parent
-
+  title: Kid 
 
 people:
   name: people

@@ -3,6 +3,7 @@ class CreateTags < ActiveRecord::Migration
 
     create_table :tags do |t|
       t.string :name
+      t.string :title
       t.integer :parent_id
       t.timestamps
     end
