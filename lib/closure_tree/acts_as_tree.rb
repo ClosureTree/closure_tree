@@ -69,6 +69,11 @@ module ClosureTree #:nodoc:
         parent_id.nil?
       end
 
+      # Returns self if +root?+ or the root ancestor
+      def root
+        root? ? self : ancestors.last
+      end
+
       # Returns true if this node has no children.
       def leaf?
         children.empty?

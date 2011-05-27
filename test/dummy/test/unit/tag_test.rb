@@ -100,5 +100,11 @@ class TagTest < ActiveSupport::TestCase
     assert_equal [tags(:california), tags(:united_states), tags(:places)], city.ancestors
     assert_equal [city, tags(:california), tags(:united_states), tags(:places)], city.self_and_ancestors
   end
+
+  def test_root
+    assert_equal tags(:grandparent), tags(:grandparent).root
+    assert_equal tags(:grandparent), tags(:parent).root
+    assert_equal tags(:grandparent), tags(:child).root
+  end
 end
 
