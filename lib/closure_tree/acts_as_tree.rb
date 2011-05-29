@@ -33,23 +33,23 @@ module ClosureTree #:nodoc:
                :foreign_key => parent_column_name,
                :before_add => :add_child
 
-      has_many :ancestors_hierarchy,
-               :class_name => hierarchy_class_name,
-               :foreign_key => "descendant_id"
+      has_and_belongs_to_many :ancestors,
+                              :class_name => base_class.to_s,
+                              :join_table => hierarchy_table_name,
+                              :foreign_key => "descendant_id",
+                              :association_foreign_key => "ancestor_id",
+                              :order => "generations asc"
 
-      has_many :ancestors, :through => :ancestors_hierarchy,
-               :order => "generations asc"
-
-      has_many :descendants_hierarchy,
-               :class_name => hierarchy_class_name,
-               :foreign_key => "ancestor_id"
-
-      has_many :descendants, :through => :descendants_hierarchy,
-               :order => "generations asc"
+      has_and_belongs_to_many :descendants,
+                              :class_name => base_class.to_s,
+                              :join_table => hierarchy_table_name,
+                              :foreign_key => "ancestor_id",
+                              :association_foreign_key => "descendant_id",
+                              :order => "generations asc"
 
       scope :roots, where(parent_column_name => nil)
 
-      scope :leaves, includes(:descendants_hierarchy).where("#{hierarchy_table_name}.descendant_id is null")
+      scope :leaves, includes(:descendants).where("#{hierarchy_table_name}.descendant_id is null")
     end
   end
 
@@ -80,7 +80,8 @@ module ClosureTree #:nodoc:
       end
 
       def leaves
-        self.class.scoped.includes(:descendants_hierarchy).where("#{hierarchy_table_name}.descendant_id is null and #{hierarchy_table_name}.ancestor_id = #{id}")
+        return [self] if leaf?
+        Tag.leaves.includes(:ancestors).where("ancestors_tags.id = ?", self.id)
       end
 
       # Returns true if this node has a parent, and is not a root.
@@ -214,8 +215,6 @@ module ClosureTree #:nodoc:
 
   # Mixed into both classes and instances to provide easy access to the column names
   module Columns
-
-    protected
 
     def parent_column_name
       closure_tree_options[:parent_column_name]

@@ -105,6 +105,7 @@ Note that the other columns will be null if nodes are created, other than auto-g
 [tag.root?] returns true if this is a root node
 [tag.child?] returns true if this is a child node. It has a parent.
 [tag.leaf?] returns true if this is a leaf node. It has no children.
+[tag.leaves] returns an array of all the nodes in self_and_descendants that are leaves.
 [tag.level] returns the level, or "generation", for this node in the tree. A root node = 0
 [tag.parent] returns the node's immediate parent
 [tag.children] returns an array of immediate children (just those in the next level).

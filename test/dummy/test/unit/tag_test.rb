@@ -106,5 +106,13 @@ class TagTest < ActiveSupport::TestCase
     assert_equal tags(:grandparent), tags(:parent).root
     assert_equal tags(:grandparent), tags(:child).root
   end
+
+  def test_leaves
+    assert Tag.leaves.include? tags(:child)
+    assert Tag.leaves.select{|t|!t.leaf?}.empty?
+    assert_equal [tags(:child)], tags(:grandparent).leaves
+    assert_equal [tags(:child)], tags(:parent).leaves
+    assert_equal [tags(:child)], tags(:child).leaves
+  end
 end
 
