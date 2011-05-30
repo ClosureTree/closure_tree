@@ -6,17 +6,11 @@ end
 
 Bundler::GemHelper.install_tasks
 
+require 'yard'
 
-require 'rdoc/task'
-
-RDoc::Task.new do |rdoc|
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title    = 'ClosureTree'
-  rdoc.options << '--line-numbers' << '--inline-source'
-  rdoc.rdoc_files.include('README.rdoc')
-  rdoc.rdoc_files.include('lib/**/*.rb')
+YARD::Rake::YardocTask.new do |t|
+t.files = ['lib/**/*.rb', 'README.md']
 end
-
 
 require 'rake/testtask'
 

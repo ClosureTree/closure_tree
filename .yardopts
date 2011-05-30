@@ -1,0 +1,3 @@
+--readme README.md
+--charset utf-8
+'lib/**/*.rb'
