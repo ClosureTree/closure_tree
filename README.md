@@ -34,8 +34,8 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
     convention the table name will be the model's table name, followed by
     "_hierarchy". Note that by calling ```acts_as_tree```, a "virtual model" (in this case, ```TagsHierarchy```) will be added automatically, so you don't need to create it.
 
-        ```ruby
-        class CreateTagHierarchy < ActiveRecord::Migration
+      ```ruby
+      class CreateTagHierarchy < ActiveRecord::Migration
         def change
           create_table :tags_hierarchy, :id => false do |t|
             t.integer  :ancestor_id, :null => false   # ID of the parent/grandparent/great-grandparent/... tag
