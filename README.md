@@ -22,17 +22,20 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
 
     Note that if the column is null, the tag will be considered a root node.
 
+      ```ruby
       class AddParentIdToTag < ActiveRecord::Migration
         def change
           add_column :tag, :parent_id, :integer
         end
       end
+      ```
 
 5.  Add a database migration to store the hierarchy for your model. By
     convention the table name will be the model's table name, followed by
     "_hierarchy". Note that by calling ```acts_as_tree```, a "virtual model" (in this case, ```TagsHierarchy```) will be added automatically, so you don't need to create it.
 
-      class CreateTagHierarchy < ActiveRecord::Migration
+        ```ruby
+        class CreateTagHierarchy < ActiveRecord::Migration
         def change
           create_table :tags_hierarchy, :id => false do |t|
             t.integer  :ancestor_id, :null => false   # ID of the parent/grandparent/great-grandparent/... tag
@@ -47,6 +50,7 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
           add_index :tags_hierarchy, [:descendant_id]
         end
       end
+      ```
 
 6.  Run ```rake db:migrate```
 
@@ -90,10 +94,13 @@ Then:
   ["grandparent", "parent", "child"]
   ```
 
-### ```find_or_create_by_path```
+### +find_or_create_by_path+
 
 We can do all the node creation and add_child calls from the prior section with one method call:
+
+  ```ruby
   child = Tag.find_or_create_by_path "grandparent", "parent", "child"
+  ```
 
 You can ```find``` as well as ```find_or_create``` by "ancestry paths". Ancestry paths may be built using any column in your model. The default column is ```name```, which can be changed with the :name_column option provided to ```acts_as_tree```.
 
