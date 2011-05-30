@@ -94,7 +94,7 @@ Then:
   ["grandparent", "parent", "child"]
   ```
 
-### +find_or_create_by_path+
+### <code>find_or_create_by_path</code>
 
 We can do all the node creation and add_child calls from the prior section with one method call:
 
