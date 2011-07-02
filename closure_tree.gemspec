@@ -3,6 +3,7 @@ require "closure_tree/version"
 
 Gem::Specification.new do |s|
   s.name = "closure_tree"
+  s.authors     = %w{matthew-github@mceachen.org}
   s.version     = ClosureTree::VERSION
   s.summary     = %q{Hierarchies for ActiveRecord models using a Closure Tree storage algorithm}
   s.description = <<desc
