@@ -1,14 +1,11 @@
 source "http://rubygems.org"
 
-gem 'rails', :git => 'git://github.com/rails/rails.git'
-#gem 'rails', '3.1.0.beta1'
-gem 'sprockets', :git => 'git://github.com/sstephenson/sprockets.git'
+gem 'rails', '~>3.1.0.rc4'
+#gem 'sprockets', :git => 'git://github.com/sstephenson/sprockets.git'
 #gem 'sprockets', '2.0.0.beta.2'
 gem 'yard'
 gem 'mysql2'
 gem 'sqlite3'
-gem 'awesome_print', :require => 'ap'
-
 
 if RUBY_VERSION < '1.9'
   gem "ruby-debug", ">= 0.10.3"

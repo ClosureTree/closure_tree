@@ -1,8 +1,11 @@
 .bundle/
 .idea/
-log/*.log
+log/
 pkg/
 rdoc/
+doc/
 test/dummy/db/*.sqlite3
 test/dummy/log/*.log
 test/dummy/tmp/
+.DS_Store
+.yardoc/
