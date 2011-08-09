@@ -35,19 +35,19 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
     "_hierarchy". Note that by calling ```acts_as_tree```, a "virtual model" (in this case, ```TagsHierarchy```) will be added automatically, so you don't need to create it.
 
       ```ruby
-      class CreateTagHierarchy < ActiveRecord::Migration
+      class CreateTagHierarchies < ActiveRecord::Migration
         def change
-          create_table :tags_hierarchy, :id => false do |t|
+          create_table :tags_hierarchies, :id => false do |t|
             t.integer  :ancestor_id, :null => false   # ID of the parent/grandparent/great-grandparent/... tag
             t.integer  :descendant_id, :null => false # ID of the target tag
             t.integer  :generations, :null => false   # Number of generations between the ancestor and the descendant. Parent/child = 1, for example.
           end
 
           # For "all progeny of..." selects:
-          add_index :tags_hierarchy, [:ancestor_id, :descendant_id], :unique => true
+          add_index :tags_hierarchies, [:ancestor_id, :descendant_id], :unique => true
 
           # For "all ancestors of..." selects
-          add_index :tags_hierarchy, [:descendant_id]
+          add_index :tags_hierarchies, [:descendant_id]
         end
       end
       ```
