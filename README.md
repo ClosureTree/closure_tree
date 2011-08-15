@@ -16,7 +16,7 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
 
 2.  Run ```bundle install```
 
-3.  Add ```acts_as_tree``` to your hierarchical model(s) (see the <a href="#options">available options</a>)
+3.  Add ```acts_as_tree``` to your hierarchical model(s) (see the <a href="#options">available options</a>).
 
 4.  Add a migration to add a ```parent_id``` column to the model you want to act_as_tree.
 
@@ -35,7 +35,7 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
     "_hierarchy". Note that by calling ```acts_as_tree```, a "virtual model" (in this case, ```TagsHierarchy```) will be added automatically, so you don't need to create it.
 
       ```ruby
-      class CreateTagHierarchy < ActiveRecord::Migration
+      class CreateTagHierarchies < ActiveRecord::Migration
         def change
           create_table :tag_hierarchies, :id => false do |t|
             t.integer  :ancestor_id, :null => false   # ID of the parent/grandparent/great-grandparent/... tag
