@@ -16,7 +16,7 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
 
 2.  Run ```bundle install```
 
-3.  Add ```acts_as_tree``` to your hierarchical model(s).
+3.  Add ```acts_as_tree``` to your hierarchical model(s) (see the <a href="#options">available options</a>)
 
 4.  Add a migration to add a ```parent_id``` column to the model you want to act_as_tree.
 
@@ -37,17 +37,17 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
       ```ruby
       class CreateTagHierarchy < ActiveRecord::Migration
         def change
-          create_table :tags_hierarchy, :id => false do |t|
+          create_table :tag_hierarchies, :id => false do |t|
             t.integer  :ancestor_id, :null => false   # ID of the parent/grandparent/great-grandparent/... tag
             t.integer  :descendant_id, :null => false # ID of the target tag
             t.integer  :generations, :null => false   # Number of generations between the ancestor and the descendant. Parent/child = 1, for example.
           end
 
           # For "all progeny of..." selects:
-          add_index :tags_hierarchy, [:ancestor_id, :descendant_id], :unique => true
+          add_index :tag_hierarchies, [:ancestor_id, :descendant_id], :unique => true
 
           # For "all ancestors of..." selects
-          add_index :tags_hierarchy, [:descendant_id]
+          add_index :tag_hierarchies, [:descendant_id]
         end
       end
       ```
@@ -106,6 +106,17 @@ You can ```find``` as well as ```find_or_create``` by "ancestry paths". Ancestry
 
 Note that the other columns will be null if nodes are created, other than auto-generated columns like ID and created_at timestamp. Only the specified column will receive the path element value.
 
+### Available options
+<a id="options" />
+
+When you include ```acts_as_tree``` in your model, you can provide a hash to override the following defaults:
+
+* ```:parent_column_name``` to override the column name of the parent foreign key in the model's table
+* ```:hierarchy_table_name``` to override the hierarchy table name. This defaults to the singular name of the model + "_hierarchies".
+* ```:dependent``` can be set to ```:delete_all``` or ```:destroy_all```, where delete_all performs a one SQL call that circumvents the destroy method in the model
+* ```:name_column``` used by the ```find_or_create_by_path``` and ```ancestry_path``` instance methods. This is primarily useful if the model only has one required field (like a "tag").
+
+
 ## Accessing Data
 
 ### Class methods
@@ -130,6 +141,15 @@ Note that the other columns will be null if nodes are created, other than auto-g
 * ``` tag.self_and_siblings``` returns an array of brothers and sisters (all at that level), including self.
 * ``` tag.descendants``` returns an array of all children, childrens' children, etc., excluding self.
 * ``` tag.self_and_descendants``` returns an array of all children, childrens' children, etc., including self.
+* ``` tag.move_to_child_of``` lets you move a node (and all it's children) to a new parent.
+* ``` tag.destroy``` will delete or destroy a node as well as all of it's children. See the ```:dependent``` option passed to ```acts_as_tree```.
+
+## Changelog
+
+### 1.1.0
+
+* Added new instance method ```move_to_child_of```
+* Tag deletion is supported now, and the option of ```:dependent => :destroy``` and ```:dependent => :delete``` are supported
 
 ## Thanks to
 

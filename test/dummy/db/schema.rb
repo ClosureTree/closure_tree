@@ -12,6 +12,15 @@
 
 ActiveRecord::Schema.define(:version => 20110522004834) do
 
+  create_table "tag_hierarchies", :id => false, :force => true do |t|
+    t.integer "ancestor_id",   :null => false
+    t.integer "descendant_id", :null => false
+    t.integer "generations",   :null => false
+  end
+
+  add_index "tag_hierarchies", ["ancestor_id", "descendant_id"], :name => "index_tag_hierarchies_on_ancestor_id_and_descendant_id", :unique => true
+  add_index "tag_hierarchies", ["descendant_id"], :name => "index_tag_hierarchies_on_descendant_id"
+
   create_table "tags", :force => true do |t|
     t.string   "name"
     t.string   "title"
@@ -19,14 +28,5 @@ ActiveRecord::Schema.define(:version => 20110522004834) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
-
-  create_table "tags_hierarchies", :id => false, :force => true do |t|
-    t.integer "ancestor_id",   :null => false
-    t.integer "descendant_id", :null => false
-    t.integer "generations",   :null => false
-  end
-
-  add_index "tags_hierarchies", ["ancestor_id", "descendant_id"], :name => "index_tags_hierarchies_on_ancestor_id_and_descendant_id", :unique => true
-  add_index "tags_hierarchies", ["descendant_id"], :name => "index_tags_hierarchies_on_descendant_id"
 
 end

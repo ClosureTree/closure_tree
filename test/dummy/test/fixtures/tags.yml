@@ -61,3 +61,32 @@ san_francisco:
   name: san_francisco
   parent: california
 
+
+# Move and deletion test tree
+
+a1:
+  name: a1
+
+b1:
+  name: b1
+  parent: a1
+
+b2:
+  name: b2
+  parent: a1
+
+c1a:
+  name: c1a
+  parent: b1
+
+c1b:
+  name: c1b
+  parent: b1
+
+c2:
+  name: c2
+  parent: b2
+
+d2:
+  name: d2
+  parent: c2

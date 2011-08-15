@@ -114,5 +114,21 @@ class TagTest < ActiveSupport::TestCase
     assert_equal [tags(:child)], tags(:parent).leaves
     assert_equal [tags(:child)], tags(:child).leaves
   end
+
+  def test_move
+    # This is what the fixture should encode:
+    assert_equal %w{a1 b2 c2 d2}, tags(:d2).ancestry_path
+
+    tags(:c2).move_to_child_of(tags(:b1))
+    assert tags(:b2).leaf?
+    assert tags(:b1).children.include?(tags(:c2))
+    assert_equal %w{a1 b1 c2 d2}, tags(:d2).ancestry_path
+  end
+
+  def test_deletion
+    tags(:b1).destroy
+    assert_nil Tag.find(tags(:c1).id)
+  end
+
 end
 

@@ -4,10 +4,9 @@ module ClosureTree #:nodoc:
 
       class_attribute :closure_tree_options
       self.closure_tree_options = {
-        :parent_column_name => 'parent_id',
-        :dependent => :delete_all, # or :destroy
-        :hierarchy_table_suffix => '_hierarchies',
-        :name_column => 'name'
+          :parent_column_name => 'parent_id',
+          :dependent => :delete_all, # or :destroy_all, where delete_all is done in one SQL call that circumvents the destroy method
+          :name_column => 'name'
       }.merge(options)
 
       include ClosureTree::Columns
@@ -25,13 +24,16 @@ module ClosureTree #:nodoc:
 
       include ClosureTree::Model
 
+      before_destroy :delete_hierarchy_references
+
       belongs_to :parent, :class_name => base_class.to_s,
                  :foreign_key => parent_column_name
 
       has_many :children,
                :class_name => base_class.to_s,
                :foreign_key => parent_column_name,
-               :before_add => :add_child
+               :before_add => :add_child,
+               :dependent => closure_tree_options[:dependent]
 
       has_and_belongs_to_many :ancestors,
                               :class_name => base_class.to_s,
@@ -127,11 +129,18 @@ module ClosureTree #:nodoc:
         nil
       end
 
-      def move_to_child_of new_parent
+      # NOTE that child nodes will need to be reloaded.
+      def delete_hierarchy_references delete_child_references = true
         connection.execute <<-SQL
           DELETE FROM #{quoted_hierarchy_table_name}
-          WHERE descendant_id = #{child_node.id}
+          WHERE descendant_id = #{id} #{"OR ancestor_id = #{id}" if delete_child_references}
         SQL
+      end
+
+      # Note that object caches may be out of sync after calling this method.
+      def move_to_child_of new_parent
+        delete_hierarchy_references delete_child_references = false
+        reload
         new_parent.add_child self
       end
 
@@ -233,7 +242,7 @@ module ClosureTree #:nodoc:
     end
 
     def hierarchy_table_name
-      ct_table_name + closure_tree_options[:hierarchy_table_suffix]
+      closure_tree_options[:hierarchy_table_name] || ct_table_name.singularize + "_hierarchies"
     end
 
     def hierarchy_class_name
