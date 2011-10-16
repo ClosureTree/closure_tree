@@ -6,7 +6,7 @@ module ClosureTree
 
       self.closure_tree_options = {
         :parent_column_name => 'parent_id',
-        :dependent => :rootify, # or :destroy or :delete_all -- see the README
+        :dependent => nil, # or :destroy or :delete_all -- see the README
         :name_column => 'name'
       }.merge(options)
 
@@ -25,7 +25,7 @@ module ClosureTree
 
       include ClosureTree::Model
 
-      before_destroy :delete_hierarchy_references
+      before_destroy :acts_as_tree_before_destroy
 
       belongs_to :parent,
         :class_name => base_class.to_s,
@@ -35,7 +35,7 @@ module ClosureTree
         :class_name => base_class.to_s,
         :foreign_key => parent_column_name,
         :before_add => :add_child,
-        :dependent => dependent_option == :rootify ? nil : dependent_option
+        :dependent => closure_tree_options[:dependent]
 
       has_and_belongs_to_many :ancestors,
         :class_name => base_class.to_s,
@@ -134,7 +134,7 @@ module ClosureTree
 
       # Note that object caches may be out of sync after calling this method.
       def reparent(new_parent)
-        delete_hierarchy_references unless new_record?
+        acts_as_tree_before_destroy unless new_record?
         update_attribute :parent, new_parent
         rebuild!
       end
@@ -148,7 +148,7 @@ module ClosureTree
       end
 
       # NOTE that child nodes will need to be reloaded.
-      def delete_hierarchy_references
+      def acts_as_tree_before_destroy
         # MySQL doesn't support subqueries in deletes, so we have to make a temp table. :-|
         doomed = "`doomed-#{SecureRandom.uuid}`"
         connection.execute <<-SQL
@@ -262,10 +262,6 @@ module ClosureTree
 
     def parent_column_name
       closure_tree_options[:parent_column_name]
-    end
-
-    def dependent_option
-      closure_tree_options[:dependent] ||= :rootify
     end
 
     def has_name?

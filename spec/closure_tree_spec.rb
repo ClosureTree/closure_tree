@@ -13,18 +13,18 @@ describe Tag do
       Tag.hierarchy_class.to_s.should == "TagHierarchy"
       Tag.hierarchy_class_name.should == "TagHierarchy"
     end
+
     it "should have a correct parent column name" do
       Tag.parent_column_name.should == "parent_id"
     end
-
   end
 
   context "roots" do
     it "should find global roots" do
       roots = Tag.roots.to_a
-      roots.include?(tags(:people)).should_not be_nil
-      roots.include?(tags(:events)).should_not be_nil
-      roots.include?(tags(:child)).should be_false
+      roots.should be_member(tags(:people))
+      roots.should be_member(tags(:events))
+      roots.should_not be_member(tags(:child))
       tags(:people).root?.should be_true
       tags(:child).root?.should be_false
     end
@@ -49,7 +49,7 @@ describe Tag do
     end
   end
 
-  context "graph mutation" do
+  context "adding children" do
     it "should work explicitly" do
       sb = Tag.create!(:name => "Santa Barbara")
       sb.leaf?.should_not be_nil
@@ -66,7 +66,7 @@ describe Tag do
       validate_city_tag eg
     end
 
-    it "should fail to create encestor loops" do
+    it "should fail to create ancestor loops" do
       lambda do
         tags(:child).add_child(tags(:grandparent))
       end.should raise_error
@@ -83,12 +83,12 @@ describe Tag do
       d2.ancestry_path.should == %w{a1 b1 c2 d2}
     end
 
-    it "should destroy, not delete" do
-      tags(:b2).destroy
-      [:a1, :b1, :c1a, :c1b].each { |t| Tag.exists?(tags(t).id).should be_true }
-      [:b2, :c2, :d2].each { |t| Tag.exists?(tags(t).id).should be_false }
+    it "should root all children" do
+      b2 = tags(:b2).reload
+      children = bt.children.to_a
+      b2.destroy
+      (Tag.roots & children).should == children
     end
-
   end
 
   context "injected attributes" do
