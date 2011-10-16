@@ -6,7 +6,7 @@ module ClosureTree
 
       self.closure_tree_options = {
         :parent_column_name => 'parent_id',
-        :dependent => :destroy, # or :delete_all, where delete_all is done in one SQL call that circumvents the destroy method
+        :dependent => :rootify, # or :destroy or :delete_all -- see the README
         :name_column => 'name'
       }.merge(options)
 
@@ -35,7 +35,7 @@ module ClosureTree
         :class_name => base_class.to_s,
         :foreign_key => parent_column_name,
         :before_add => :add_child,
-        :dependent => closure_tree_options[:dependent]
+        :dependent => dependent_option == :rootify ? nil : dependent_option
 
       has_and_belongs_to_many :ancestors,
         :class_name => base_class.to_s,
@@ -122,13 +122,29 @@ module ClosureTree
 
       # You must use this method, or add child nodes to the +children+ association, to
       # make the hierarchy table stay consistent.
-      def add_child( child_node)
-        child_node.update_attribute :parent_id, self.id
-        self_and_ancestors.inject(1) do |gen, ancestor|
-          hierarchy_class.create!(:ancestor => ancestor, :descendant => child_node, :generations => gen)
+      # Note that an error will be raised if the child_node is already associated to this node.
+      def add_child(child_node)
+        if self_and_ancestors.include?(child_node)
+          # TODO: raise Ouroboros or Philip J. Fry error:
+          raise ActiveRecord::ActiveRecordError "You cannot add an ancestor as a descendant"
+        end
+        child_node.reparent(self)
+        nil
+      end
+
+      # Note that object caches may be out of sync after calling this method.
+      def reparent(new_parent)
+        delete_hierarchy_references unless new_record?
+        update_attribute :parent, new_parent
+        rebuild!
+      end
+
+      def rebuild!
+        ancestors.inject(1) do |gen, ancestor|
+          hierarchy_class.create!(:ancestor => ancestor, :descendant => self, :generations => gen)
           gen + 1
         end
-        nil
+        children.each { |child| child.rebuild! }
       end
 
       # NOTE that child nodes will need to be reloaded.
@@ -153,29 +169,22 @@ module ClosureTree
         SQL
       end
 
-      # Note that object caches may be out of sync after calling this method.
-      def move_to_child_of(new_parent)
-        delete_hierarchy_references
-        new_parent.add_child self
-        self.rebuild_node_and_children self
-      end
-
       # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.
       # If the first argument is a symbol, it will be used as the column to search by
       def find_by_path(*path)
-        find_or_create_by_path "find", path
+        recurse_path "find", path
       end
 
       # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
       def find_or_create_by_path(*path)
-        find_or_create_by_path "find_or_create", path
+        recurse_path "find_or_create", path
       end
 
       protected
 
-      def find_or_create_by_path(method_prefix, path)
+      def recurse_path(method_prefix, path)
+        path = path.flatten
         to_s_column = path.first.is_a?(Symbol) ? path.shift.to_s : name_column
-        path.flatten!
         node = self
         while (s = path.shift and node)
           node = node.children.send("#{method_prefix}_by_#{to_s_column}".to_sym, s)
@@ -198,18 +207,18 @@ module ClosureTree
       # Rebuilds the hierarchy table based on the parent_id column in the database.
       # Note that the hierarchy table will be truncated.
       def rebuild!
-        connection.execute <<-SQL
-          DELETE FROM #{quoted_hierarchy_table_name}
-        SQL
-        roots.each { |n| rebuild_node_and_children n }
-        nil
+        in_tenacious_transaction do
+          hierarchy_class.delete_all # not destroy_all -- we just want a simple truncate.
+          roots.each { |n| n.rebuild! }
+          nil
+        end
       end
 
       # Find the node whose +ancestry_path+ is +path+
       # If the first argument is a symbol, it will be used as the column to search by
       def find_by_path(*path)
+        path = path.flatten
         to_s_column = path.first.is_a?(Symbol) ? path.shift.to_s : name_column
-        path.flatten!
         self.where(to_s_column => path.last).each do |n|
           return n if path == n.ancestry_path(to_s_column)
         end
@@ -222,18 +231,28 @@ module ClosureTree
         n = find_by_path path
         return n if n
 
+        path.flatten
         column_sym = path.first.is_a?(Symbol) ? path.shift : name_sym
-        path.flatten!
         s = path.shift
         node = roots.where(column_sym => s).first
         node = create!(column_sym => s) unless node
         node.find_or_create_by_path column_sym, path
       end
 
-      private
-      def rebuild_node_and_children(node)
-        node.parent.add_child node if node.parent
-        node.children.each { |child| rebuild_node_and_children child }
+      # From https://github.com/collectiveidea/awesome_nested_set:
+      def in_tenacious_transaction(&block)
+        retry_count = 0
+        begin
+          transaction(&block)
+        rescue ActiveRecord::StatementInvalid => error
+          raise unless connection.open_transactions.zero?
+          raise unless error.message =~ /Deadlock found when trying to get lock|Lock wait timeout exceeded/
+          raise unless retry_count < 10
+          retry_count += 1
+          logger.info "Deadlock detected on retry #{retry_count}, restarting transaction"
+          sleep(rand(retry_count)*0.2) # Aloha protocol
+          retry
+        end
       end
     end
   end
@@ -243,6 +262,10 @@ module ClosureTree
 
     def parent_column_name
       closure_tree_options[:parent_column_name]
+    end
+
+    def dependent_option
+      closure_tree_options[:dependent] ||= :rootify
     end
 
     def has_name?
@@ -289,6 +312,5 @@ module ClosureTree
     def quoted_table_name
       connection.quote_column_name ct_table_name
     end
-
   end
 end

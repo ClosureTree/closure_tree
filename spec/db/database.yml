@@ -1,0 +1,18 @@
+sqlite3:
+  adapter: <%= "jdbc" if defined? JRUBY_VERSION %>sqlite3
+  database: closure_tree.sqlite3.db
+sqlite3mem:
+  adapter: <%= "jdbc" if defined? JRUBY_VERSION %>sqlite3
+  database: ":memory:"
+postgresql:
+  adapter: postgresql
+  username: postgres
+  password: postgres
+  database: closure_tree_plugin_test
+  min_messages: ERROR
+mysql:
+  adapter: mysql2
+  host: localhost
+  username: root
+  password:
+  database: closure_tree_plugin_test

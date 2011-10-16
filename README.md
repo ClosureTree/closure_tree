@@ -113,9 +113,11 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 
 * ```:parent_column_name``` to override the column name of the parent foreign key in the model's table
 * ```:hierarchy_table_name``` to override the hierarchy table name. This defaults to the singular name of the model + "_hierarchies".
-* ```:dependent``` can be set to ```:delete_all``` or ```:destroy_all```, where delete_all performs a one SQL call that circumvents the destroy method in the model
-* ```:name_column``` used by the ```find_or_create_by_path``` and ```ancestry_path``` instance methods. This is primarily useful if the model only has one required field (like a "tag").
-
+* ```:name_column``` used by #```find_or_create_by_path```, #```find_by_path```, and ```ancestry_path``` instance methods. This is primarily useful if the model only has one required field (like a "tag").
+* ```:dependent``` determines what happens when a node is destroyed. Defaults to ```nil```.
+    * ```nil``` will simply set the parent column to null. Each child node will be considered a "root" node
+    * ```:delete_all``` will delete all descendant nodes (which circumvents the destroy hooks)
+    * ```:destroy``` will destroy all descendant nodes (which runs the destroy hooks on each child node)
 
 ## Accessing Data
 
@@ -132,25 +134,25 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ``` tag.child?``` returns true if this is a child node. It has a parent.
 * ``` tag.leaf?``` returns true if this is a leaf node. It has no children.
 * ``` tag.leaves``` returns an array of all the nodes in self_and_descendants that are leaves.
-* ``` tag.level``` returns the level, or "generation", for this node in the tree. A root node = 0
+* ``` tag.level``` returns the level, or "generation", for this node in the tree. A root node == 0.
 * ``` tag.parent``` returns the node's immediate parent
 * ``` tag.children``` returns an array of immediate children (just those in the next level).
-* ``` tag.ancestors``` returns an array of all parents, parents' parents, etc, excluding self.
-* ``` tag.self_and_ancestors``` returns an array of all parents, parents' parents, etc, including self.
+* ``` tag.ancestors``` returns an array of [ parent, grandparent, great grandparent, ... ]. Note that the size of this array will always equal ```tag.level```.
+* ``` tag.self_and_ancestors``` returns an array of self, parent, grandparent, great grandparent, etc.
 * ``` tag.siblings``` returns an array of brothers and sisters (all at that level), excluding self.
 * ``` tag.self_and_siblings``` returns an array of brothers and sisters (all at that level), including self.
 * ``` tag.descendants``` returns an array of all children, childrens' children, etc., excluding self.
 * ``` tag.self_and_descendants``` returns an array of all children, childrens' children, etc., including self.
-* ``` tag.move_to_child_of``` lets you move a node (and all it's children) to a new parent.
-* ``` tag.destroy``` will delete or destroy a node as well as all of it's children. See the ```:dependent``` option passed to ```acts_as_tree```.
+* ``` tag.reparent``` lets you move a node (and all it's children) to a new parent.
+* ``` tag.destroy``` will destroy a node as well as possibly all of its children. See the ```:dependent``` option passed to ```acts_as_tree```.
 
 ## Changelog
 
 ### 1.1.0.beta1
 
-* Tag deletion is supported now, and the option of ```:dependent => :destroy_all``` and ```:dependent => :delete_all``` are supported
-* Added new instance method ```move_to_child_of```
-* Upgraded to rails 3.1 plugin skeleton
+* Tag deletion is supported now along with ```:dependent => :destroy``` and ```:dependent => :delete_all```
+* Added new instance method ```reparent```
+* Switched from default rails plugin directory structure to rspec
 
 ## Thanks to
 
