@@ -109,7 +109,7 @@ class TagTest < ActiveSupport::TestCase
 
   def test_leaves
     assert Tag.leaves.include? tags(:child)
-    assert Tag.leaves.select{|t|!t.leaf?}.empty?
+    assert Tag.leaves.select { |t| !t.leaf? }.empty?
     assert_equal [tags(:child)], tags(:grandparent).leaves
     assert_equal [tags(:child)], tags(:parent).leaves
     assert_equal [tags(:child)], tags(:child).leaves
@@ -118,16 +118,18 @@ class TagTest < ActiveSupport::TestCase
   def test_move
     # This is what the fixture should encode:
     assert_equal %w{a1 b2 c2 d2}, tags(:d2).ancestry_path
-
     tags(:c2).move_to_child_of(tags(:b1))
     assert tags(:b2).leaf?
     assert tags(:b1).children.include?(tags(:c2))
-    assert_equal %w{a1 b1 c2 d2}, tags(:d2).ancestry_path
+    d2 = Tag.find(tags(:d2))
+    d2.reload
+    assert_equal %w{a1 b1 c2 d2}, d2.ancestry_path
   end
 
   def test_deletion
-    tags(:b1).destroy
-    assert_nil Tag.find(tags(:c1).id)
+    tags(:b2).destroy
+    [:a1, :b1, :c1a, :c1b].each { |t| assert Tag.exists?(tags(t).id) }
+    [:b2, :c2, :d2].each { |t| assert !Tag.exists?(tags(t).id) }
   end
 
 end

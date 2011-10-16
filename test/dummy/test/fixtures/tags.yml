@@ -12,7 +12,7 @@ parent:
 child:
   name: child
   parent: parent
-  title: Kid 
+  title: Kid
 
 people:
   name: people
@@ -90,3 +90,7 @@ c2:
 d2:
   name: d2
   parent: c2
+
+e2:
+  name: e2
+  parent: d2

@@ -146,10 +146,11 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 
 ## Changelog
 
-### 1.1.0
+### 1.1.0.beta1
 
+* Tag deletion is supported now, and the option of ```:dependent => :destroy_all``` and ```:dependent => :delete_all``` are supported
 * Added new instance method ```move_to_child_of```
-* Tag deletion is supported now, and the option of ```:dependent => :destroy``` and ```:dependent => :delete``` are supported
+* Upgraded to rails 3.1 plugin skeleton
 
 ## Thanks to
 

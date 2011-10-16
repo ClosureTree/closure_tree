@@ -1,12 +1,13 @@
-module ClosureTree #:nodoc:
-  module ActsAsTree #:nodoc:
-    def acts_as_tree options = {}
+module ClosureTree
+  module ActsAsTree
+    def acts_as_tree(options = {})
 
       class_attribute :closure_tree_options
+
       self.closure_tree_options = {
-          :parent_column_name => 'parent_id',
-          :dependent => :delete_all, # or :destroy_all, where delete_all is done in one SQL call that circumvents the destroy method
-          :name_column => 'name'
+        :parent_column_name => 'parent_id',
+        :dependent => :destroy, # or :delete_all, where delete_all is done in one SQL call that circumvents the destroy method
+        :name_column => 'name'
       }.merge(options)
 
       include ClosureTree::Columns
@@ -26,28 +27,29 @@ module ClosureTree #:nodoc:
 
       before_destroy :delete_hierarchy_references
 
-      belongs_to :parent, :class_name => base_class.to_s,
-                 :foreign_key => parent_column_name
+      belongs_to :parent,
+        :class_name => base_class.to_s,
+        :foreign_key => parent_column_name
 
       has_many :children,
-               :class_name => base_class.to_s,
-               :foreign_key => parent_column_name,
-               :before_add => :add_child,
-               :dependent => closure_tree_options[:dependent]
+        :class_name => base_class.to_s,
+        :foreign_key => parent_column_name,
+        :before_add => :add_child,
+        :dependent => closure_tree_options[:dependent]
 
       has_and_belongs_to_many :ancestors,
-                              :class_name => base_class.to_s,
-                              :join_table => hierarchy_table_name,
-                              :foreign_key => "descendant_id",
-                              :association_foreign_key => "ancestor_id",
-                              :order => "generations asc"
+        :class_name => base_class.to_s,
+        :join_table => hierarchy_table_name,
+        :foreign_key => "descendant_id",
+        :association_foreign_key => "ancestor_id",
+        :order => "generations asc"
 
       has_and_belongs_to_many :descendants,
-                              :class_name => base_class.to_s,
-                              :join_table => hierarchy_table_name,
-                              :foreign_key => "ancestor_id",
-                              :association_foreign_key => "descendant_id",
-                              :order => "generations asc"
+        :class_name => base_class.to_s,
+        :join_table => hierarchy_table_name,
+        :foreign_key => "ancestor_id",
+        :association_foreign_key => "descendant_id",
+        :order => "generations asc"
 
       scope :roots, where(parent_column_name => nil)
 
@@ -62,7 +64,7 @@ module ClosureTree #:nodoc:
         self[parent_column_name]
       end
 
-      def parent_id= new_parent_id
+      def parent_id=(new_parent_id)
         self[parent_column_name] = new_parent_id
       end
 
@@ -102,7 +104,7 @@ module ClosureTree #:nodoc:
       # Returns an array, root first, of self_and_ancestors' values of the +to_s_column+, which defaults
       # to the +name_column+.
       # (so child.ancestry_path == +%w{grandparent parent child}+
-      def ancestry_path to_s_column = name_column
+      def ancestry_path(to_s_column = name_column)
         self_and_ancestors.reverse.collect { |n| n.send to_s_column.to_sym }
       end
 
@@ -120,7 +122,7 @@ module ClosureTree #:nodoc:
 
       # You must use this method, or add child nodes to the +children+ association, to
       # make the hierarchy table stay consistent.
-      def add_child child_node
+      def add_child( child_node)
         child_node.update_attribute :parent_id, self.id
         self_and_ancestors.inject(1) do |gen, ancestor|
           hierarchy_class.create!(:ancestor => ancestor, :descendant => child_node, :generations => gen)
@@ -130,34 +132,48 @@ module ClosureTree #:nodoc:
       end
 
       # NOTE that child nodes will need to be reloaded.
-      def delete_hierarchy_references delete_child_references = true
+      def delete_hierarchy_references
+        # MySQL doesn't support subqueries in deletes, so we have to make a temp table. :-|
+        doomed = "`doomed-#{SecureRandom.uuid}`"
+        connection.execute <<-SQL
+          CREATE TEMPORARY TABLE #{doomed} AS
+            SELECT DISTINCT descendant_id
+            FROM #{quoted_hierarchy_table_name}
+            WHERE ancestor_id = #{id};
+        SQL
+
         connection.execute <<-SQL
           DELETE FROM #{quoted_hierarchy_table_name}
-          WHERE descendant_id = #{id} #{"OR ancestor_id = #{id}" if delete_child_references}
+          WHERE descendant_id IN (SELECT descendant_id FROM #{doomed})
+            OR descendant_id = #{id}
+        SQL
+
+        connection.execute <<-SQL
+          DROP TABLE #{doomed}
         SQL
       end
 
       # Note that object caches may be out of sync after calling this method.
-      def move_to_child_of new_parent
-        delete_hierarchy_references delete_child_references = false
-        reload
+      def move_to_child_of(new_parent)
+        delete_hierarchy_references
         new_parent.add_child self
+        self.rebuild_node_and_children self
       end
 
       # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.
       # If the first argument is a symbol, it will be used as the column to search by
-      def find_by_path *path
-        _find_or_create_by_path "find", path
+      def find_by_path(*path)
+        find_or_create_by_path "find", path
       end
 
       # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
-      def find_or_create_by_path *path
-        _find_or_create_by_path "find_or_create", path
+      def find_or_create_by_path(*path)
+        find_or_create_by_path "find_or_create", path
       end
 
       protected
 
-      def _find_or_create_by_path method_prefix, path
+      def find_or_create_by_path(method_prefix, path)
         to_s_column = path.first.is_a?(Symbol) ? path.shift.to_s : name_column
         path.flatten!
         node = self
@@ -191,7 +207,7 @@ module ClosureTree #:nodoc:
 
       # Find the node whose +ancestry_path+ is +path+
       # If the first argument is a symbol, it will be used as the column to search by
-      def find_by_path *path
+      def find_by_path(*path)
         to_s_column = path.first.is_a?(Symbol) ? path.shift.to_s : name_column
         path.flatten!
         self.where(to_s_column => path.last).each do |n|
@@ -201,7 +217,7 @@ module ClosureTree #:nodoc:
       end
 
       # Find or create nodes such that the +ancestry_path+ is +path+
-      def find_or_create_by_path *path
+      def find_or_create_by_path(*path)
         # short-circuit if we can:
         n = find_by_path path
         return n if n
@@ -215,7 +231,7 @@ module ClosureTree #:nodoc:
       end
 
       private
-      def rebuild_node_and_children node
+      def rebuild_node_and_children(node)
         node.parent.add_child node if node.parent
         node.children.each { |child| rebuild_node_and_children child }
       end
@@ -242,6 +258,7 @@ module ClosureTree #:nodoc:
     end
 
     def hierarchy_table_name
+      # We need to use the table_name, not ct_class.to_s.demodulize, because they may have overridden the table name
       closure_tree_options[:hierarchy_table_name] || ct_table_name.singularize + "_hierarchies"
     end
 
