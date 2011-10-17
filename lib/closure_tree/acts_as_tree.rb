@@ -37,14 +37,14 @@ module ClosureTree
         :before_add => :add_child,
         :dependent => closure_tree_options[:dependent]
 
-      has_and_belongs_to_many :ancestors,
+      has_and_belongs_to_many :self_and_ancestors,
         :class_name => base_class.to_s,
         :join_table => hierarchy_table_name,
         :foreign_key => "descendant_id",
         :association_foreign_key => "ancestor_id",
         :order => "generations asc"
 
-      has_and_belongs_to_many :descendants,
+      has_and_belongs_to_many :self_and_descendants,
         :class_name => base_class.to_s,
         :join_table => hierarchy_table_name,
         :foreign_key => "ancestor_id",
@@ -53,7 +53,13 @@ module ClosureTree
 
       scope :roots, where(parent_column_name => nil)
 
-      scope :leaves, includes(:descendants).where("#{hierarchy_table_name}.descendant_id is null")
+      scope(:leaves, where(<<-SQL
+        #{quoted_table_name}.#{primary_key} IN
+          (SELECT ancestor_id from #{quoted_hierarchy_table_name}
+           GROUP BY 1
+           HAVING MAX(generations) = 0)
+        SQL
+      ))
     end
   end
 
@@ -85,7 +91,13 @@ module ClosureTree
 
       def leaves
         return [self] if leaf?
-        Tag.leaves.includes(:ancestors).where("ancestors_tags.id = ?", self.id)
+        self.class.leaves.where(<<-SQL
+          #{quoted_table_name}.#{self.class.primary_key} IN (
+            SELECT descendant_id
+            FROM #{quoted_hierarchy_table_name}
+            WHERE ancestor_id = #{id})
+          SQL
+        )
       end
 
       # Returns true if this node has a parent, and is not a root.
@@ -97,8 +109,8 @@ module ClosureTree
         ancestors.size
       end
 
-      def self_and_ancestors
-        [self].concat ancestors.to_a
+      def ancestors
+        without_self(self_and_ancestors)
       end
 
       # Returns an array, root first, of self_and_ancestors' values of the +to_s_column+, which defaults
@@ -108,8 +120,8 @@ module ClosureTree
         self_and_ancestors.reverse.collect { |n| n.send to_s_column.to_sym }
       end
 
-      def self_and_descendants
-        [self].concat descendants.to_a
+      def descendants
+        without_self(self_and_descendants)
       end
 
       def self_and_siblings
@@ -134,16 +146,23 @@ module ClosureTree
 
       # Note that object caches may be out of sync after calling this method.
       def reparent(new_parent)
-        acts_as_tree_before_destroy unless new_record?
+        acts_as_tree_before_destroy if parent || children.present?
         update_attribute :parent, new_parent
         rebuild!
       end
 
       def rebuild!
-        ancestors.inject(1) do |gen, ancestor|
-          hierarchy_class.create!(:ancestor => ancestor, :descendant => self, :generations => gen)
-          gen + 1
+        hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
+        if parent_id
+          connection.execute <<-SQL
+            INSERT INTO #{quoted_hierarchy_table_name}
+              (ancestor_id, descendant_id, generations)
+            SELECT x.ancestor_id, #{id}, x.generations + 1
+            FROM #{quoted_hierarchy_table_name} x
+            WHERE x.descendant_id = #{parent_id}
+          SQL
         end
+
         children.each { |child| child.rebuild! }
       end
 
@@ -172,21 +191,22 @@ module ClosureTree
       # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.
       # If the first argument is a symbol, it will be used as the column to search by
       def find_by_path(*path)
-        recurse_path "find", path
+        recurse_path "find", *path
       end
 
       # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
       def find_or_create_by_path(*path)
-        recurse_path "find_or_create", path
+        recurse_path "find_or_create", *path
       end
 
       protected
 
-      def recurse_path(method_prefix, path)
+      def recurse_path(method_prefix, *path)
         path = path.flatten
+        debugger
         to_s_column = path.first.is_a?(Symbol) ? path.shift.to_s : name_column
         node = self
-        while (s = path.shift and node)
+        while ((s = path.shift) && node)
           node = node.children.send("#{method_prefix}_by_#{to_s_column}".to_sym, s)
         end
         node
@@ -199,6 +219,7 @@ module ClosureTree
     end
 
     module ClassMethods
+
       # Returns an arbitrary node that has no parents.
       def root
         roots.first

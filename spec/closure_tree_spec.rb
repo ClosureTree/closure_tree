@@ -38,8 +38,8 @@ describe Tag do
 
   context "leaves" do
     it "should assemble global leaves" do
-      Tag.leaves.include? tags(:child).should_not be_nil
-      Tag.leaves.select { |t| !t.leaf? }.empty?.should_not be_nil
+      Tag.leaves.each{|t| t.children.should be_empty, "#{t.name} was returned by leaves but has children: #{t.children}"}
+      Tag.leaves.each{|t| t.should be_leaf, "{t.name} was returned by leaves but was not a leaf" }
     end
 
     it "should assemble instance leaves" do
