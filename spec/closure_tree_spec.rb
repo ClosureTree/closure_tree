@@ -1,10 +1,40 @@
 require 'spec_helper'
 
+describe "clean db" do
+  before :each do
+    Tag.delete_all
+  end
+
+  context "empty db" do
+    it "should return no entities" do
+      Tag.roots.should be_empty
+      Tag.leaves.should be_empty
+    end
+  end
+
+  context "single entity db" do
+    it "should return the only entity as a root and leaf" do
+      a = Tag.create!(:name => "a")
+      Tag.roots.should == [a]
+      Tag.leaves.should == [a]
+    end
+  end
+
+  context "tiny db" do
+    it "should return the only entity as a root and leaf" do
+      root = Tag.create!(:name => "root")
+      leaf = root.add_child(Tag.create!(:name => "leaf"))
+      Tag.roots.should == [root]
+      Tag.leaves.should == [leaf]
+    end
+  end
+end
+
 describe Tag do
 
   fixtures :tags
 
-  before :each do
+  before :all do
     Tag.rebuild!
   end
 
@@ -38,8 +68,8 @@ describe Tag do
 
   context "leaves" do
     it "should assemble global leaves" do
-      Tag.leaves.each{|t| t.children.should be_empty, "#{t.name} was returned by leaves but has children: #{t.children}"}
-      Tag.leaves.each{|t| t.should be_leaf, "{t.name} was returned by leaves but was not a leaf" }
+      Tag.leaves.each { |t| t.children.should be_empty, "#{t.name} was returned by leaves but has children: #{t.children}" }
+      Tag.leaves.each { |t| t.should be_leaf, "{t.name} was returned by leaves but was not a leaf" }
     end
 
     it "should assemble instance leaves" do
@@ -102,7 +132,7 @@ describe Tag do
 
     it "should root all children" do
       b2 = tags(:b2).reload
-      children = bt.children.to_a
+      children = b2.children.to_a
       b2.destroy
       (Tag.roots & children).should == children
     end

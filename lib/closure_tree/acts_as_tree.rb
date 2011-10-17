@@ -26,6 +26,7 @@ module ClosureTree
       include ClosureTree::Model
 
       before_destroy :acts_as_tree_before_destroy
+      after_save :rebuild!
 
       belongs_to :parent,
         :class_name => base_class.to_s,
@@ -54,11 +55,11 @@ module ClosureTree
       scope :roots, where(parent_column_name => nil)
 
       scope(:leaves, where(<<-SQL
-        #{quoted_table_name}.#{primary_key} IN
+#{quoted_table_name}.#{primary_key} IN
           (SELECT ancestor_id from #{quoted_hierarchy_table_name}
            GROUP BY 1
            HAVING MAX(generations) = 0)
-        SQL
+      SQL
       ))
     end
   end
@@ -92,11 +93,11 @@ module ClosureTree
       def leaves
         return [self] if leaf?
         self.class.leaves.where(<<-SQL
-          #{quoted_table_name}.#{self.class.primary_key} IN (
+#{quoted_table_name}.#{self.class.primary_key} IN (
             SELECT descendant_id
             FROM #{quoted_hierarchy_table_name}
             WHERE ancestor_id = #{id})
-          SQL
+        SQL
         )
       end
 
@@ -141,51 +142,14 @@ module ClosureTree
           raise ActiveRecord::ActiveRecordError "You cannot add an ancestor as a descendant"
         end
         child_node.reparent(self)
-        nil
+        child_node
       end
 
       # Note that object caches may be out of sync after calling this method.
       def reparent(new_parent)
         acts_as_tree_before_destroy if self_and_descendants.present?
-        update_attribute :parent, new_parent
-        rebuild!
-      end
-
-      def rebuild!
-        hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
-        if parent_id
-          connection.execute <<-SQL
-            INSERT INTO #{quoted_hierarchy_table_name}
-              (ancestor_id, descendant_id, generations)
-            SELECT x.ancestor_id, #{id}, x.generations + 1
-            FROM #{quoted_hierarchy_table_name} x
-            WHERE x.descendant_id = #{parent_id}
-          SQL
-        end
-
-        children.each { |child| child.rebuild! }
-      end
-
-      # NOTE that child nodes will need to be reloaded.
-      def acts_as_tree_before_destroy
-        # MySQL doesn't support subqueries in deletes, so we have to make a temp table. :-|
-        doomed = "`doomed-#{SecureRandom.uuid}`"
-        connection.execute <<-SQL
-          CREATE TEMPORARY TABLE #{doomed} AS
-            SELECT DISTINCT descendant_id
-            FROM #{quoted_hierarchy_table_name}
-            WHERE ancestor_id = #{id};
-        SQL
-
-        connection.execute <<-SQL
-          DELETE FROM #{quoted_hierarchy_table_name}
-          WHERE descendant_id IN (SELECT descendant_id FROM #{doomed})
-            OR descendant_id = #{id}
-        SQL
-
-        connection.execute <<-SQL
-          DROP TABLE #{doomed}
-        SQL
+        update_attribute parent_column_name, new_parent
+        rebuild!(true)
       end
 
       # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.
@@ -200,6 +164,37 @@ module ClosureTree
       end
 
       protected
+
+      def rebuild!(cascade_to_children = false)
+        hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
+        unless root?
+          connection.execute <<-SQL
+            INSERT INTO #{quoted_hierarchy_table_name}
+              (ancestor_id, descendant_id, generations)
+            SELECT x.ancestor_id, #{id}, x.generations + 1
+            FROM #{quoted_hierarchy_table_name} x
+            WHERE x.descendant_id = #{parent_id}
+          SQL
+        end
+        children.each{|c|c.rebuild!(cascade_to_children)} if cascade_to_children
+      end
+
+      def acts_as_tree_before_destroy
+        # The crazy double-wrapped sub-subselect works around MySQL's limitation of subselects on the same table that is being mutated.
+        # It shouldn't affect performance of postgresql.
+        # See http://dev.mysql.com/doc/refman/5.0/en/subquery-errors.html
+        connection.execute <<-SQL
+          DELETE FROM #{quoted_hierarchy_table_name}
+          WHERE descendant_id IN (
+            SELECT DISTINCT descendant_id
+            FROM ( SELECT descendant_id
+              FROM #{quoted_hierarchy_table_name}
+              WHERE ancestor_id = #{id}
+            ) AS x
+          )
+            OR descendant_id = #{id}
+        SQL
+      end
 
       def recurse_path(method_prefix, *path)
         path = path.flatten
@@ -227,11 +222,9 @@ module ClosureTree
       # Rebuilds the hierarchy table based on the parent_id column in the database.
       # Note that the hierarchy table will be truncated.
       def rebuild!
-        in_tenacious_transaction do
-          hierarchy_class.delete_all # not destroy_all -- we just want a simple truncate.
-          roots.each { |n| n.rebuild! }
-          nil
-        end
+        hierarchy_class.delete_all # not destroy_all -- we just want a simple truncate.
+        roots.each { |n| n.rebuild!(true) }
+        nil
       end
 
       # Find the node whose +ancestry_path+ is +path+
