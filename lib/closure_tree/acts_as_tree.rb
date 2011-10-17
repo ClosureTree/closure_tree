@@ -146,7 +146,7 @@ module ClosureTree
 
       # Note that object caches may be out of sync after calling this method.
       def reparent(new_parent)
-        acts_as_tree_before_destroy if parent || children.present?
+        acts_as_tree_before_destroy if self_and_descendants.present?
         update_attribute :parent, new_parent
         rebuild!
       end
@@ -203,7 +203,6 @@ module ClosureTree
 
       def recurse_path(method_prefix, *path)
         path = path.flatten
-        debugger
         to_s_column = path.first.is_a?(Symbol) ? path.shift.to_s : name_column
         node = self
         while ((s = path.shift) && node)

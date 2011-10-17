@@ -72,7 +72,7 @@ describe Tag do
       end.should raise_error
     end
 
-    it "move" do
+    it "should move non-leaves" do
       # This is what the fixture should encode:
       tags(:d2).ancestry_path.should == %w{a1 b2 c2 d2}
       tags(:b1).add_child(tags(:c2))
@@ -81,6 +81,23 @@ describe Tag do
       d2 = Tag.find(tags(:d2))
       d2.reload
       d2.ancestry_path.should == %w{a1 b1 c2 d2}
+    end
+
+    it "should move leaves" do
+      # I don't care which one:
+      l = Tag.find_or_create_by_path(%w{leaftest branch1 leaf})
+      b2 = Tag.find_or_create_by_path(%w{leaftest branch2})
+      l.reparent(b2)
+      l.ancestry_path.should == %w{leaftest branch2 leaf}
+    end
+
+    it "should move roots" do
+      # I don't care which one:
+      l1 = Tag.find_or_create_by_path(%w{roottest1 branch1 leaf1})
+      l2 = Tag.find_or_create_by_path(%w{roottest2 branch2 leaf2})
+      l2.root.reparent(l1)
+      l1.ancestry_path.should == %w{roottest1 branch1 leaf1}
+      l2.ancestry_path.should == %w{roottest1 branch1 leaf1 roottest2 branch2 leaf2}
     end
 
     it "should root all children" do
