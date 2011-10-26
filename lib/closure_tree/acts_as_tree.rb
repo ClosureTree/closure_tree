@@ -142,7 +142,6 @@ module ClosureTree
 
       def acts_as_tree_before_save
         @was_new_record = new_record?
-        puts "Before_save check on #{self} (parent is #{parent})"
         if changes[parent_column_name] &&
           parent.present? &&
           parent.self_and_ancestors.include?(self)
@@ -156,7 +155,6 @@ module ClosureTree
       end
 
       def rebuild!
-        puts "Rebuilding #{self} (parent is #{parent})"
         delete_hierarchy_references unless @was_new_record
         hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
         unless root?
@@ -179,7 +177,6 @@ module ClosureTree
       end
 
       def delete_hierarchy_references
-        puts "delete_hierarchy_references #{self}"
         # The crazy double-wrapped sub-subselect works around MySQL's limitation of subselects on the same table that is being mutated.
         # It shouldn't affect performance of postgresql.
         # See http://dev.mysql.com/doc/refman/5.0/en/subquery-errors.html
