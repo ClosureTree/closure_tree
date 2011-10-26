@@ -135,8 +135,8 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ``` tag.leaf?``` returns true if this is a leaf node. It has no children.
 * ``` tag.leaves``` returns an array of all the nodes in self_and_descendants that are leaves.
 * ``` tag.level``` returns the level, or "generation", for this node in the tree. A root node == 0.
-* ``` tag.parent``` returns the node's immediate parent
-* ``` tag.children``` returns an array of immediate children (just those in the next level).
+* ``` tag.parent``` returns the node's immediate parent. Root nodes will return nil.
+* ``` tag.children``` returns an array of immediate children (just those nodes whose parent is the current node).
 * ``` tag.ancestors``` returns an array of [ parent, grandparent, great grandparent, ... ]. Note that the size of this array will always equal ```tag.level```.
 * ``` tag.self_and_ancestors``` returns an array of self, parent, grandparent, great grandparent, etc.
 * ``` tag.siblings``` returns an array of brothers and sisters (all at that level), excluding self.
@@ -148,8 +148,9 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 
 ## Changelog
 
-### 1.1.0.beta1
+### 2.0.0.beta1
 
+* Had to increment the major version, as rebuild! will need to be called by prior consumers to support the new ```leaves``` class and instance methods.
 * Tag deletion is supported now along with ```:dependent => :destroy``` and ```:dependent => :delete_all```
 * Added new instance method ```reparent```
 * Switched from default rails plugin directory structure to rspec

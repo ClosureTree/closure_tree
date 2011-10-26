@@ -7,8 +7,8 @@ ActiveRecord::Schema.define(:version => 0) do
     t.integer "generations",   :null => false
   end
 
-  add_index "tag_hierarchies", ["ancestor_id", "descendant_id"]
-  add_index "tag_hierarchies", ["descendant_id"]
+  add_index :tag_hierarchies, [:ancestor_id, :descendant_id], :unique => true
+  add_index :tag_hierarchies, [:descendant_id]
 
   create_table "tags", :force => true do |t|
     t.string   "name"
@@ -24,8 +24,8 @@ ActiveRecord::Schema.define(:version => 0) do
     t.integer "generations",   :null => false
   end
 
-  add_index "user_hierarchies", ["ancestor_id", "descendant_id"]
-  add_index "user_hierarchies", ["descendant_id"]
+  add_index :user_hierarchies, [:ancestor_id, :descendant_id], :unique => true
+  add_index :user_hierarchies, [:descendant_id]
 
   create_table "users", :force => true do |t|
     t.string   "email"

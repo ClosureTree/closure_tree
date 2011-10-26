@@ -28,5 +28,5 @@ require 'support/models'
 require 'rspec/rails'
 RSpec.configure do |config|
   config.fixture_path = "#{plugin_test_dir}/fixtures"
-  config.use_transactional_fixtures = true
+  config.use_transactional_fixtures = false
 end

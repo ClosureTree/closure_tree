@@ -1,8 +1,14 @@
 require 'spec_helper'
 
-describe "clean db" do
-  before :each do
+describe "empty db" do
+
+  def nuke
     Tag.delete_all
+    TagHierarchy.delete_all
+  end
+
+  before :each do
+    nuke
   end
 
   context "empty db" do
@@ -12,7 +18,7 @@ describe "clean db" do
     end
   end
 
-  context "single entity db" do
+  context "1 tag db" do
     it "should return the only entity as a root and leaf" do
       a = Tag.create!(:name => "a")
       Tag.roots.should == [a]
@@ -20,12 +26,76 @@ describe "clean db" do
     end
   end
 
-  context "tiny db" do
-    it "should return the only entity as a root and leaf" do
+  context "2 tag db" do
+    it "should return a simple root and leaf" do
       root = Tag.create!(:name => "root")
       leaf = root.add_child(Tag.create!(:name => "leaf"))
       Tag.roots.should == [root]
       Tag.leaves.should == [leaf]
+    end
+  end
+
+  context "3 tag collection.create db" do
+    before :each do
+      @root = Tag.create! :name => "root"
+      @mid = @root.children.create! :name => "mid"
+      @leaf = @mid.children.create! :name => "leaf"
+    end
+
+    it "should create all tags" do
+      Tag.all.should =~ [@root, @mid, @leaf]
+    end
+
+    it "should return a root and leaf without middle tag" do
+      Tag.roots.should == [@root]
+      Tag.leaves.should == [@leaf]
+    end
+
+    it "should delete leaves" do
+      Tag.leaves.destroy_all
+      Tag.roots.should == [@root] # untouched
+      Tag.leaves.should == [@mid]
+    end
+
+    it "should delete roots and maintain heirarchies" do
+      Tag.roots.destroy_all
+      @mid.ancestry_path.should == %w{mid}
+      @leaf.ancestry_path.should == %w{mid leaf}
+      @mid.self_and_descendants.should =~ [@mid, @leaf]
+      Tag.roots.should == [@mid]
+      Tag.leaves.should == [@leaf]
+    end
+  end
+
+  context "3 tag explicit_create db" do
+    before :each do
+      @root = Tag.create!(:name => "root")
+      @mid = @root.add_child(Tag.create!(:name => "mid"))
+      @leaf = @mid.add_child(Tag.create!(:name => "leaf"))
+    end
+
+    it "should create all tags" do
+      Tag.all.should =~ [@root, @mid, @leaf]
+    end
+
+    it "should return a root and leaf without middle tag" do
+      Tag.roots.should == [@root]
+      Tag.leaves.should == [@leaf]
+    end
+
+    it "should prevent parental loops" do
+      lambda do
+        @mid.children << @root
+      end.should raise_error
+
+      lambda do
+        @leaf.children << @root
+      end.should raise_error
+    end
+
+    it "should support reparenting" do
+      @root.children << @leaf
+      Tag.leaves.should =~ [@leaf, @mid]
     end
   end
 end
@@ -34,7 +104,7 @@ describe Tag do
 
   fixtures :tags
 
-  before :all do
+  before :each do
     Tag.rebuild!
   end
 
@@ -68,6 +138,7 @@ describe Tag do
 
   context "leaves" do
     it "should assemble global leaves" do
+      Tag.leaves.size.should > 0
       Tag.leaves.each { |t| t.children.should be_empty, "#{t.name} was returned by leaves but has children: #{t.children}" }
       Tag.leaves.each { |t| t.should be_leaf, "{t.name} was returned by leaves but was not a leaf" }
     end
@@ -114,18 +185,16 @@ describe Tag do
     end
 
     it "should move leaves" do
-      # I don't care which one:
       l = Tag.find_or_create_by_path(%w{leaftest branch1 leaf})
       b2 = Tag.find_or_create_by_path(%w{leaftest branch2})
-      l.reparent(b2)
+      b2.children << l
       l.ancestry_path.should == %w{leaftest branch2 leaf}
     end
 
     it "should move roots" do
-      # I don't care which one:
       l1 = Tag.find_or_create_by_path(%w{roottest1 branch1 leaf1})
       l2 = Tag.find_or_create_by_path(%w{roottest2 branch2 leaf2})
-      l2.root.reparent(l1)
+      l1.children << l2.root
       l1.ancestry_path.should == %w{roottest1 branch1 leaf1}
       l2.ancestry_path.should == %w{roottest1 branch1 leaf1 roottest2 branch2 leaf2}
     end
@@ -134,7 +203,7 @@ describe Tag do
       b2 = tags(:b2).reload
       children = b2.children.to_a
       b2.destroy
-      (Tag.roots & children).should == children
+      (Tag.roots & children).should =~ children
     end
   end
 
@@ -182,19 +251,15 @@ describe Tag do
     it "should find by path" do
       # class method:
       Tag.find_by_path(%w{grandparent parent child}).should == tags(:child)
-      Tag.find_by_path(:title, %w{Nonnie Mom Kid}).should == tags(:child)
       # instance method:
       tags(:parent).find_by_path(%w{child}).should == tags(:child)
-      tags(:parent).find_by_path(:title, %w{Kid}).should == tags(:child)
       tags(:grandparent).find_by_path(%w{parent child}).should == tags(:child)
-      tags(:grandparent).find_by_path(:title, %w{Mom Kid}).should == tags(:child)
       tags(:parent).find_by_path(%w{child larvae}).should be_nil
     end
 
     it "should find or create by path" do
       # class method:
       Tag.find_or_create_by_path(%w{grandparent parent child}).should == tags(:child)
-      Tag.find_or_create_by_path(:title, %w{Nonnie Mom Kid}).should == tags(:child)
       Tag.find_or_create_by_path(%w{events anniversary}).ancestry_path.should == %w{events anniversary}
       a = Tag.find_or_create_by_path(%w{a})
       a.ancestry_path.should == %w{a}

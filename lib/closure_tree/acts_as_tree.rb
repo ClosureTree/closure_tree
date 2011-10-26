@@ -6,7 +6,7 @@ module ClosureTree
 
       self.closure_tree_options = {
         :parent_column_name => 'parent_id',
-        :dependent => nil, # or :destroy or :delete_all -- see the README
+        :dependent => :nullify, # or :destroy or :delete_all -- see the README
         :name_column => 'name'
       }.merge(options)
 
@@ -26,7 +26,8 @@ module ClosureTree
       include ClosureTree::Model
 
       before_destroy :acts_as_tree_before_destroy
-      after_save :rebuild!
+      before_save :acts_as_tree_before_save
+      after_save :acts_as_tree_after_save
 
       belongs_to :parent,
         :class_name => base_class.to_s,
@@ -35,7 +36,6 @@ module ClosureTree
       has_many :children,
         :class_name => base_class.to_s,
         :foreign_key => parent_column_name,
-        :before_add => :add_child,
         :dependent => closure_tree_options[:dependent]
 
       has_and_belongs_to_many :self_and_ancestors,
@@ -54,40 +54,33 @@ module ClosureTree
 
       scope :roots, where(parent_column_name => nil)
 
-      scope(:leaves, where(<<-SQL
-#{quoted_table_name}.#{primary_key} IN
-          (SELECT ancestor_id from #{quoted_hierarchy_table_name}
-           GROUP BY 1
-           HAVING MAX(generations) = 0)
-      SQL
-      ))
+      scope :leaves, where(" #{quoted_table_name}.#{primary_key} IN
+        (SELECT ancestor_id from #{quoted_hierarchy_table_name} GROUP BY 1 HAVING MAX(generations) = 0)")
     end
   end
 
   module Model
     extend ActiveSupport::Concern
     module InstanceMethods
-      def parent_id
-        self[parent_column_name]
-      end
-
-      def parent_id=(new_parent_id)
-        self[parent_column_name] = new_parent_id
-      end
 
       # Returns true if this node has no parents.
       def root?
-        parent_id.nil?
+        parent.nil?
       end
 
-      # Returns self if +root?+ or the root ancestor
-      def root
-        root? ? self : ancestors.last
+      # Returns true if this node has a parent, and is not a root.
+      def child?
+        !parent.nil?
       end
 
       # Returns true if this node has no children.
       def leaf?
         children.empty?
+      end
+
+      # Returns the farthest ancestor, or self if +root?+
+      def root
+        root? ? self : ancestors.last
       end
 
       def leaves
@@ -99,11 +92,6 @@ module ClosureTree
             WHERE ancestor_id = #{id})
         SQL
         )
-      end
-
-      # Returns true if this node has a parent, and is not a root.
-      def child?
-        !parent_id.nil?
       end
 
       def level
@@ -126,46 +114,50 @@ module ClosureTree
       end
 
       def self_and_siblings
-        self.class.scoped.where(:parent_id => parent_id)
+        self.class.scoped.where(:parent => parent)
       end
 
       def siblings
         without_self(self_and_siblings)
       end
 
-      # You must use this method, or add child nodes to the +children+ association, to
-      # make the hierarchy table stay consistent.
-      # Note that an error will be raised if the child_node is already associated to this node.
+      # alias for appending to the children collect
       def add_child(child_node)
-        if self_and_ancestors.include?(child_node)
-          # TODO: raise Ouroboros or Philip J. Fry error:
-          raise ActiveRecord::ActiveRecordError "You cannot add an ancestor as a descendant"
-        end
-        child_node.reparent(self)
+        children << child_node
         child_node
-      end
-
-      # Note that object caches may be out of sync after calling this method.
-      def reparent(new_parent)
-        acts_as_tree_before_destroy if self_and_descendants.present?
-        update_attribute parent_column_name, new_parent
-        rebuild!(true)
       end
 
       # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.
       # If the first argument is a symbol, it will be used as the column to search by
       def find_by_path(*path)
-        recurse_path "find", *path
+        foc_by_path("find", *path)
       end
 
       # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
       def find_or_create_by_path(*path)
-        recurse_path "find_or_create", *path
+        foc_by_path("find_or_create", *path)
       end
 
       protected
 
-      def rebuild!(cascade_to_children = false)
+      def acts_as_tree_before_save
+        @was_new_record = new_record?
+        puts "Before_save check on #{self} (parent is #{parent})"
+        if changes[parent_column_name] &&
+          parent.present? &&
+          parent.self_and_ancestors.include?(self)
+          # TODO: raise Ouroboros or Philip J. Fry error:
+          raise ActiveRecord::ActiveRecordError "You cannot add an ancestor as a descendant"
+        end
+      end
+
+      def acts_as_tree_after_save
+        rebuild! if changes[parent_column_name] || @was_new_record
+      end
+
+      def rebuild!
+        puts "Rebuilding #{self} (parent is #{parent})"
+        delete_hierarchy_references unless @was_new_record
         hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
         unless root?
           connection.execute <<-SQL
@@ -176,10 +168,18 @@ module ClosureTree
             WHERE x.descendant_id = #{parent_id}
           SQL
         end
-        children.each{|c|c.rebuild!(cascade_to_children)} if cascade_to_children
+        children.each { |c| c.rebuild! }
       end
 
       def acts_as_tree_before_destroy
+        delete_hierarchy_references
+        if closure_tree_options[:dependent] == :nullify
+          children.each { |c| c.rebuild! }
+        end
+      end
+
+      def delete_hierarchy_references
+        puts "delete_hierarchy_references #{self}"
         # The crazy double-wrapped sub-subselect works around MySQL's limitation of subselects on the same table that is being mutated.
         # It shouldn't affect performance of postgresql.
         # See http://dev.mysql.com/doc/refman/5.0/en/subquery-errors.html
@@ -190,18 +190,17 @@ module ClosureTree
             FROM ( SELECT descendant_id
               FROM #{quoted_hierarchy_table_name}
               WHERE ancestor_id = #{id}
-            ) AS x
-          )
+            ) AS x )
             OR descendant_id = #{id}
         SQL
       end
 
-      def recurse_path(method_prefix, *path)
+      def foc_by_path(method_prefix, *path)
         path = path.flatten
-        to_s_column = path.first.is_a?(Symbol) ? path.shift.to_s : name_column
+        return self if path.empty?
         node = self
-        while ((s = path.shift) && node)
-          node = node.children.send("#{method_prefix}_by_#{to_s_column}".to_sym, s)
+        while (!path.empty? && node)
+          node = node.children.send("#{method_prefix}_by_#{name_column}", path.shift)
         end
         node
       end
@@ -223,33 +222,22 @@ module ClosureTree
       # Note that the hierarchy table will be truncated.
       def rebuild!
         hierarchy_class.delete_all # not destroy_all -- we just want a simple truncate.
-        roots.each { |n| n.rebuild!(true) }
+        roots.each { |n| n.send(:rebuild!) } # roots just uses the parent_id column, so this is safe.
         nil
       end
 
       # Find the node whose +ancestry_path+ is +path+
-      # If the first argument is a symbol, it will be used as the column to search by
       def find_by_path(*path)
         path = path.flatten
-        to_s_column = path.first.is_a?(Symbol) ? path.shift.to_s : name_column
-        self.where(to_s_column => path.last).each do |n|
-          return n if path == n.ancestry_path(to_s_column)
-        end
-        nil
+        r = roots.send("find_by_#{name_column}", path.shift)
+        r.nil? ? nil : r.find_by_path(*path)
       end
 
       # Find or create nodes such that the +ancestry_path+ is +path+
       def find_or_create_by_path(*path)
-        # short-circuit if we can:
-        n = find_by_path path
-        return n if n
-
-        path.flatten
-        column_sym = path.first.is_a?(Symbol) ? path.shift : name_sym
-        s = path.shift
-        node = roots.where(column_sym => s).first
-        node = create!(column_sym => s) unless node
-        node.find_or_create_by_path column_sym, path
+        path = path.flatten
+        root = roots.send("find_or_create_by_#{name_column}", path.shift)
+        root.find_or_create_by_path(*path)
       end
 
       # From https://github.com/collectiveidea/awesome_nested_set:
