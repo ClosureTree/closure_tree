@@ -16,7 +16,7 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
 
 2.  Run ```bundle install```
 
-3.  Add ```acts_as_tree``` to your hierarchical model(s) (see the Available Options section below for details)</a>).
+3.  Add ```acts_as_tree``` to your hierarchical model(s) (see the Available Options section below for details).
 
 4.  Add a migration to add a ```parent_id``` column to the model you want to act_as_tree.
 
