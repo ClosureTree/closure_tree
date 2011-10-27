@@ -16,7 +16,7 @@ Note that closure_tree is being developed for Rails 3.1.0.rc1
 
 2.  Run ```bundle install```
 
-3.  Add ```acts_as_tree``` to your hierarchical model(s) (see the <a href="#options">available options</a>).
+3.  Add ```acts_as_tree``` to your hierarchical model(s) (see the Available Options section below for details)</a>).
 
 4.  Add a migration to add a ```parent_id``` column to the model you want to act_as_tree.
 
@@ -111,13 +111,13 @@ Note that the other columns will be null if nodes are created, other than auto-g
 
 When you include ```acts_as_tree``` in your model, you can provide a hash to override the following defaults:
 
-* ```:parent_column_name``` to override the column name of the parent foreign key in the model's table
+* ```:parent_column_name``` to override the column name of the parent foreign key in the model's table. This defaults to "parent_id".
 * ```:hierarchy_table_name``` to override the hierarchy table name. This defaults to the singular name of the model + "_hierarchies".
-* ```:name_column``` used by #```find_or_create_by_path```, #```find_by_path```, and ```ancestry_path``` instance methods. This is primarily useful if the model only has one required field (like a "tag").
 * ```:dependent``` determines what happens when a node is destroyed. Defaults to ```nil```.
-    * ```nil``` will simply set the parent column to null. Each child node will be considered a "root" node
+    * ```:nullify``` will simply set the parent column to null. Each child node will be considered a "root" node. This is the default.
     * ```:delete_all``` will delete all descendant nodes (which circumvents the destroy hooks)
     * ```:destroy``` will destroy all descendant nodes (which runs the destroy hooks on each child node)
+* ```:name_column``` used by #```find_or_create_by_path```, #```find_by_path```, and ```ancestry_path``` instance methods. This is primarily useful if the model only has one required field (like a "tag").
 
 ## Accessing Data
 
