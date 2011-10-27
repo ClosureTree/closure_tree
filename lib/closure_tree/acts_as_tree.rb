@@ -242,22 +242,6 @@ module ClosureTree
         root = roots.send("find_or_create_by_#{name_column}", path.shift)
         root.find_or_create_by_path(*path)
       end
-
-      # From https://github.com/collectiveidea/awesome_nested_set:
-      def in_tenacious_transaction(&block)
-        retry_count = 0
-        begin
-          transaction(&block)
-        rescue ActiveRecord::StatementInvalid => error
-          raise unless connection.open_transactions.zero?
-          raise unless error.message =~ /Deadlock found when trying to get lock|Lock wait timeout exceeded/
-          raise unless retry_count < 10
-          retry_count += 1
-          logger.info "Deadlock detected on retry #{retry_count}, restarting transaction"
-          sleep(rand(retry_count)*0.2) # Aloha protocol
-          retry
-        end
-      end
     end
   end
 

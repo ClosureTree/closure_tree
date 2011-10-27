@@ -70,20 +70,26 @@ Create a root node:
   grandparent = Tag.create!(:name => 'Grandparent')
   ```
 
-There are two equivalent ways to add children. Either use the ```add_child``` method:
+Child nodes are created by appending to the children collection:
+
+  ```ruby
+  child = parent.children.create!(:name => 'Child')
+  ```
+
+You can also append to the children collection:
+
+  ```ruby
+  child = Tag.create!(:name => 'Child')
+  parent.children << child
+  ```
+
+Or call the "add_child" method:
 
   ```ruby
   parent = Tag.create!(:name => 'Parent')
   grandparent.add_child parent
   ```
 
-Or append to the ```children``` collection:
-
-  ```ruby
-  child = Tag.create!(:name => 'Child')
-  parent.children << child
-  ```
-  
 Then:
 
   ```ruby
@@ -143,8 +149,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ``` tag.self_and_siblings``` returns an array of brothers and sisters (all at that level), including self.
 * ``` tag.descendants``` returns an array of all children, childrens' children, etc., excluding self.
 * ``` tag.self_and_descendants``` returns an array of all children, childrens' children, etc., including self.
-* ``` tag.reparent``` lets you move a node (and all it's children) to a new parent.
-* ``` tag.destroy``` will destroy a node as well as possibly all of its children. See the ```:dependent``` option passed to ```acts_as_tree```.
+* ``` tag.destroy``` will destroy a node and do <em>something</em> to its children, which is determined by the ```:dependent``` option passed to ```acts_as_tree```.
 
 ## Changelog
 
@@ -152,7 +157,6 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 
 * Had to increment the major version, as rebuild! will need to be called by prior consumers to support the new ```leaves``` class and instance methods.
 * Tag deletion is supported now along with ```:dependent => :destroy``` and ```:dependent => :delete_all```
-* Added new instance method ```reparent```
 * Switched from default rails plugin directory structure to rspec
 
 ## Thanks to
