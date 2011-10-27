@@ -5,6 +5,7 @@ describe "empty db" do
   def nuke
     Tag.delete_all
     TagHierarchy.delete_all
+    DestroyedTag.delete_all
   end
 
   before :each do
@@ -57,13 +58,12 @@ describe "empty db" do
       Tag.leaves.should == [@mid]
     end
 
-    it "should delete roots and maintain heirarchies" do
+    it "should delete everything if you delete the roots" do
       Tag.roots.destroy_all
-      @mid.ancestry_path.should == %w{mid}
-      @leaf.ancestry_path.should == %w{mid leaf}
-      @mid.self_and_descendants.should =~ [@mid, @leaf]
-      Tag.roots.should == [@mid]
-      Tag.leaves.should == [@leaf]
+      Tag.all.should be_empty
+      Tag.roots.should be_empty
+      Tag.leaves.should be_empty
+      DestroyedTag.all.collect{|t|t.name}.should =~ %w{root mid leaf}
     end
   end
 
@@ -179,9 +179,7 @@ describe Tag do
       tags(:b1).add_child(tags(:c2))
       tags(:b2).leaf?.should_not be_nil
       tags(:b1).children.include?(tags(:c2)).should_not be_nil
-      d2 = Tag.find(tags(:d2))
-      d2.reload
-      d2.ancestry_path.should == %w{a1 b1 c2 d2}
+      tags(:d2).reload.ancestry_path.should == %w{a1 b1 c2 d2}
     end
 
     it "should move leaves" do
@@ -199,11 +197,13 @@ describe Tag do
       l2.ancestry_path.should == %w{roottest1 branch1 leaf1 roottest2 branch2 leaf2}
     end
 
-    it "should root all children" do
-      b2 = tags(:b2).reload
-      children = b2.children.to_a
+    it "should cascade delete all children" do
+      b2 = tags(:b2)
+      entities = b2.self_and_descendants.to_a
+      names = b2.self_and_descendants.collect{|t|t.name}
       b2.destroy
-      (Tag.roots & children).should =~ children
+      entities.each{|e| Tag.find_by_id(e.id).should be_nil }
+      DestroyedTag.all.collect{|t|t.name}.should =~ names
     end
   end
 
@@ -275,3 +275,4 @@ describe Tag do
   end
 
 end
+

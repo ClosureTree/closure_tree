@@ -55,7 +55,10 @@ module ClosureTree
       scope :roots, where(parent_column_name => nil)
 
       scope :leaves, where(" #{quoted_table_name}.#{primary_key} IN
-        (SELECT ancestor_id from #{quoted_hierarchy_table_name} GROUP BY 1 HAVING MAX(generations) = 0)")
+        (SELECT ancestor_id
+         FROM #{quoted_hierarchy_table_name}
+         GROUP BY 1
+         HAVING MAX(generations) = 0)")
     end
   end
 
@@ -163,7 +166,7 @@ module ClosureTree
               (ancestor_id, descendant_id, generations)
             SELECT x.ancestor_id, #{id}, x.generations + 1
             FROM #{quoted_hierarchy_table_name} x
-            WHERE x.descendant_id = #{parent_id}
+            WHERE x.descendant_id = #{self._parent_id}
           SQL
         end
         children.each { |c| c.rebuild! }
@@ -206,6 +209,9 @@ module ClosureTree
         scope.where(["#{quoted_table_name}.#{self.class.primary_key} != ?", self])
       end
 
+      def _parent_id
+        send(parent_column_name)
+      end
     end
 
     module ClassMethods
@@ -262,6 +268,10 @@ module ClosureTree
       closure_tree_options[:parent_column_name]
     end
 
+    def parent_column_sym
+      parent_column_name.to_sym
+    end
+
     def has_name?
       ct_class.new.attributes.include? closure_tree_options[:name_column]
     end
@@ -285,10 +295,6 @@ module ClosureTree
 
     def quoted_hierarchy_table_name
       connection.quote_column_name hierarchy_table_name
-    end
-
-    def scope_column_names
-      Array closure_tree_options[:scope]
     end
 
     def quoted_parent_column_name

@@ -28,5 +28,7 @@ require 'support/models'
 require 'rspec/rails'
 RSpec.configure do |config|
   config.fixture_path = "#{plugin_test_dir}/fixtures"
-  config.use_transactional_fixtures = true
+  # true runs the tests 1 second faster, but then you can't
+  # see what's going on while debuggering with different db connections.
+  config.use_transactional_fixtures = false
 end
