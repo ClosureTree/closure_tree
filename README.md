@@ -10,7 +10,7 @@ for a description of different tree storage algorithms.
 
 ## Setup
 
-Note that closure_tree is being developed for Rails 3.1.0.rc1
+Note that closure_tree is being developed for Rails 3.1.x
 
 1.  Add this to your Gemfile: ```gem 'closure_tree'```
 
