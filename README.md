@@ -67,26 +67,26 @@ Note that closure_tree is being developed for Rails 3.1.x
 Create a root node:
 
   ```ruby
-  grandparent = Tag.create!(:name => 'Grandparent')
+  grandparent = Tag.create(:name => 'Grandparent')
   ```
 
 Child nodes are created by appending to the children collection:
 
   ```ruby
-  child = parent.children.create!(:name => 'Child')
+  child = parent.children.create(:name => 'Child')
   ```
 
 You can also append to the children collection:
 
   ```ruby
-  child = Tag.create!(:name => 'Child')
+  child = Tag.create(:name => 'Child')
   parent.children << child
   ```
 
 Or call the "add_child" method:
 
   ```ruby
-  parent = Tag.create!(:name => 'Parent')
+  parent = Tag.create(:name => 'Parent')
   grandparent.add_child parent
   ```
 
@@ -105,7 +105,7 @@ Then:
 We can do all the node creation and add_child calls from the prior section with one method call:
 
   ```ruby
-  child = Tag.find_or_create_by_path "grandparent", "parent", "child"
+  child = Tag.find_or_create_by_path("grandparent", "parent", "child")
   ```
 
 You can ```find``` as well as ```find_or_create``` by "ancestry paths". Ancestry paths may be built using any column in your model. The default column is ```name```, which can be changed with the :name_column option provided to ```acts_as_tree```.
