@@ -3,8 +3,9 @@
 pkg/
 rdoc/
 doc/
-*.sqlite3
+*.sqlite3.db
 *.log
 tmp/
 .DS_Store
 .yardoc/
+.rvmrc
