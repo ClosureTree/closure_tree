@@ -15,3 +15,6 @@ require "rspec/core/rake_task"
 RSpec::Core::RakeTask.new(:spec)
 
 task :default => :spec
+
+# Run the specs using all the different database engines:
+# for DB in sqlite3 mysql postgresql ; do rake ; done
