@@ -105,12 +105,22 @@ Then:
 We can do all the node creation and add_child calls from the prior section with one method call:
 
   ```ruby
-  child = Tag.find_or_create_by_path("grandparent", "parent", "child")
+  child = Tag.find_or_create_by_path(["grandparent", "parent", "child"])
   ```
 
-You can ```find``` as well as ```find_or_create``` by "ancestry paths". Ancestry paths may be built using any column in your model. The default column is ```name```, which can be changed with the :name_column option provided to ```acts_as_tree```.
+You can ```find``` as well as ```find_or_create``` by "ancestry paths".
+Ancestry paths may be built using any column in your model. The default
+column is ```name```, which can be changed with the :name_column option
+provided to ```acts_as_tree```.
 
-Note that the other columns will be null if nodes are created, other than auto-generated columns like ID and created_at timestamp. Only the specified column will receive the path element value.
+Note that any other AR fields can be set with the second, optional ```attributes``` argument.
+
+  ```ruby
+  child = Tag.find_or_create_by_path(%w{home chuck Photos"}, {:tag_type => "File"})
+  ```
+This will pass the attribute hash of ```{:name => "home", :tag_type => "File"}``` to
+```Tag.find_or_create_by_name``` if the root directory doesn't exist (and
+```{:name => "chuck", :tag_type => "File"}``` if the second-level tag doesn't exist, and so on).
 
 ### Available options
 <a id="options" />
@@ -129,35 +139,58 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 
 ### Class methods
 
-* ``` Tag.root``` returns an arbitrary root node
-* ``` Tag.roots``` returns all root nodes
-* ``` Tag.leaves``` returns all leaf nodes
+* ```Tag.root``` returns an arbitrary root node
+* ```Tag.roots``` returns all root nodes
+* ```Tag.leaves``` returns all leaf nodes
 
 ### Instance methods
 
-* ``` tag.root``` returns the root for this node
-* ``` tag.root?``` returns true if this is a root node
-* ``` tag.child?``` returns true if this is a child node. It has a parent.
-* ``` tag.leaf?``` returns true if this is a leaf node. It has no children.
-* ``` tag.leaves``` returns an array of all the nodes in self_and_descendants that are leaves.
-* ``` tag.level``` returns the level, or "generation", for this node in the tree. A root node == 0.
-* ``` tag.parent``` returns the node's immediate parent. Root nodes will return nil.
-* ``` tag.children``` returns an array of immediate children (just those nodes whose parent is the current node).
-* ``` tag.ancestors``` returns an array of [ parent, grandparent, great grandparent, ... ]. Note that the size of this array will always equal ```tag.level```.
-* ``` tag.self_and_ancestors``` returns an array of self, parent, grandparent, great grandparent, etc.
-* ``` tag.siblings``` returns an array of brothers and sisters (all at that level), excluding self.
-* ``` tag.self_and_siblings``` returns an array of brothers and sisters (all at that level), including self.
-* ``` tag.descendants``` returns an array of all children, childrens' children, etc., excluding self.
-* ``` tag.self_and_descendants``` returns an array of all children, childrens' children, etc., including self.
-* ``` tag.destroy``` will destroy a node and do <em>something</em> to its children, which is determined by the ```:dependent``` option passed to ```acts_as_tree```.
+* ```tag.root``` returns the root for this node
+* ```tag.root?``` returns true if this is a root node
+* ```tag.child?``` returns true if this is a child node. It has a parent.
+* ```tag.leaf?``` returns true if this is a leaf node. It has no children.
+* ```tag.leaves``` returns an array of all the nodes in self_and_descendants that are leaves.
+* ```tag.level``` returns the level, or "generation", for this node in the tree. A root node == 0.
+* ```tag.parent``` returns the node's immediate parent. Root nodes will return nil.
+* ```tag.children``` returns an array of immediate children (just those nodes whose parent is the current node).
+* ```tag.ancestors``` returns an array of [ parent, grandparent, great grandparent, ... ]. Note that the size of this array will always equal ```tag.level```.
+* ```tag.self_and_ancestors``` returns an array of self, parent, grandparent, great grandparent, etc.
+* ```tag.siblings``` returns an array of brothers and sisters (all at that level), excluding self.
+* ```tag.self_and_siblings``` returns an array of brothers and sisters (all at that level), including self.
+* ```tag.descendants``` returns an array of all children, childrens' children, etc., excluding self.
+* ```tag.self_and_descendants``` returns an array of all children, childrens' children, etc., including self.
+* ```tag.destroy``` will destroy a node and do <em>something</em> to its children, which is determined by the ```:dependent``` option passed to ```acts_as_tree```.
 
-## Changelog
+## Polymorphic hierarchies
 
-### 2.0.0.beta1
+Polymorphic models are supported:
+
+1. Create a db migration that adds a String ```type``` column to your model
+2. Subclass the model class. You only need to add acts_as_tree to your base class.
+
+  ```ruby
+  class Tag < ActiveRecord::Base
+    acts_as_tree
+  end
+  class WhenTag < Tag ; end
+  class WhereTag < Tag ; end
+  class WhatTag < Tag ; end
+  ```
+
+## Change log
+
+### 2.0.0
 
 * Had to increment the major version, as rebuild! will need to be called by prior consumers to support the new ```leaves``` class and instance methods.
 * Tag deletion is supported now along with ```:dependent => :destroy``` and ```:dependent => :delete_all```
 * Switched from default rails plugin directory structure to rspec
+* Support for running specs under different database engines: ```export DB ; for DB in sqlite3 mysql postgresql ; do rake ; done```
+
+### 3.0.0
+
+* Support for polymorphic trees
+* ```find_by_path``` and ```find_or_create_by_path``` signatures changed to support constructor attributes
+* tested against Rails 3.1.3
 
 ## Thanks to
 

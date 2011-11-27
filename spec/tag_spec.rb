@@ -2,14 +2,14 @@ require 'spec_helper'
 
 describe "empty db" do
 
-  def nuke
+  def nuke_db
     Tag.delete_all
     TagHierarchy.delete_all
     DestroyedTag.delete_all
   end
 
   before :each do
-    nuke
+    nuke_db
   end
 
   context "empty db" do
@@ -63,7 +63,7 @@ describe "empty db" do
       Tag.all.should be_empty
       Tag.roots.should be_empty
       Tag.leaves.should be_empty
-      DestroyedTag.all.collect{|t|t.name}.should =~ %w{root mid leaf}
+      DestroyedTag.all.collect { |t| t.name }.should =~ %w{root mid leaf}
     end
   end
 
@@ -200,10 +200,10 @@ describe Tag do
     it "should cascade delete all children" do
       b2 = tags(:b2)
       entities = b2.self_and_descendants.to_a
-      names = b2.self_and_descendants.collect{|t|t.name}
+      names = b2.self_and_descendants.collect { |t| t.name }
       b2.destroy
-      entities.each{|e| Tag.find_by_id(e.id).should be_nil }
-      DestroyedTag.all.collect{|t|t.name}.should =~ names
+      entities.each { |e| Tag.find_by_id(e.id).should be_nil }
+      DestroyedTag.all.collect { |t| t.name }.should =~ names
     end
   end
 
@@ -257,9 +257,19 @@ describe Tag do
       tags(:parent).find_by_path(%w{child larvae}).should be_nil
     end
 
+    it "should return nil for missing nodes" do
+      Tag.find_by_path(%w{missing}).should be_nil
+      Tag.find_by_path(%w{grandparent missing}).should be_nil
+      Tag.find_by_path(%w{grandparent parent missing}).should be_nil
+      Tag.find_by_path(%w{grandparent parent missing child}).should be_nil
+    end
+
     it "should find or create by path" do
       # class method:
-      Tag.find_or_create_by_path(%w{grandparent parent child}).should == tags(:child)
+      grandparent = Tag.find_or_create_by_path(%w{grandparent})
+      grandparent.should == tags(:grandparent)
+      child = Tag.find_or_create_by_path(%w{grandparent parent child})
+      child.should == tags(:child)
       Tag.find_or_create_by_path(%w{events anniversary}).ancestry_path.should == %w{events anniversary}
       a = Tag.find_or_create_by_path(%w{a})
       a.ancestry_path.should == %w{a}

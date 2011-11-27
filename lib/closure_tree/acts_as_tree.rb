@@ -10,6 +10,8 @@ module ClosureTree
         :name_column => 'name'
       }.merge(options)
 
+      raise IllegalArgumentException, "name_column can't be 'path'" if closure_tree_options[:name_column] == 'path'
+
       include ClosureTree::Columns
       extend ClosureTree::Columns
 
@@ -19,8 +21,8 @@ module ClosureTree
       self.hierarchy_class = Object.const_set hierarchy_class_name, Class.new(ActiveRecord::Base)
 
       self.hierarchy_class.class_eval <<-RUBY
-        belongs_to :ancestor, :class_name => "#{base_class.to_s}"
-        belongs_to :descendant, :class_name => "#{base_class.to_s}"
+        belongs_to :ancestor, :class_name => "#{ct_class.to_s}"
+        belongs_to :descendant, :class_name => "#{ct_class.to_s}"
       RUBY
 
       include ClosureTree::Model
@@ -30,23 +32,23 @@ module ClosureTree
       after_save :acts_as_tree_after_save
 
       belongs_to :parent,
-        :class_name => base_class.to_s,
+        :class_name => ct_class.to_s,
         :foreign_key => parent_column_name
 
       has_many :children,
-        :class_name => base_class.to_s,
+        :class_name => ct_class.to_s,
         :foreign_key => parent_column_name,
         :dependent => closure_tree_options[:dependent]
 
       has_and_belongs_to_many :self_and_ancestors,
-        :class_name => base_class.to_s,
+        :class_name => ct_class.to_s,
         :join_table => hierarchy_table_name,
         :foreign_key => "descendant_id",
         :association_foreign_key => "ancestor_id",
         :order => "generations asc"
 
       has_and_belongs_to_many :self_and_descendants,
-        :class_name => base_class.to_s,
+        :class_name => ct_class.to_s,
         :join_table => hierarchy_table_name,
         :foreign_key => "ancestor_id",
         :association_foreign_key => "descendant_id",
@@ -124,21 +126,39 @@ module ClosureTree
         without_self(self_and_siblings)
       end
 
-      # alias for appending to the children collect
+      # Alias for appending to the children collection.
+      # You can also add directly to the children collection, if you'd prefer.
       def add_child(child_node)
         children << child_node
         child_node
       end
 
       # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.
-      # If the first argument is a symbol, it will be used as the column to search by
-      def find_by_path(*path)
-        foc_by_path("find", *path)
+      def find_by_path(path)
+        path = [path] unless path.is_a? Enumerable
+        node = self
+        while (!path.empty? && node)
+          node = node.children.send("find_by_#{name_column}", path.shift)
+        end
+        node
       end
 
       # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
-      def find_or_create_by_path(*path)
-        foc_by_path("find_or_create", *path)
+      def find_or_create_by_path(path, attributes = {})
+        path = [path] unless path.is_a? Enumerable
+        node = self
+        attrs = {}
+        attrs[:type] = self.type if ct_subclass? && ct_has_type?
+        path.each do |name|
+          attrs[name_sym] = name
+          child = node.children.where(attrs).first
+          unless child
+            child = self.class.new(attributes.merge attrs)
+            node.children << child
+          end
+          node = child
+        end
+        node
       end
 
       protected
@@ -195,16 +215,6 @@ module ClosureTree
         SQL
       end
 
-      def foc_by_path(method_prefix, *path)
-        path = path.flatten
-        return self if path.empty?
-        node = self
-        while (!path.empty? && node)
-          node = node.children.send("#{method_prefix}_by_#{name_column}", path.shift)
-        end
-        node
-      end
-
       def without_self(scope)
         scope.where(["#{quoted_table_name}.#{self.class.primary_key} != ?", self])
       end
@@ -230,17 +240,21 @@ module ClosureTree
       end
 
       # Find the node whose +ancestry_path+ is +path+
-      def find_by_path(*path)
-        path = path.flatten
-        r = roots.send("find_by_#{name_column}", path.shift)
-        r.nil? ? nil : r.find_by_path(*path)
+      def find_by_path(path)
+        root = roots.send("find_by_#{name_column}", path.shift)
+        root.try(:find_by_path, path)
       end
 
       # Find or create nodes such that the +ancestry_path+ is +path+
-      def find_or_create_by_path(*path)
-        path = path.flatten
-        root = roots.send("find_or_create_by_#{name_column}", path.shift)
-        root.find_or_create_by_path(*path)
+      def find_or_create_by_path(path, attributes = {})
+        name = path.shift
+        # shenanigans because find_or_create can't infer we want the same class as this:
+        # Note that roots will already be constrained to this subclass (in the case of polymorphism):
+        root = roots.send("find_by_#{name_column}", name)
+        if root.nil?
+          root = create!(attributes.merge(name_sym => name))
+        end
+        root.find_or_create_by_path(path, attributes)
       end
     end
   end
@@ -287,6 +301,18 @@ module ClosureTree
 
     def ct_class
       (self.is_a?(Class) ? self : self.class)
+    end
+
+    def ct_subclass?
+      ct_class != ct_class.base_class
+    end
+
+    def ct_attribute_names
+      @ct_attr_names ||= ct_class.new.attributes.keys - ct_class.protected_attributes.to_a
+    end
+
+    def ct_has_type?
+      ct_attribute_names.include? 'type'
     end
 
     def ct_table_name
