@@ -23,35 +23,35 @@ Note that closure_tree is being developed for Rails 3.1.x
 
     Note that if the column is null, the tag will be considered a root node.
 
-      ```ruby
-      class AddParentIdToTag < ActiveRecord::Migration
-        def change
-          add_column :tag, :parent_id, :integer
-        end
+    ```ruby
+    class AddParentIdToTag < ActiveRecord::Migration
+      def change
+        add_column :tag, :parent_id, :integer
       end
-      ```
+    end
+    ```
 
 5.  Add a database migration to store the hierarchy for your model. By
     convention the table name will be the model's table name, followed by
     "_hierarchy". Note that by calling ```acts_as_tree```, a "virtual model" (in this case, ```TagsHierarchy```) will be added automatically, so you don't need to create it.
 
-      ```ruby
-      class CreateTagHierarchies < ActiveRecord::Migration
-        def change
-          create_table :tag_hierarchies, :id => false do |t|
-            t.integer  :ancestor_id, :null => false   # ID of the parent/grandparent/great-grandparent/... tag
-            t.integer  :descendant_id, :null => false # ID of the target tag
-            t.integer  :generations, :null => false   # Number of generations between the ancestor and the descendant. Parent/child = 1, for example.
-          end
-
-          # For "all progeny of..." selects:
-          add_index :tag_hierarchies, [:ancestor_id, :descendant_id], :unique => true
-
-          # For "all ancestors of..." selects
-          add_index :tag_hierarchies, [:descendant_id]
+    ```ruby
+    class CreateTagHierarchies < ActiveRecord::Migration
+      def change
+        create_table :tag_hierarchies, :id => false do |t|
+          t.integer  :ancestor_id, :null => false   # ID of the parent/grandparent/great-grandparent/... tag
+          t.integer  :descendant_id, :null => false # ID of the target tag
+          t.integer  :generations, :null => false   # Number of generations between the ancestor and the descendant. Parent/child = 1, for example.
         end
+
+        # For "all progeny of..." selects:
+        add_index :tag_hierarchies, [:ancestor_id, :descendant_id], :unique => true
+
+        # For "all ancestors of..." selects
+        add_index :tag_hierarchies, [:descendant_id]
       end
-      ```
+    end
+    ```
 
 6.  Run ```rake db:migrate```
 
@@ -67,39 +67,39 @@ Note that closure_tree is being developed for Rails 3.1.x
 
 Create a root node:
 
-  ```ruby
-  grandparent = Tag.create(:name => 'Grandparent')
-  ```
+```ruby
+grandparent = Tag.create(:name => 'Grandparent')
+```
 
 Child nodes are created by appending to the children collection:
 
-  ```ruby
-  child = parent.children.create(:name => 'Child')
-  ```
+```ruby
+child = parent.children.create(:name => 'Child')
+```
 
 You can also append to the children collection:
 
-  ```ruby
-  child = Tag.create(:name => 'Child')
-  parent.children << child
-  ```
+```ruby
+child = Tag.create(:name => 'Child')
+parent.children << child
+```
 
 Or call the "add_child" method:
 
-  ```ruby
-  parent = Tag.create(:name => 'Parent')
-  grandparent.add_child parent
-  ```
+```ruby
+parent = Tag.create(:name => 'Parent')
+grandparent.add_child parent
+```
 
 Then:
 
-  ```ruby
-  puts grandparent.self_and_descendants.collect{ |t| t.name }.join(" > ")
-  "grandparent > parent > child"
+```ruby
+puts grandparent.self_and_descendants.collect{ |t| t.name }.join(" > ")
+"grandparent > parent > child"
 
-  child.ancestry_path
-  ["grandparent", "parent", "child"]
-  ```
+child.ancestry_path
+["grandparent", "parent", "child"]
+```
 
 ### <code>find_or_create_by_path</code>
 
@@ -116,9 +116,9 @@ provided to ```acts_as_tree```.
 
 Note that any other AR fields can be set with the second, optional ```attributes``` argument.
 
-  ```ruby
-  child = Tag.find_or_create_by_path(%w{home chuck Photos"}, {:tag_type => "File"})
-  ```
+```ruby
+child = Tag.find_or_create_by_path(%w{home chuck Photos"}, {:tag_type => "File"})
+```
 This will pass the attribute hash of ```{:name => "home", :tag_type => "File"}``` to
 ```Tag.find_or_create_by_name``` if the root directory doesn't exist (and
 ```{:name => "chuck", :tag_type => "File"}``` if the second-level tag doesn't exist, and so on).
@@ -169,14 +169,14 @@ Polymorphic models are supported:
 1. Create a db migration that adds a String ```type``` column to your model
 2. Subclass the model class. You only need to add acts_as_tree to your base class.
 
-  ```ruby
-  class Tag < ActiveRecord::Base
-    acts_as_tree
-  end
-  class WhenTag < Tag ; end
-  class WhereTag < Tag ; end
-  class WhatTag < Tag ; end
-  ```
+```ruby
+class Tag < ActiveRecord::Base
+  acts_as_tree
+end
+class WhenTag < Tag ; end
+class WhereTag < Tag ; end
+class WhatTag < Tag ; end
+```
 
 ## Change log
 
