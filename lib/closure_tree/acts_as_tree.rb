@@ -66,162 +66,160 @@ module ClosureTree
 
   module Model
     extend ActiveSupport::Concern
-    module InstanceMethods
 
-      # Returns true if this node has no parents.
-      def root?
-        parent.nil?
-      end
+    # Returns true if this node has no parents.
+    def root?
+      parent.nil?
+    end
 
-      # Returns true if this node has a parent, and is not a root.
-      def child?
-        !parent.nil?
-      end
+    # Returns true if this node has a parent, and is not a root.
+    def child?
+      !parent.nil?
+    end
 
-      # Returns true if this node has no children.
-      def leaf?
-        children.empty?
-      end
+    # Returns true if this node has no children.
+    def leaf?
+      children.empty?
+    end
 
-      # Returns the farthest ancestor, or self if +root?+
-      def root
-        root? ? self : ancestors.last
-      end
+    # Returns the farthest ancestor, or self if +root?+
+    def root
+      root? ? self : ancestors.last
+    end
 
-      def leaves
-        return [self] if leaf?
-        self.class.leaves.where(<<-SQL
+    def leaves
+      return [self] if leaf?
+      self.class.leaves.where(<<-SQL
 #{quoted_table_name}.#{self.class.primary_key} IN (
-            SELECT descendant_id
-            FROM #{quoted_hierarchy_table_name}
-            WHERE ancestor_id = #{id})
+          SELECT descendant_id
+          FROM #{quoted_hierarchy_table_name}
+          WHERE ancestor_id = #{id})
+      SQL
+      )
+    end
+
+    def level
+      ancestors.size
+    end
+
+    def ancestors
+      without_self(self_and_ancestors)
+    end
+
+    # Returns an array, root first, of self_and_ancestors' values of the +to_s_column+, which defaults
+    # to the +name_column+.
+    # (so child.ancestry_path == +%w{grandparent parent child}+
+    def ancestry_path(to_s_column = name_column)
+      self_and_ancestors.reverse.collect { |n| n.send to_s_column.to_sym }
+    end
+
+    def descendants
+      without_self(self_and_descendants)
+    end
+
+    def self_and_siblings
+      self.class.scoped.where(:parent => parent)
+    end
+
+    def siblings
+      without_self(self_and_siblings)
+    end
+
+    # Alias for appending to the children collection.
+    # You can also add directly to the children collection, if you'd prefer.
+    def add_child(child_node)
+      children << child_node
+      child_node
+    end
+
+    # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.
+    def find_by_path(path)
+      path = [path] unless path.is_a? Enumerable
+      node = self
+      while (!path.empty? && node)
+        node = node.children.send("find_by_#{name_column}", path.shift)
+      end
+      node
+    end
+
+    # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
+    def find_or_create_by_path(path, attributes = {})
+      path = [path] unless path.is_a? Enumerable
+      node = self
+      attrs = {}
+      attrs[:type] = self.type if ct_subclass? && ct_has_type?
+      path.each do |name|
+        attrs[name_sym] = name
+        child = node.children.where(attrs).first
+        unless child
+          child = self.class.new(attributes.merge attrs)
+          node.children << child
+        end
+        node = child
+      end
+      node
+    end
+
+    protected
+
+    def acts_as_tree_before_save
+      @was_new_record = new_record?
+      if changes[parent_column_name] &&
+        parent.present? &&
+        parent.self_and_ancestors.include?(self)
+        # TODO: raise Ouroboros or Philip J. Fry error:
+        raise ActiveRecord::ActiveRecordError "You cannot add an ancestor as a descendant"
+      end
+    end
+
+    def acts_as_tree_after_save
+      rebuild! if changes[parent_column_name] || @was_new_record
+    end
+
+    def rebuild!
+      delete_hierarchy_references unless @was_new_record
+      hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
+      unless root?
+        connection.execute <<-SQL
+          INSERT INTO #{quoted_hierarchy_table_name}
+            (ancestor_id, descendant_id, generations)
+          SELECT x.ancestor_id, #{id}, x.generations + 1
+          FROM #{quoted_hierarchy_table_name} x
+          WHERE x.descendant_id = #{self._parent_id}
         SQL
-        )
       end
+      children.each { |c| c.rebuild! }
+    end
 
-      def level
-        ancestors.size
-      end
-
-      def ancestors
-        without_self(self_and_ancestors)
-      end
-
-      # Returns an array, root first, of self_and_ancestors' values of the +to_s_column+, which defaults
-      # to the +name_column+.
-      # (so child.ancestry_path == +%w{grandparent parent child}+
-      def ancestry_path(to_s_column = name_column)
-        self_and_ancestors.reverse.collect { |n| n.send to_s_column.to_sym }
-      end
-
-      def descendants
-        without_self(self_and_descendants)
-      end
-
-      def self_and_siblings
-        self.class.scoped.where(:parent => parent)
-      end
-
-      def siblings
-        without_self(self_and_siblings)
-      end
-
-      # Alias for appending to the children collection.
-      # You can also add directly to the children collection, if you'd prefer.
-      def add_child(child_node)
-        children << child_node
-        child_node
-      end
-
-      # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.
-      def find_by_path(path)
-        path = [path] unless path.is_a? Enumerable
-        node = self
-        while (!path.empty? && node)
-          node = node.children.send("find_by_#{name_column}", path.shift)
-        end
-        node
-      end
-
-      # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
-      def find_or_create_by_path(path, attributes = {})
-        path = [path] unless path.is_a? Enumerable
-        node = self
-        attrs = {}
-        attrs[:type] = self.type if ct_subclass? && ct_has_type?
-        path.each do |name|
-          attrs[name_sym] = name
-          child = node.children.where(attrs).first
-          unless child
-            child = self.class.new(attributes.merge attrs)
-            node.children << child
-          end
-          node = child
-        end
-        node
-      end
-
-      protected
-
-      def acts_as_tree_before_save
-        @was_new_record = new_record?
-        if changes[parent_column_name] &&
-          parent.present? &&
-          parent.self_and_ancestors.include?(self)
-          # TODO: raise Ouroboros or Philip J. Fry error:
-          raise ActiveRecord::ActiveRecordError "You cannot add an ancestor as a descendant"
-        end
-      end
-
-      def acts_as_tree_after_save
-        rebuild! if changes[parent_column_name] || @was_new_record
-      end
-
-      def rebuild!
-        delete_hierarchy_references unless @was_new_record
-        hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
-        unless root?
-          connection.execute <<-SQL
-            INSERT INTO #{quoted_hierarchy_table_name}
-              (ancestor_id, descendant_id, generations)
-            SELECT x.ancestor_id, #{id}, x.generations + 1
-            FROM #{quoted_hierarchy_table_name} x
-            WHERE x.descendant_id = #{self._parent_id}
-          SQL
-        end
+    def acts_as_tree_before_destroy
+      delete_hierarchy_references
+      if closure_tree_options[:dependent] == :nullify
         children.each { |c| c.rebuild! }
       end
+    end
 
-      def acts_as_tree_before_destroy
-        delete_hierarchy_references
-        if closure_tree_options[:dependent] == :nullify
-          children.each { |c| c.rebuild! }
-        end
-      end
+    def delete_hierarchy_references
+      # The crazy double-wrapped sub-subselect works around MySQL's limitation of subselects on the same table that is being mutated.
+      # It shouldn't affect performance of postgresql.
+      # See http://dev.mysql.com/doc/refman/5.0/en/subquery-errors.html
+      connection.execute <<-SQL
+        DELETE FROM #{quoted_hierarchy_table_name}
+        WHERE descendant_id IN (
+          SELECT DISTINCT descendant_id
+          FROM ( SELECT descendant_id
+            FROM #{quoted_hierarchy_table_name}
+            WHERE ancestor_id = #{id}
+          ) AS x )
+          OR descendant_id = #{id}
+      SQL
+    end
 
-      def delete_hierarchy_references
-        # The crazy double-wrapped sub-subselect works around MySQL's limitation of subselects on the same table that is being mutated.
-        # It shouldn't affect performance of postgresql.
-        # See http://dev.mysql.com/doc/refman/5.0/en/subquery-errors.html
-        connection.execute <<-SQL
-          DELETE FROM #{quoted_hierarchy_table_name}
-          WHERE descendant_id IN (
-            SELECT DISTINCT descendant_id
-            FROM ( SELECT descendant_id
-              FROM #{quoted_hierarchy_table_name}
-              WHERE ancestor_id = #{id}
-            ) AS x )
-            OR descendant_id = #{id}
-        SQL
-      end
+    def without_self(scope)
+      scope.where(["#{quoted_table_name}.#{self.class.primary_key} != ?", self])
+    end
 
-      def without_self(scope)
-        scope.where(["#{quoted_table_name}.#{self.class.primary_key} != ?", self])
-      end
-
-      def _parent_id
-        send(parent_column_name)
-      end
+    def _parent_id
+      send(parent_column_name)
     end
 
     module ClassMethods
