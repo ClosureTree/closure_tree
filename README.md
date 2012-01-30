@@ -11,7 +11,7 @@ for a description of different tree storage algorithms.
 
 ## Setup
 
-Note that closure_tree is being developed for Rails 3.1.x
+Note that closure_tree supports Rails 3. Rails 2, not so much.
 
 1.  Add this to your Gemfile: ```gem 'closure_tree'```
 
@@ -192,6 +192,10 @@ class WhatTag < Tag ; end
 * Support for polymorphic trees
 * ```find_by_path``` and ```find_or_create_by_path``` signatures changed to support constructor attributes
 * tested against Rails 3.1.3
+
+### 3.0.1
+
+* Support 3.2.0's fickle deprecation of InstanceMethods (Thanks, [jheiss](https://github.com/mceachen/closure_tree/pull/5))!
 
 ## Thanks to
 
