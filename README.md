@@ -199,7 +199,7 @@ class WhatTag < Tag ; end
 
 ### 3.0.2
 
-* Fix for ancestry-loop detection (which is now a proper validation, and not a exception raised on before_save
+* Fix for ancestry-loop detection (performed by a validation, not through raising an exception in before_save)
 
 ## Thanks to
 
