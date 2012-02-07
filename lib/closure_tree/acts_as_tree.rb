@@ -27,9 +27,10 @@ module ClosureTree
 
       include ClosureTree::Model
 
-      before_destroy :acts_as_tree_before_destroy
+      validate :acts_as_tree_validate
       before_save :acts_as_tree_before_save
       after_save :acts_as_tree_after_save
+      before_destroy :acts_as_tree_before_destroy
 
       belongs_to :parent,
         :class_name => ct_class.to_s,
@@ -162,14 +163,17 @@ module ClosureTree
 
     protected
 
-    def acts_as_tree_before_save
-      @was_new_record = new_record?
+    def acts_as_tree_validate
       if changes[parent_column_name] &&
         parent.present? &&
         parent.self_and_ancestors.include?(self)
-        # TODO: raise Ouroboros or Philip J. Fry error:
-        raise ActiveRecord::ActiveRecordError "You cannot add an ancestor as a descendant"
+        errors.add(parent_column_sym, "You cannot add an ancestor as a descendant")
       end
+    end
+
+    def acts_as_tree_before_save
+      @was_new_record = new_record?
+      nil # AR will cancel the save if this is falsy
     end
 
     def acts_as_tree_after_save

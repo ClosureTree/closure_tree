@@ -197,6 +197,10 @@ class WhatTag < Tag ; end
 
 * Support 3.2.0's fickle deprecation of InstanceMethods (Thanks, [jheiss](https://github.com/mceachen/closure_tree/pull/5))!
 
+### 3.0.2
+
+* Fix for ancestry-loop detection (which is now a proper validation, and not a exception raised on before_save
+
 ## Thanks to
 
 * https://github.com/collectiveidea/awesome_nested_set

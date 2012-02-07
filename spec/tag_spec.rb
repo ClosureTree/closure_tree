@@ -83,16 +83,18 @@ describe "empty db" do
       Tag.leaves.should == [@leaf]
     end
 
-    it "should prevent parental loops" do
-      lambda do
-        @mid.children << @root
-      end.should raise_error
-
-      lambda do
-        @leaf.children << @root
-      end.should raise_error
+    it "should prevent parental loops from torso" do
+      @mid.children << @root
+      @root.valid?.should be_false
+      @mid.reload.children.should == [@leaf]
     end
 
+    it "should prevent parental loops from toes" do
+      @leaf.children << @root
+      @root.valid?.should be_false
+      @leaf.reload.children.should be_empty
+    end
+    
     it "should support reparenting" do
       @root.children << @leaf
       Tag.leaves.should =~ [@leaf, @mid]
@@ -168,9 +170,12 @@ describe Tag do
     end
 
     it "should fail to create ancestor loops" do
-      lambda do
-        tags(:child).add_child(tags(:grandparent))
-      end.should raise_error
+      child = tags(:child)
+      parent = child.parent
+      child.add_child(parent) # this should fail
+      parent.valid?.should be_false
+      child.reload.children.should be_empty
+      parent.reload.children.should =~ [child]
     end
 
     it "should move non-leaves" do

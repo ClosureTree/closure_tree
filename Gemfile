@@ -9,11 +9,10 @@ group :test, :development do
   gem 'rails'
   gem 'rack'
   gem 'yard'
+  gem "rspec" #, "~> 2.7.0"
+  gem 'rspec-rails'
   gem 'mysql2'
   gem 'pg'
   gem 'sqlite3', :platform => :ruby
   gem 'activerecord-jdbcsqlite3-adapter', :platform => :jruby
-  gem 'rspec-rails'
-  # gem 'shoulda'
-  # gem 'guard-rspec'
 end

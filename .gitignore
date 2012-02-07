@@ -9,3 +9,4 @@ tmp/
 .DS_Store
 .yardoc/
 .rvmrc
+Gemfile.lock
