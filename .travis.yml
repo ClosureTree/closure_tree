@@ -17,6 +17,6 @@ env:
 script: bundle exec rake
 
 before_script:
-  - mysql -e 'create database closure_tree_test;'
-  - psql -c -U postgres 'create database closure_tree_test;'
+  - [ "$DB" == "mysql" ] && mysql -e 'create database closure_tree_test'
+  - [ "$DB" == "postgresql" ] && psql -c 'create database closure_tree_test' -U postgres
 
