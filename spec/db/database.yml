@@ -7,12 +7,10 @@ sqlite3mem:
 postgresql:
   adapter: postgresql
   username: postgres
-  password: postgres
-  database: closure_tree_plugin_test
+  database: closure_tree_test
   min_messages: ERROR
 mysql:
   adapter: mysql2
   host: localhost
   username: root
-  password:
-  database: closure_tree_plugin_test
+  database: closure_tree_test

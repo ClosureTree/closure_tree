@@ -7,7 +7,6 @@ rvm:
 # TODO: - rbx-18mode
 
 gemfile:
-# TODO: - ci/Gemfile.rails-2.3.x
   - ci/Gemfile.rails-3.0.x
   - ci/Gemfile.rails-3.1.x
   - ci/Gemfile.rails-3.2.x
@@ -16,3 +15,8 @@ env:
   - DB=mysql
   - DB=postgresql
 script: bundle exec rake
+
+before_script:
+  - mysql -e 'create database closure_tree_test;'
+  - psql -c -U postgres 'create database closure_tree_test;'
+
