@@ -11,9 +11,9 @@ See [Bill Karwin](http://karwin.blogspot.com/)'s excellent
 [Models for hierarchical data presentation](http://www.slideshare.net/billkarwin/models-for-hierarchical-data)
 for a description of different tree storage algorithms.
 
-## Setup
+## Installation
 
-Note that closure_tree supports Rails 3. Rails 2, not so much.
+Note that closure_tree only supports Rails 3.0 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
 
 1.  Add this to your Gemfile: ```gem 'closure_tree'```
 
@@ -23,8 +23,6 @@ Note that closure_tree supports Rails 3. Rails 2, not so much.
 
 4.  Add a migration to add a ```parent_id``` column to the model you want to act_as_tree.
 
-    Note that if the column is null, the tag will be considered a root node.
-
     ```ruby
     class AddParentIdToTag < ActiveRecord::Migration
       def change
@@ -33,9 +31,12 @@ Note that closure_tree supports Rails 3. Rails 2, not so much.
     end
     ```
 
+    Note that if the column is null, the tag will be considered a root node.
+
 5.  Add a database migration to store the hierarchy for your model. By
-    convention the table name will be the model's table name, followed by
-    "_hierarchy". Note that by calling ```acts_as_tree```, a "virtual model" (in this case, ```TagsHierarchy```) will be added automatically, so you don't need to create it.
+    default the table name will be the model's table name, followed by
+    "_hierarchies". Note that by calling ```acts_as_tree```, a "virtual model" (in this case, ```TagsHierarchy```)
+    will be added automatically, so you don't need to create it.
 
     ```ruby
     class CreateTagHierarchies < ActiveRecord::Migration
@@ -46,10 +47,10 @@ Note that closure_tree supports Rails 3. Rails 2, not so much.
           t.integer  :generations, :null => false   # Number of generations between the ancestor and the descendant. Parent/child = 1, for example.
         end
 
-        # For "all progeny of..." selects:
+        # For "all progeny of…" selects:
         add_index :tag_hierarchies, [:ancestor_id, :descendant_id], :unique => true
 
-        # For "all ancestors of..." selects
+        # For "all ancestors of…" selects
         add_index :tag_hierarchies, [:descendant_id]
       end
     end
@@ -57,9 +58,9 @@ Note that closure_tree supports Rails 3. Rails 2, not so much.
 
 6.  Run ```rake db:migrate```
 
-7.  If you're migrating away from another system where your model already has a
+7.  If you're migrating from another system where your model already has a
     ```parent_id``` column, run ```Tag.rebuild!``` and the
-    ..._hierarchy table will be truncated and rebuilt.
+    …_hierarchy table will be truncated and rebuilt.
 
     If you're starting from scratch you don't need to call ```rebuild!```.
 
@@ -156,7 +157,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```tag.level``` returns the level, or "generation", for this node in the tree. A root node == 0.
 * ```tag.parent``` returns the node's immediate parent. Root nodes will return nil.
 * ```tag.children``` returns an array of immediate children (just those nodes whose parent is the current node).
-* ```tag.ancestors``` returns an array of [ parent, grandparent, great grandparent, ... ]. Note that the size of this array will always equal ```tag.level```.
+* ```tag.ancestors``` returns an array of [ parent, grandparent, great grandparent, … ]. Note that the size of this array will always equal ```tag.level```.
 * ```tag.self_and_ancestors``` returns an array of self, parent, grandparent, great grandparent, etc.
 * ```tag.siblings``` returns an array of brothers and sisters (all at that level), excluding self.
 * ```tag.self_and_siblings``` returns an array of brothers and sisters (all at that level), including self.
