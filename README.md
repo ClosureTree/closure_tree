@@ -1,5 +1,7 @@
 # Closure Tree
 
+[![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
+
 Closure Tree is a mostly-API-compatible replacement for the
 acts_as_tree and awesome_nested_set gems, but with much better
 mutation performance thanks to the Closure Tree storage algorithm,

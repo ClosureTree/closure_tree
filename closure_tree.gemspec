@@ -17,4 +17,14 @@ Gem::Specification.new do |s|
   s.test_files = `git ls-files -- {test,spec,features}/*`.split("\n")
 
   s.add_runtime_dependency 'activerecord', '>= 3.0.0'
+
+  s.add_development_dependency 'rake'
+  s.add_development_dependency 'yard'
+  s.add_development_dependency 'rspec'
+  s.add_development_dependency 'rails' # FIXME: just for rspec fixture support (!!)
+  s.add_development_dependency 'rspec-rails' # FIXME: just for rspec fixture support (!!)
+  s.add_development_dependency 'mysql2'
+  s.add_development_dependency 'pg'
+  s.add_development_dependency 'sqlite3'
+  # TODO: gem 'activerecord-jdbcsqlite3-adapter', :platform => :jruby
 end

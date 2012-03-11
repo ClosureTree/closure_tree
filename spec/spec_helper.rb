@@ -10,7 +10,7 @@ require 'logger'
 require 'active_support'
 require 'active_model'
 require 'active_record'
-require 'action_controller'
+require 'action_controller' # rspec-rails needs this :(
 
 require 'closure_tree'
 
@@ -24,8 +24,8 @@ ActiveRecord::Migration.verbose = false
 load(File.join(plugin_test_dir, "db", "schema.rb"))
 
 require 'support/models'
+require 'rspec/rails' # TODO: clean this up-- I don't want to pull the elephant through the mouse hole just for fixture support
 
-require 'rspec/rails'
 RSpec.configure do |config|
   config.fixture_path = "#{plugin_test_dir}/fixtures"
   # true runs the tests 1 second faster, but then you can't
