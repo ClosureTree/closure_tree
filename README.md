@@ -201,6 +201,12 @@ class WhatTag < Tag ; end
 
 * Fix for ancestry-loop detection (performed by a validation, not through raising an exception in before_save)
 
+### 3.0.3
+
+* Added support for ActiveRecord's whitelist_attributes
+  (Make sure you read [the Rails Security Guide](http://guides.rubyonrails.org/security.html), and
+  enable ```config.active_record.whitelist_attributes``` in your ```config/application.rb``` ASAP!)
+
 ## Thanks to
 
 * https://github.com/collectiveidea/awesome_nested_set

@@ -23,6 +23,7 @@ module ClosureTree
       self.hierarchy_class.class_eval <<-RUBY
         belongs_to :ancestor, :class_name => "#{ct_class.to_s}"
         belongs_to :descendant, :class_name => "#{ct_class.to_s}"
+        attr_accessible :ancestor, :descendant, :generations
       RUBY
 
       include ClosureTree::Model
@@ -137,7 +138,7 @@ module ClosureTree
     def find_by_path(path)
       path = [path] unless path.is_a? Enumerable
       node = self
-      while (!path.empty? && node)
+      while !path.empty? && node
         node = node.children.send("find_by_#{name_column}", path.shift)
       end
       node
@@ -153,7 +154,7 @@ module ClosureTree
         attrs[name_sym] = name
         child = node.children.where(attrs).first
         unless child
-          child = self.class.new(attributes.merge attrs)
+          child = self.class.new(attributes.merge(attrs))
           node.children << child
         end
         node = child
@@ -173,7 +174,7 @@ module ClosureTree
 
     def acts_as_tree_before_save
       @was_new_record = new_record?
-      nil # AR will cancel the save if this is falsy
+      true # don't cancel the save
     end
 
     def acts_as_tree_after_save

@@ -1,6 +1,7 @@
 class Tag < ActiveRecord::Base
   acts_as_tree :dependent => :destroy
   before_destroy :add_destroyed_tag
+  attr_accessible :name
 
   def to_s
     name
@@ -13,12 +14,14 @@ class Tag < ActiveRecord::Base
 end
 
 class DestroyedTag < ActiveRecord::Base
+  attr_accessible :name
 end
 
 class User < ActiveRecord::Base
   acts_as_tree :parent_column_name => "referrer_id",
     :name_column => 'email',
     :hierarchy_table_name => 'referral_hierarchies'
+  attr_accessible :email, :referrer
 
   def to_s
     email
@@ -27,6 +30,8 @@ end
 
 class Label < ActiveRecord::Base
   acts_as_tree
+  attr_accessible :name
+
   def to_s
     "#{self.class}: #{name}"
   end

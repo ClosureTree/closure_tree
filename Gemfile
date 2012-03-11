@@ -2,12 +2,8 @@ source "http://rubygems.org"
 gemspec
 
 group :test, :development do
-  if RUBY_VERSION < '1.9'
-    gem "ruby-debug", ">= 0.10.3"
-  end
   gem 'rake'
   gem 'rails'
-  gem 'rack'
   gem 'yard'
   gem "rspec" #, "~> 2.7.0"
   gem 'rspec-rails'
