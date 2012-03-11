@@ -1,4 +1,4 @@
 source :rubygems
-gemspec
+gemspec :path => '..'
 
-gem 'activerecord', '~> 2.3.14'
+gem 'activerecord', '~> 2.3.0'
