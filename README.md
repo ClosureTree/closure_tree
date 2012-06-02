@@ -183,12 +183,19 @@ class WhatTag < Tag ; end
 
 ## Change log
 
-### 2.0.0
+### 3.0.3
 
-* Had to increment the major version, as rebuild! will need to be called by prior consumers to support the new ```leaves``` class and instance methods.
-* Tag deletion is supported now along with ```:dependent => :destroy``` and ```:dependent => :delete_all```
-* Switched from default rails plugin directory structure to rspec
-* Support for running specs under different database engines: ```export DB ; for DB in sqlite3 mysql postgresql ; do rake ; done```
+* Added support for ActiveRecord's whitelist_attributes
+  (Make sure you read [the Rails Security Guide](http://guides.rubyonrails.org/security.html), and
+  enable ```config.active_record.whitelist_attributes``` in your ```config/application.rb``` ASAP!)
+
+### 3.0.2
+
+* Fix for ancestry-loop detection (performed by a validation, not through raising an exception in before_save)
+
+### 3.0.1
+
+* Support 3.2.0's fickle deprecation of InstanceMethods (Thanks, [jheiss](https://github.com/mceachen/closure_tree/pull/5))!
 
 ### 3.0.0
 
@@ -196,19 +203,12 @@ class WhatTag < Tag ; end
 * ```find_by_path``` and ```find_or_create_by_path``` signatures changed to support constructor attributes
 * tested against Rails 3.1.3
 
-### 3.0.1
+### 2.0.0
 
-* Support 3.2.0's fickle deprecation of InstanceMethods (Thanks, [jheiss](https://github.com/mceachen/closure_tree/pull/5))!
-
-### 3.0.2
-
-* Fix for ancestry-loop detection (performed by a validation, not through raising an exception in before_save)
-
-### 3.0.3
-
-* Added support for ActiveRecord's whitelist_attributes
-  (Make sure you read [the Rails Security Guide](http://guides.rubyonrails.org/security.html), and
-  enable ```config.active_record.whitelist_attributes``` in your ```config/application.rb``` ASAP!)
+* Had to increment the major version, as rebuild! will need to be called by prior consumers to support the new ```leaves``` class and instance methods.
+* Tag deletion is supported now along with ```:dependent => :destroy``` and ```:dependent => :delete_all```
+* Switched from default rails plugin directory structure to rspec
+* Support for running specs under different database engines: ```export DB ; for DB in sqlite3 mysql postgresql ; do rake ; done```
 
 ## Thanks to
 
