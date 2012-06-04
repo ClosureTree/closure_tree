@@ -120,7 +120,7 @@ module ClosureTree
     end
 
     def self_and_siblings
-      self.class.scoped.where(:parent => parent)
+      self.class.scoped.where(:parent_id => parent)
     end
 
     def siblings
