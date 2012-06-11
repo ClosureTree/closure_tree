@@ -181,6 +181,11 @@ class WhatTag < Tag ; end
 
 ## Change log
 
+### 3.0.4
+
+* Merged [pull request](https://github.com/mceachen/closure_tree/pull/8) to fix ```.siblings``` and ```.self_and_siblings```
+  (Thanks, [eljojo](https://github.com/eljojo)!)
+
 ### 3.0.3
 
 * Added support for ActiveRecord's whitelist_attributes
