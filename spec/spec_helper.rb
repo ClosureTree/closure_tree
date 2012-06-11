@@ -18,8 +18,9 @@ ActiveRecord::Base.logger = Logger.new(plugin_test_dir + "/debug.log")
 
 require 'yaml'
 require 'erb'
+ENV["DB"] ||= "sqlite3mem"
 ActiveRecord::Base.configurations = YAML::load(ERB.new(IO.read(plugin_test_dir + "/db/database.yml")).result)
-ActiveRecord::Base.establish_connection(ENV["DB"] || "mysql")
+ActiveRecord::Base.establish_connection(ENV["DB"])
 ActiveRecord::Migration.verbose = false
 load(File.join(plugin_test_dir, "db", "schema.rb"))
 
