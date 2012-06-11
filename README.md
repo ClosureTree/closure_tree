@@ -9,6 +9,12 @@ See [Bill Karwin](http://karwin.blogspot.com/)'s excellent
 [Models for hierarchical data presentation](http://www.slideshare.net/billkarwin/models-for-hierarchical-data)
 for a description of different tree storage algorithms.
 
+Closure tree is (tested under every combination)[http://travis-ci.org/mceachen/closure_tree] of
+
+* Ruby 1.8.7 and Ruby 1.9.3
+* The latest Rails 3.0, 3.1, and 3.2 branches, and
+* Using MySQL, Postgresql, and SQLite.
+
 ## Installation
 
 Note that closure_tree only supports Rails 3.0 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
