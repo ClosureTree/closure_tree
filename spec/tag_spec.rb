@@ -184,7 +184,7 @@ shared_examples_for Tag do
         tags(:d2).ancestry_path.should == %w{a1 b2 c2 d2}
         tags(:b1).add_child(tags(:c2))
         tags(:b2).leaf?.should_not be_nil
-        tags(:b1).children.include?(tags(:c2)).should_not be_nil
+        tags(:b1).children.include?(tags(:c2)).should be_true
         tags(:d2).reload.ancestry_path.should == %w{a1 b1 c2 d2}
       end
 
@@ -227,9 +227,15 @@ shared_examples_for Tag do
       end
 
       it "should have a sane children collection" do
-        tags(:grandparent).children.include? tags(:parent).should_not be_nil
-        tags(:parent).children.include? tags(:child).should_not be_nil
-        tags(:child).children.empty?.should_not be_nil
+        tags(:grandparent).children.include? tags(:parent).should be_true
+        tags(:parent).children.include? tags(:child).should be_true
+        tags(:child).children.should be_empty
+      end
+
+      it "assembles siblings correctly" do
+        tags(:b1).siblings.to_a.should =~ [tags(:b2)]
+        tags(:a1).siblings.to_a.should =~ (Tag.roots.to_a - [tags(:a1)])
+        tags(:a1).self_and_siblings.to_a.should =~ Tag.roots.to_a
       end
 
       it "should assemble ancestors correctly" do
