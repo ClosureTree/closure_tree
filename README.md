@@ -9,7 +9,7 @@ See [Bill Karwin](http://karwin.blogspot.com/)'s excellent
 [Models for hierarchical data presentation](http://www.slideshare.net/billkarwin/models-for-hierarchical-data)
 for a description of different tree storage algorithms.
 
-Closure tree is (tested under every combination)[http://travis-ci.org/mceachen/closure_tree] of
+Closure tree is [tested under every combination](http://travis-ci.org/mceachen/closure_tree) of
 
 * Ruby 1.8.7 and Ruby 1.9.3
 * The latest Rails 3.0, 3.1, and 3.2 branches, and
