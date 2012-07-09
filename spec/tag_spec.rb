@@ -6,7 +6,6 @@ shared_examples_for Tag do
     def nuke_db
       Tag.delete_all
       TagHierarchy.delete_all
-      DestroyedTag.delete_all
     end
 
     before :each do
@@ -42,6 +41,7 @@ shared_examples_for Tag do
         @root = Tag.create! :name => "root"
         @mid = @root.children.create! :name => "mid"
         @leaf = @mid.children.create! :name => "leaf"
+        DestroyedTag.delete_all
       end
 
       it "should create all tags" do
@@ -100,6 +100,23 @@ shared_examples_for Tag do
         @root.children << @leaf
         Tag.leaves.should =~ [@leaf, @mid]
       end
+      
+      it "cleans up hierarchy references for leaves" do
+        @leaf.destroy
+        TagHierarchy.find_all_by_ancestor_id(@leaf.id).should be_empty
+        TagHierarchy.find_all_by_descendant_id(@leaf.id).should be_empty
+      end
+
+      it "cleans up hierarchy references" do
+        @mid.destroy
+        TagHierarchy.find_all_by_ancestor_id(@mid.id).should be_empty
+        TagHierarchy.find_all_by_descendant_id(@mid.id).should be_empty
+        @root.reload.should be_root
+        root_hiers = @root.ancestor_hierarchies.to_a
+        root_hiers.size.should == 1
+        TagHierarchy.find_all_by_ancestor_id(@root.id).should == root_hiers
+        TagHierarchy.find_all_by_descendant_id(@root.id).should == root_hiers
+      end
     end
   end
 
@@ -109,6 +126,7 @@ shared_examples_for Tag do
 
     before :each do
       Tag.rebuild!
+      DestroyedTag.delete_all
     end
 
     context "class injection" do
@@ -199,8 +217,8 @@ shared_examples_for Tag do
         l1 = Tag.find_or_create_by_path(%w{roottest1 branch1 leaf1})
         l2 = Tag.find_or_create_by_path(%w{roottest2 branch2 leaf2})
         l1.children << l2.root
-        l1.ancestry_path.should == %w{roottest1 branch1 leaf1}
-        l2.ancestry_path.should == %w{roottest1 branch1 leaf1 roottest2 branch2 leaf2}
+        l1.reload.ancestry_path.should == %w{roottest1 branch1 leaf1}
+        l2.reload.ancestry_path.should == %w{roottest1 branch1 leaf1 roottest2 branch2 leaf2}
       end
 
       it "should cascade delete all children" do
@@ -238,12 +256,12 @@ shared_examples_for Tag do
         tags(:a1).self_and_siblings.to_a.should =~ Tag.roots.to_a
       end
 
-      it "should assemble ancestors correctly" do
+      it "assembles ancestors" do
         tags(:child).ancestors.should == [tags(:parent), tags(:grandparent)]
         tags(:child).self_and_ancestors.should == [tags(:child), tags(:parent), tags(:grandparent)]
       end
 
-      it "should assemble descendants correctly" do
+      it "assembles descendants" do
         tags(:parent).descendants.should == [tags(:child)]
         tags(:parent).self_and_descendants.should == [tags(:parent), tags(:child)]
         tags(:grandparent).descendants.should == [tags(:parent), tags(:child)]

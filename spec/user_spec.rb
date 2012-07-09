@@ -37,6 +37,7 @@ describe "empty db" do
       @root = User.create! :email => "poppy@t.co"
       @mid = @root.children.create! :email => "matt@t.co"
       @leaf = @mid.children.create! :email => "james@t.co"
+      @root_id = @root.id
     end
 
     it "should create all Users" do
@@ -63,13 +64,15 @@ describe "empty db" do
       @root.destroy
       assert_mid_and_leaf_remain
     end
-  end
-end
 
-def assert_mid_and_leaf_remain
-  @mid.ancestry_path.should == %w{matt@t.co}
-  @leaf.ancestry_path.should == %w{matt@t.co james@t.co}
-  @mid.self_and_descendants.should =~ [@mid, @leaf]
-  User.roots.should == [@mid]
-  User.leaves.should == [@leaf]
+    def assert_mid_and_leaf_remain
+      ReferralHierarchy.find_all_by_ancestor_id(@root_id).should be_empty
+      ReferralHierarchy.find_all_by_descendant_id(@root_id).should be_empty
+      @mid.ancestry_path.should == %w{matt@t.co}
+      @leaf.ancestry_path.should == %w{matt@t.co james@t.co}
+      @mid.self_and_descendants.should =~ [@mid, @leaf]
+      User.roots.should == [@mid]
+      User.leaves.should == [@leaf]
+    end
+  end
 end

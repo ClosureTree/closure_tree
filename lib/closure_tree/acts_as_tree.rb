@@ -24,6 +24,11 @@ module ClosureTree
         belongs_to :ancestor, :class_name => "#{ct_class.to_s}"
         belongs_to :descendant, :class_name => "#{ct_class.to_s}"
         attr_accessible :ancestor, :descendant, :generations
+        def ==(comparison_object)
+          comparison_object.instance_of?(self.class) &&
+          self.attributes == comparison_object.attributes
+        end
+        alias :eql? :==
       RUBY
 
       include ClosureTree::Model
@@ -42,18 +47,26 @@ module ClosureTree
         :foreign_key => parent_column_name,
         :dependent => closure_tree_options[:dependent]
 
-      has_and_belongs_to_many :self_and_ancestors,
-        :class_name => ct_class.to_s,
-        :join_table => hierarchy_table_name,
+      has_many :ancestor_hierarchies,
+        :class_name => hierarchy_class_name,
         :foreign_key => "descendant_id",
-        :association_foreign_key => "ancestor_id",
+        :order => "generations asc",
+        :dependent => :destroy
+
+      has_many :self_and_ancestors,
+        :through => :ancestor_hierarchies,
+        :source => :ancestor,
         :order => "generations asc"
 
-      has_and_belongs_to_many :self_and_descendants,
-        :class_name => ct_class.to_s,
-        :join_table => hierarchy_table_name,
+      has_many :descendant_hierarchies,
+        :class_name => hierarchy_class_name,
         :foreign_key => "ancestor_id",
-        :association_foreign_key => "descendant_id",
+        :order => "generations asc",
+        :dependent => :destroy
+
+      has_many :self_and_descendants,
+        :through => :descendant_hierarchies,
+        :source => :descendant,
         :order => "generations asc"
 
       scope :roots, where(parent_column_name => nil)
@@ -71,7 +84,7 @@ module ClosureTree
 
     # Returns true if this node has no parents.
     def root?
-      parent.nil?
+      _parent_id.nil?
     end
 
     # Returns true if this node has a parent, and is not a root.
@@ -86,7 +99,7 @@ module ClosureTree
 
     # Returns the farthest ancestor, or self if +root?+
     def root
-      root? ? self : ancestors.last
+      self_and_ancestors.where(parent_column_name.to_sym => nil).first
     end
 
     def leaves
@@ -136,7 +149,7 @@ module ClosureTree
 
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.
     def find_by_path(path)
-      path = [path] unless path.is_a? Enumerable
+      path = path.is_a?(Enumerable) ? path.dup : [path]
       node = self
       while !path.empty? && node
         node = node.children.send("find_by_#{name_column}", path.shift)
@@ -146,7 +159,7 @@ module ClosureTree
 
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
     def find_or_create_by_path(path, attributes = {})
-      path = [path] unless path.is_a? Enumerable
+      path = path.is_a?(Enumerable) ? path.dup : [path]
       node = self
       attrs = {}
       attrs[:type] = self.type if ct_subclass? && ct_has_type?
