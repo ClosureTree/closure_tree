@@ -1,3 +1,3 @@
 module ClosureTree
-  VERSION = "3.0.4" unless defined?(::ClosureTree::VERSION)
+  VERSION = "3.1.0" unless defined?(::ClosureTree::VERSION)
 end
