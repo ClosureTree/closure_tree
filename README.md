@@ -105,15 +105,15 @@ Then:
 
 ```ruby
 puts grandparent.self_and_descendants.collect{ |t| t.name }.join(" > ")
-"grandparent > parent > child"
+=> "grandparent > parent > child"
 
 child.ancestry_path
-["grandparent", "parent", "child"]
+=> ["grandparent", "parent", "child"]
 ```
 
 ### find_or_create_by_path
 
-We can do all the node creation and add_child calls from the prior section with one method call:
+We can do all the node creation and add_child calls with one method call:
 
   ```ruby
   child = Tag.find_or_create_by_path(["grandparent", "parent", "child"])
@@ -132,6 +132,18 @@ child = Tag.find_or_create_by_path(%w{home chuck Photos"}, {:tag_type => "File"}
 This will pass the attribute hash of ```{:name => "home", :tag_type => "File"}``` to
 ```Tag.find_or_create_by_name``` if the root directory doesn't exist (and
 ```{:name => "chuck", :tag_type => "File"}``` if the second-level tag doesn't exist, and so on).
+
+### Moving nodes around the tree
+
+Nodes can be moved around to other parents, and closure_tree moves the node's descendancy to the new parent for you:
+
+```ruby
+d = Tag.find_or_create_by_path %w(a b c d)
+h = Tag.find_or_create_by_path %w(e f g h)
+e = h.root
+d.add_child(e) # "d.children << e" would work too, of course
+h.ancestry_path
+=> ["a", "b", "c", "d", "e", "f", "g", "h"]
 
 ### <a id="options"></a>Available options
 
