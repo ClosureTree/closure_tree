@@ -1,19 +1,17 @@
 # Closure Tree [![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
 
 Closure Tree is a mostly-API-compatible replacement for the
-acts_as_tree and awesome_nested_set gems, but with much better
-mutation performance thanks to the Closure Tree storage algorithm,
-as well as support for polymorphism within the hierarchy.
+[ancestry](https://github.com/stefankroes/ancestry),
+[acts_as_tree](https://github.com/amerine/acts_as_tree) and
+[awesome_nested_set](https://github.com/collectiveidea/awesome_nested_set/) gems, giving you:
 
-See [Bill Karwin](http://karwin.blogspot.com/)'s excellent
-[Models for hierarchical data presentation](http://www.slideshare.net/billkarwin/models-for-hierarchical-data)
-for a description of different tree storage algorithms.
-
-Closure tree is [tested under every combination](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master) of
-
-* Ruby 1.8.7 and Ruby 1.9.3
-* The latest Rails 3.0, 3.1, and 3.2 branches, and
-* Using MySQL, Postgresql, and SQLite.
+* Much better mutation performance thanks to the Closure Tree storage algorithm
+* Very efficient select performance (again, thanks to Closure Tree)
+* Efficient subtree selects
+* Support for polymorphism [STI](#sti) within the hierarchy
+* [```find_or_create_by_path```](#find_or_create_by_path) for building out hierarchies quickly
+* Support for [deterministic ordering](#sort_order) of children
+* Excellent [test coverage](#testing) in a variety of environments
 
 ## Installation
 
@@ -26,6 +24,7 @@ Note that closure_tree only supports Rails 3.0 and later, and has test coverage 
 3.  Add ```acts_as_tree``` to your hierarchical model(s) (see the <em>Available options</em> section below for details).
 
 4.  Add a migration to add a ```parent_id``` column to the model you want to act_as_tree.
+    You may want to also [add a column for deterministic ordering of children](#sort_order), but that's optional.
 
     ```ruby
     class AddParentIdToTag < ActiveRecord::Migration
@@ -130,8 +129,7 @@ This will pass the attribute hash of ```{:name => "home", :tag_type => "File"}``
 ```Tag.find_or_create_by_name``` if the root directory doesn't exist (and
 ```{:name => "chuck", :tag_type => "File"}``` if the second-level tag doesn't exist, and so on).
 
-### Available options
-<a id="options" />
+### <a id="options"></a>Available options
 
 When you include ```acts_as_tree``` in your model, you can provide a hash to override the following defaults:
 
@@ -158,23 +156,23 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```tag.child?``` returns true if this is a child node. It has a parent.
 * ```tag.leaf?``` returns true if this is a leaf node. It has no children.
 * ```tag.leaves``` returns an array of all the nodes in self_and_descendants that are leaves.
-* ```tag.level``` returns the level, or "generation", for this node in the tree. A root node == 0.
+* ```tag.depth``` returns the depth, or "generation", for this node in the tree. A root node will have a value of 0.
 * ```tag.parent``` returns the node's immediate parent. Root nodes will return nil.
 * ```tag.children``` returns an array of immediate children (just those nodes whose parent is the current node).
-* ```tag.ancestors``` returns an array of [ parent, grandparent, great grandparent, … ]. Note that the size of this array will always equal ```tag.level```.
-* ```tag.self_and_ancestors``` returns an array of self, parent, grandparent, great grandparent, etc.
-* ```tag.siblings``` returns an array of brothers and sisters (all at that level), excluding self.
-* ```tag.self_and_siblings``` returns an array of brothers and sisters (all at that level), including self.
-* ```tag.descendants``` returns an array of all children, childrens' children, etc., excluding self.
+* ```tag.ancestors``` returns an array of [ parent, grandparent, great grandparent, … ]. Note that the size of this array will always equal ```tag.depth```.
+* ```tag.self_and_ancestors``` returns a scope containing self, parent, grandparent, great grandparent, etc.
+* ```tag.siblings``` returns a scope containing all nodes with the same parent as ```tag```, excluding self.
+* ```tag.self_and_siblings``` returns a scope containing all nodes with the same parent as ```tag```, including self.
+* ```tag.descendants``` returns a scope of all children, childrens' children, etc., excluding self ordered by depth.
 * ```tag.self_and_descendants``` returns an array of all children, childrens' children, etc., including self.
 * ```tag.destroy``` will destroy a node and do <em>something</em> to its children, which is determined by the ```:dependent``` option passed to ```acts_as_tree```.
 
-## Polymorphic hierarchies
+## <a id="sti"></a>Polymorphic hierarchies with STI
 
-Polymorphic models are supported:
+Polymorphic models using single table inheritance (STI) are supported:
 
 1. Create a db migration that adds a String ```type``` column to your model
-2. Subclass the model class. You only need to add acts_as_tree to your base class.
+2. Subclass the model class. You only need to add ```acts_as_tree``` to your base class:
 
 ```ruby
 class Tag < ActiveRecord::Base
@@ -185,7 +183,63 @@ class WhereTag < Tag ; end
 class WhatTag < Tag ; end
 ```
 
+## <a id="sort_order"></a>Deterministic ordering
+
+By default, children will be ordered by your database engine, which may not be what you want.
+
+If you want to order children alphabetically, and your model has a ```name``` column, you'd do this:
+
+```ruby
+class Tag < ActiveRecord::Base
+  acts_as_tree :order => 'name'
+end
+```
+
+If you want a specific order, add a new integer column to your model in a migration:
+
+```ruby
+t.integer :sort_order
+```
+
+and in your model:
+
+```ruby
+class Tag < ActiveRecord::Base
+  acts_as_tree :order => 'sort_order'
+end
+```
+
+When you enable ```order```, you'll also have the following new methods injected into your model:
+
+* ```tag.siblings_before``` is a scope containing all nodes with the same parent as ```tag```,
+  whose sort order column is less than ```self```. These will be ordered properly, so the ```last```
+  element will be the sibling immediately before ```self```
+* ```tag.siblings_after``` which returns an array of brothers and sisters (all at that depth),
+  excluding self, whose sort order column is less than ```self```
+
+If your ```order``` column is an integer attribute, you'll also have these:
+
+* ```tag.add_sibling_before(sibling_node)``` will move ```sibling_node``` to the same parent,
+  decrement the sort_order values of the nodes before the current node by one, and set
+  ```sibling_node```'s order column to 1 less then the current node's value.
+
+Note that it's up to you to quote the column name if necessary -- I can't do it,
+because it might be something like "name desc".
+
+## Testing
+
+Closure tree is [tested under every combination](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master) of
+
+* Ruby 1.8.7 and Ruby 1.9.3
+* The latest Rails 3.0, 3.1, and 3.2 branches, and
+* MySQL, PostgreSQL, and SQLite.
+
+
 ## Change log
+
+### 3.2.0
+
+* Added support for deterministic ordering of nodes.
 
 ### 3.1.0
 
