@@ -13,6 +13,10 @@ Closure Tree is a mostly-API-compatible replacement for the
 * Support for [deterministic ordering](#deterministic-ordering) of children
 * Excellent [test coverage](#testing) in a variety of environments
 
+See [Bill Karwin](http://karwin.blogspot.com/)'s excellent
+[Models for hierarchical data presentation](http://www.slideshare.net/billkarwin/models-for-hierarchical-data)
+for a description of different tree storage algorithms.
+
 ## Installation
 
 Note that closure_tree only supports Rails 3.0 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
