@@ -10,7 +10,7 @@ Closure Tree is a mostly-API-compatible replacement for the
 * Efficient subtree selects
 * Support for polymorphism [STI](#sti) within the hierarchy
 * [```find_or_create_by_path```](#find_or_create_by_path) for building out hierarchies quickly
-* Support for [deterministic ordering](#sort_order) of children
+* Support for [deterministic ordering](#deterministic-ordering) of children
 * Excellent [test coverage](#testing) in a variety of environments
 
 ## Installation
