@@ -157,7 +157,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
     * ```:delete_all``` will delete all descendant nodes (which circumvents the destroy hooks)
     * ```:destroy``` will destroy all descendant nodes (which runs the destroy hooks on each child node)
 * ```:name_column``` used by #```find_or_create_by_path```, #```find_by_path```, and ```ancestry_path``` instance methods. This is primarily useful if the model only has one required field (like a "tag").
-* ```:order``` used to set up (deterministic ordering)[#sort_order]
+* ```:order``` used to set up [deterministic ordering](#sort_order)
 
 ## Accessing Data
 
