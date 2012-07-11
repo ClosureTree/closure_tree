@@ -144,6 +144,7 @@ e = h.root
 d.add_child(e) # "d.children << e" would work too, of course
 h.ancestry_path
 => ["a", "b", "c", "d", "e", "f", "g", "h"]
+```
 
 ### <a id="options"></a>Available options
 
