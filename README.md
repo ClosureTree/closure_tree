@@ -222,7 +222,7 @@ t.integer :sort_order
 and in your model:
 
 ```ruby
-class Tag < ActiveRecord::Base
+class OrderedTag < ActiveRecord::Base
   acts_as_tree :order => 'sort_order'
 end
 ```
@@ -248,6 +248,28 @@ If your ```order``` column is an integer attribute, you'll also have these:
   2. increment the sort_order values of the nodes after the current node by one, and
   3. set ```sibling_node```'s order column to 1 more then the current node's value.
 
+``ruby
+root = OrderedTag.create(:name => "root")
+a = OrderedTag.create(:name => "a", :parent => "root")
+b = OrderedTag.create(:name => "b")
+c = OrderedTag.create(:name => "c")
+
+a.append_sibling(b)
+root.children.collect(&:name)
+=> ["a", "b"]
+
+a.prepend_sibling(b)
+root.children.collect(&:name)
+=> ["b", "a"]
+
+a.append_sibling(c)
+root.children.collect(&:name)
+=> ["a", "c", "b"]
+
+b.append_sibling(c)
+root.children.collect(&:name)
+=> ["a", "b", "c"]
+```
 
 ## Testing
 
