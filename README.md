@@ -9,7 +9,7 @@ Closure Tree is a mostly-API-compatible replacement for the
 * Very efficient select performance (again, thanks to Closure Tree)
 * Efficient subtree selects
 * Support for polymorphism [STI](#sti) within the hierarchy
-* [```find_or_create_by_path```](#find_or_create_by_path) for building out hierarchies quickly
+* ```find_or_create_by_path``` for [building out hierarchies quickly and conveniently](#find_or_create_by_path)
 * Support for [deterministic ordering](#deterministic-ordering) of children
 * Excellent [test coverage](#testing) in a variety of environments
 
@@ -173,16 +173,16 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```tag.root?``` returns true if this is a root node
 * ```tag.child?``` returns true if this is a child node. It has a parent.
 * ```tag.leaf?``` returns true if this is a leaf node. It has no children.
-* ```tag.leaves``` returns an array of all the nodes in self_and_descendants that are leaves.
+* ```tag.leaves``` is scoped to all leaf nodes in self_and_descendants.
 * ```tag.depth``` returns the depth, or "generation", for this node in the tree. A root node will have a value of 0.
 * ```tag.parent``` returns the node's immediate parent. Root nodes will return nil.
-* ```tag.children``` returns an array of immediate children (just those nodes whose parent is the current node).
-* ```tag.ancestors``` returns an array of [ parent, grandparent, great grandparent, … ]. Note that the size of this array will always equal ```tag.depth```.
+* ```tag.children``` is a ```has_many``` of immediate children (just those nodes whose parent is the current node).
+* ```tag.ancestors``` is a ordered scope of [ parent, grandparent, great grandparent, … ]. Note that the size of this array will always equal ```tag.depth```.
 * ```tag.self_and_ancestors``` returns a scope containing self, parent, grandparent, great grandparent, etc.
 * ```tag.siblings``` returns a scope containing all nodes with the same parent as ```tag```, excluding self.
 * ```tag.self_and_siblings``` returns a scope containing all nodes with the same parent as ```tag```, including self.
 * ```tag.descendants``` returns a scope of all children, childrens' children, etc., excluding self ordered by depth.
-* ```tag.self_and_descendants``` returns an array of all children, childrens' children, etc., including self.
+* ```tag.self_and_descendants``` returns a scope of all children, childrens' children, etc., including self, ordered by depth.
 * ```tag.destroy``` will destroy a node and do <em>something</em> to its children, which is determined by the ```:dependent``` option passed to ```acts_as_tree```.
 
 ## <a id="sti"></a>Polymorphic hierarchies with STI
@@ -231,9 +231,10 @@ When you enable ```order```, you'll also have the following new methods injected
 
 * ```tag.siblings_before``` is a scope containing all nodes with the same parent as ```tag```,
   whose sort order column is less than ```self```. These will be ordered properly, so the ```last```
-  element will be the sibling immediately before ```self```
-* ```tag.siblings_after``` which returns an array of brothers and sisters (all at that depth),
-  excluding self, whose sort order column is less than ```self```
+  element in scope will be the sibling immediately before ```self```
+* ```tag.siblings_after``` is a scope containing all nodes with the same parent as ```tag```,
+  whose sort order column is more than ```self```. These will be ordered properly, so the ```first```
+  element in scope will be the sibling immediately "after" ```self```
 
 If your ```order``` column is an integer attribute, you'll also have these:
 
