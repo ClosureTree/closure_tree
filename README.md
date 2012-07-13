@@ -248,7 +248,7 @@ If your ```order``` column is an integer attribute, you'll also have these:
   2. increment the sort_order values of the nodes after the current node by one, and
   3. set ```sibling_node```'s order column to 1 more then the current node's value.
 
-``ruby
+```ruby
 root = OrderedTag.create(:name => "root")
 a = OrderedTag.create(:name => "a", :parent => "root")
 b = OrderedTag.create(:name => "b")
