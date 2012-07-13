@@ -70,7 +70,7 @@ describe Label do
     fixtures :labels
 
     before :each do
-      Tag.rebuild!
+      Label.rebuild!
     end
 
     it "should prepend a node as sibling of another node" do
