@@ -256,14 +256,15 @@ shared_examples_for Tag do
         tags(:a1).self_and_siblings.to_a.should =~ Tag.roots.to_a
 
         # must be ordered
-        tags(:indoor).siblings.to_a.should == [tags(:museum), tags(:outdoor), tags(:united_states)]
-        tags(:indoor).self_and_siblings.to_a.should == [tags(:indoor), tags(:museum), tags(:outdoor), tags(:united_states)]
+        tags(:indoor).siblings.to_a.should == [tags(:home), tags(:museum), tags(:outdoor), tags(:united_states)]
+        tags(:indoor).self_and_siblings.to_a.should == [tags(:home), tags(:indoor), tags(:museum), tags(:outdoor), tags(:united_states)]
       end
 
       it "assembles siblings before correctly" do
-        tags(:indoor).siblings_before.to_a.should == []
-        tags(:outdoor).siblings_before.to_a.should == [tags(:indoor)]
-        tags(:united_states).siblings_before.to_a.should == [tags(:indoor), tags(:museum), tags(:outdoor)]
+        tags(:home).siblings_before.to_a.should == []
+        tags(:indoor).siblings_before.to_a.should == [tags(:home)]
+        tags(:outdoor).siblings_before.to_a.should == [tags(:home), tags(:indoor), tags(:museum)]
+        tags(:united_states).siblings_before.to_a.should == [tags(:home), tags(:indoor), tags(:museum), tags(:outdoor)]
       end
 
       it "assembles siblings after correctly" do

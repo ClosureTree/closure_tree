@@ -133,7 +133,8 @@ module ClosureTree
     end
 
     def self_and_siblings
-      self.class.scoped.where(:parent_id => parent)
+      base = self.class.scoped.where(:parent_id => parent)
+      base.order("#{quoted_table_name}.#{quoted_order_column}") unless order_column.nil?
     end
 
     def siblings
@@ -141,9 +142,11 @@ module ClosureTree
     end
 
     def siblings_before
+      siblings.where(["#{quoted_table_name}.#{quoted_order_column} < ?", order])
     end
 
     def siblings_after
+      siblings.where(["#{quoted_table_name}.#{quoted_order_column} > ?", order])
     end
 
     # Alias for appending to the children collection.
@@ -154,12 +157,19 @@ module ClosureTree
     end
 
     def add_sibling_before(sibling_node)
+      sibling_node.parent.add_child self
+      sibling_node.prepend_sibling self
     end
 
     def add_sibling_after(sibling_node)
     end
 
     def prepend_sibling(node)
+      return nil if node.parent.present?
+      return node.add_sibling_before self unless parent == node.parent
+
+      # decrement sort_order of siblings_before
+      # set node order column
     end
 
     def append_sibling(node)
@@ -331,6 +341,22 @@ module ClosureTree
 
     def quoted_parent_column_name
       connection.quote_column_name parent_column_name
+    end
+
+    def order
+      send(order_column)
+    end
+
+    def order_column
+      closure_tree_options[:order]
+    end
+
+    def quoted_order_column
+      connection.quote_column_name order_column
+    end
+
+    def order_column_type
+      ct_class.columns_hash[order].type unless order.nil?
     end
 
     def ct_class
