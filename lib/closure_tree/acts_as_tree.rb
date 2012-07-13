@@ -140,11 +140,29 @@ module ClosureTree
       without_self(self_and_siblings)
     end
 
+    def siblings_before
+    end
+
+    def siblings_after
+    end
+
     # Alias for appending to the children collection.
     # You can also add directly to the children collection, if you'd prefer.
     def add_child(child_node)
       children << child_node
       child_node
+    end
+
+    def add_sibling_before(sibling_node)
+    end
+
+    def add_sibling_after(sibling_node)
+    end
+
+    def prepend_sibling(node)
+    end
+
+    def append_sibling(node)
     end
 
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.

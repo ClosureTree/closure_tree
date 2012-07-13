@@ -15,8 +15,8 @@ describe Label do
       c.parent.name.should == "parent"
     end
   end
-  context "DateLabel" do
 
+  context "DateLabel" do
     it "should find or create by path" do
       date = DateLabel.find_or_create_by_path(%w{2011 November 23})
       date.ancestry_path.should == %w{2011 November 23}
@@ -62,6 +62,42 @@ describe Label do
           i = child
         end
       end
+    end
+  end
+
+  context "Deterministic siblings sort with custom integer column" do
+    nuke_db
+    fixtures :labels
+
+    before :each do
+      Tag.rebuild!
+    end
+
+    it "should prepend a node as sibling of another node" do
+      labels(:c1a).self_and_siblings.to_a.should == [labels(:c1a), labels(:c1b)]
+      labels(:c1a).prepend_sibling(labels(:c1b))
+      labels(:c1a).self_and_siblings.to_a.should == [labels(:c1b), labels(:c1a)]
+    end
+
+    it "should append a node as sibling of another node" do
+      labels(:c1b).self_and_siblings.to_a.should == [labels(:c1a), labels(:c1b)]
+      labels(:c1b).append_sibling(labels(:c1a))
+      labels(:c1b).self_and_siblings.to_a.should == [labels(:c1b), labels(:c1a)]
+    end
+
+    it "should move a node before another node" do
+      labels(:c2).ancestry_path.should == %w{a1 b2 c2}
+      labels(:c2).add_sibling_before(labels(:b2))
+      labels(:c2).ancestry_path.should == %w{a1 c2}
+      labels(:c2).ancestry_path.should == %w{a1 c2}
+      labels(:c2).self_and_siblings.to_a.should == [labels(:b1), labels(:c2), labels(:b2)]
+    end
+
+    it "should move a node after another node" do
+      labels(:c2).ancestry_path.should == %w{a1 b2 c2}
+      labels(:c2).add_sibling_after(labels(:b1))
+      labels(:c2).ancestry_path.should == %w{a1 c2}
+      labels(:c2).self_and_siblings.to_a.should == [labels(:b1), labels(:c2), labels(:b2)]
     end
   end
 end
