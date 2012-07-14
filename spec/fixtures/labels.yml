@@ -1,40 +1,40 @@
 a1:
   name: a1
-  order: 1
+  sort_order: 1
 
 b1:
   name: b1
   parent: a1
-  order: 1
+  sort_order: 1
 
 b2:
   name: b2
   parent: a1
-  order: 2
+  sort_order: 2
 
 c1a:
   name: c1a
   parent: b1
-  order: 1
+  sort_order: 1
 
 c1b:
   name: c1b
   parent: b1
-  order: 2
+  sort_order: 2
 
 c2:
   name: c2
   parent: b2
-  order: 1
+  sort_order: 1
 
 d2:
   name: d2
   parent: c2
-  order: 1
+  sort_order: 1
 
 e2:
   name: e2
   parent: d2
-  order: 1
+  sort_order: 1
 
 

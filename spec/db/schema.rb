@@ -41,7 +41,7 @@ ActiveRecord::Schema.define(:version => 0) do
   create_table "labels", :force => true do |t|
     t.string   "name"
     t.string   "type"
-    t.integer  "order"
+    t.integer  "sort_order"
     t.integer  "parent_id"
   end
 

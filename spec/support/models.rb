@@ -29,7 +29,7 @@ class User < ActiveRecord::Base
 end
 
 class Label < ActiveRecord::Base
-  acts_as_tree :order => "order"
+  acts_as_tree :order => "sort_order"
   attr_accessible :name
 
   def to_s
