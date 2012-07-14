@@ -133,11 +133,20 @@ module ClosureTree
     end
 
     def self_and_siblings
-      self.class.scoped.where(:parent_id => parent)
+      base = self.class.scoped.where(:parent_id => parent)
+      base.order("#{quoted_table_name}.#{quoted_order_column}") unless order_column.nil?
     end
 
     def siblings
       without_self(self_and_siblings)
+    end
+
+    def siblings_before
+      siblings.where(["#{quoted_table_name}.#{quoted_order_column} < ?", order_value])
+    end
+
+    def siblings_after
+      siblings.where(["#{quoted_table_name}.#{quoted_order_column} > ?", order_value])
     end
 
     # Alias for appending to the children collection.
@@ -145,6 +154,38 @@ module ClosureTree
     def add_child(child_node)
       children << child_node
       child_node
+    end
+
+    def add_sibling_before(sibling_node)
+      sibling_node.parent.add_child self
+      sibling_node.prepend_sibling self
+    end
+
+    def add_sibling_after(sibling_node)
+      sibling_node.parent.add_child self
+      sibling_node.append_sibling self
+    end
+
+    def prepend_sibling(node)
+      return nil if !parent.present? || !is_order_column_integer?
+      return node.add_sibling_before self unless parent == node.parent
+
+      # decrement sort_order of siblings_before
+      siblings_before.each { |s| s.decrement!(order_column_sym) }
+
+      # set node order column to current node's order - 1
+      node.update_attribute(order_column, order_value - 1)
+    end
+
+    def append_sibling(node)
+      return nil if !parent.present? || !is_order_column_integer?
+      return node.add_sibling_after self unless parent == node.parent
+
+      # increment sort_order of siblings_after
+      siblings_after.each { |s| s.increment!(order_column_sym) }
+
+      # set node order column to current node's order + 1
+      node.update_attribute(order_column, order_value + 1)
     end
 
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.
@@ -313,6 +354,31 @@ module ClosureTree
 
     def quoted_parent_column_name
       connection.quote_column_name parent_column_name
+    end
+
+    def order_value
+      send(order_column)
+    end
+
+    def order_column
+      closure_tree_options[:order]
+    end
+
+    def order_column_sym
+      order_column.to_sym
+    end
+
+    def quoted_order_column
+      connection.quote_column_name order_column
+    end
+
+    def is_order_column_integer?
+      return order_column_type == :integer unless order_column_type.nil?
+      false
+    end
+
+    def order_column_type
+      ct_class.columns_hash[order_column].type unless order_column.nil?
     end
 
     def ct_class

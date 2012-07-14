@@ -239,16 +239,16 @@ When you enable ```order```, you'll also have the following new methods injected
 If your ```order``` column is an integer attribute, you'll also have these:
 
 * ```tag.add_sibling_before(sibling_node)``` which will
-  1. move ```sibling_node``` to the same parent,
-  2. decrement the sort_order values of the nodes before the current node by one, and
-  3. set ```sibling_node```'s order column to 1 less then the current node's value.
+  1. move ```tag``` to the same parent as ```sibling_node```,
+  2. decrement the sort_order values of the nodes before the ```sibling_node``` by one, and
+  3. set ```tag```'s order column to 1 less than the ```sibling_node```'s value.
 
 * ```tag.add_sibling_after(sibling_node)``` which will
-  1. move ```sibling_node``` to the same parent,
-  2. increment the sort_order values of the nodes after the current node by one, and
-  3. set ```sibling_node```'s order column to 1 more then the current node's value.
+  1. move ```tag``` to the same parent as ```sibling_node```,
+  2. increment the sort_order values of the nodes after the ```sibling_node``` by one, and
+  3. set ```tag```'s order column to 1 more than the ```sibling_node```'s value.
 
-``ruby
+```ruby
 root = OrderedTag.create(:name => "root")
 a = OrderedTag.create(:name => "a", :parent => "root")
 b = OrderedTag.create(:name => "b")

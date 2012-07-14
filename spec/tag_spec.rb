@@ -100,7 +100,7 @@ shared_examples_for Tag do
         @root.children << @leaf
         Tag.leaves.should =~ [@leaf, @mid]
       end
-      
+
       it "cleans up hierarchy references for leaves" do
         @leaf.destroy
         TagHierarchy.find_all_by_ancestor_id(@leaf.id).should be_empty
@@ -254,6 +254,23 @@ shared_examples_for Tag do
         tags(:b1).siblings.to_a.should =~ [tags(:b2)]
         tags(:a1).siblings.to_a.should =~ (Tag.roots.to_a - [tags(:a1)])
         tags(:a1).self_and_siblings.to_a.should =~ Tag.roots.to_a
+
+        # must be ordered
+        tags(:indoor).siblings.to_a.should == [tags(:home), tags(:museum), tags(:outdoor), tags(:united_states)]
+        tags(:indoor).self_and_siblings.to_a.should == [tags(:home), tags(:indoor), tags(:museum), tags(:outdoor), tags(:united_states)]
+      end
+
+      it "assembles siblings before correctly" do
+        tags(:home).siblings_before.to_a.should == []
+        tags(:indoor).siblings_before.to_a.should == [tags(:home)]
+        tags(:outdoor).siblings_before.to_a.should == [tags(:home), tags(:indoor), tags(:museum)]
+        tags(:united_states).siblings_before.to_a.should == [tags(:home), tags(:indoor), tags(:museum), tags(:outdoor)]
+      end
+
+      it "assembles siblings after correctly" do
+        tags(:indoor).siblings_after.to_a.should == [tags(:museum), tags(:outdoor), tags(:united_states)]
+        tags(:outdoor).siblings_after.to_a.should == [tags(:united_states)]
+        tags(:united_states).siblings_after.to_a.should == []
       end
 
       it "assembles ancestors" do
