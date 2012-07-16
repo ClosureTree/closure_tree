@@ -1,5 +1,5 @@
 class Tag < ActiveRecord::Base
-  acts_as_tree :dependent => :destroy
+  acts_as_tree :dependent => :destroy, :order => "sort_order"
   before_destroy :add_destroyed_tag
   attr_accessible :name
 
@@ -29,7 +29,7 @@ class User < ActiveRecord::Base
 end
 
 class Label < ActiveRecord::Base
-  acts_as_tree
+  acts_as_tree :order => "name"
   attr_accessible :name
 
   def to_s

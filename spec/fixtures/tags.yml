@@ -78,10 +78,12 @@ b2:
 c1a:
   name: c1a
   parent: b1
+  sort_order: 2
 
 c1b:
   name: c1b
   parent: b1
+  sort_order: 1
 
 c2:
   name: c2

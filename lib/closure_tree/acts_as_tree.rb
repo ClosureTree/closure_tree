@@ -31,21 +31,27 @@ module ClosureTree
         alias :eql? :==
       RUBY
 
+      unless ct_order_option.nil?
+        include ClosureTree::DeterministicOrdering
+        include ClosureTree::DeterministicNumericOrdering if ct_order_is_numeric
+      end
+
       include ClosureTree::Model
 
-      validate :acts_as_tree_validate
-      before_save :acts_as_tree_before_save
-      after_save :acts_as_tree_after_save
-      before_destroy :acts_as_tree_before_destroy
+      validate :ct_validate
+      before_save :ct_before_save
+      after_save :ct_after_save
+      before_destroy :ct_before_destroy
 
       belongs_to :parent,
         :class_name => ct_class.to_s,
         :foreign_key => parent_column_name
 
-      has_many :children,
+      has_many :children, ct_order_param.merge(
         :class_name => ct_class.to_s,
-        :foreign_key => parent_column_name,
-        :dependent => closure_tree_options[:dependent]
+          :foreign_key => parent_column_name,
+          :dependent => closure_tree_options[:dependent]
+      )
 
       has_many :ancestor_hierarchies,
         :class_name => hierarchy_class_name,
@@ -63,19 +69,29 @@ module ClosureTree
         :foreign_key => "ancestor_id",
         :order => "generations asc",
         :dependent => :destroy
+        # TODO: FIXME: this collection currently ignores sort_order
+        # (because the quoted_table_named would need to be joined in to get to the order column)
 
       has_many :self_and_descendants,
         :through => :descendant_hierarchies,
         :source => :descendant,
-        :order => "generations asc"
+        :order => ct_with_order("generations asc")
 
-      scope :roots, where(parent_column_name => nil)
+      def self.roots
+        where(parent_column_name => nil)
+      end
 
-      scope :leaves, where(" #{quoted_table_name}.#{primary_key} IN
+      def self.leaves
+        s = where("#{quoted_table_name}.#{primary_key} IN
         (SELECT ancestor_id
          FROM #{quoted_hierarchy_table_name}
          GROUP BY 1
          HAVING MAX(generations) = 0)")
+        if ct_order_option
+          s.order(ct_order_option)
+        end
+        s
+      end
     end
   end
 
@@ -84,7 +100,7 @@ module ClosureTree
 
     # Returns true if this node has no parents.
     def root?
-      _parent_id.nil?
+      ct_parent_id.nil?
     end
 
     # Returns true if this node has a parent, and is not a root.
@@ -113,9 +129,11 @@ module ClosureTree
       )
     end
 
-    def level
+    def depth
       ancestors.size
     end
+
+    alias :level :depth
 
     def ancestors
       without_self(self_and_ancestors)
@@ -133,11 +151,18 @@ module ClosureTree
     end
 
     def self_and_siblings
-      self.class.scoped.where(:parent_id => parent)
+      s = self.class.scoped.where(:parent_id => parent)
+      s = s.order(ct_order_option) if ct_order_option
+      s
     end
 
     def siblings
       without_self(self_and_siblings)
+    end
+
+    def add_sibling(sibling_node, save_immediately = true)
+      sibling_node.parent = self.parent
+      sibling_node.save! if save_immediately
     end
 
     # Alias for appending to the children collection.
@@ -177,7 +202,7 @@ module ClosureTree
 
     protected
 
-    def acts_as_tree_validate
+    def ct_validate
       if changes[parent_column_name] &&
         parent.present? &&
         parent.self_and_ancestors.include?(self)
@@ -185,12 +210,12 @@ module ClosureTree
       end
     end
 
-    def acts_as_tree_before_save
+    def ct_before_save
       @was_new_record = new_record?
       true # don't cancel the save
     end
 
-    def acts_as_tree_after_save
+    def ct_after_save
       rebuild! if changes[parent_column_name] || @was_new_record
     end
 
@@ -203,13 +228,13 @@ module ClosureTree
             (ancestor_id, descendant_id, generations)
           SELECT x.ancestor_id, #{id}, x.generations + 1
           FROM #{quoted_hierarchy_table_name} x
-          WHERE x.descendant_id = #{self._parent_id}
+          WHERE x.descendant_id = #{self.ct_parent_id}
         SQL
       end
       children.each { |c| c.rebuild! }
     end
 
-    def acts_as_tree_before_destroy
+    def ct_before_destroy
       delete_hierarchy_references
       if closure_tree_options[:dependent] == :nullify
         children.each { |c| c.rebuild! }
@@ -236,9 +261,12 @@ module ClosureTree
       scope.where(["#{quoted_table_name}.#{self.class.primary_key} != ?", self])
     end
 
-    def _parent_id
+    def ct_parent_id
       send(parent_column_name)
     end
+
+    # TODO: _parent_id will be removed in the next major version
+    alias :_parent_id :ct_parent_id
 
     module ClassMethods
 
@@ -299,7 +327,8 @@ module ClosureTree
     end
 
     def hierarchy_table_name
-      # We need to use the table_name, not ct_class.to_s.demodulize, because they may have overridden the table name
+      # We need to use the table_name, not ct_class.to_s.demodulize,
+      # because the table name may have been overridden
       closure_tree_options[:hierarchy_table_name] || ct_table_name.singularize + "_hierarchies"
     end
 
@@ -315,12 +344,30 @@ module ClosureTree
       connection.quote_column_name parent_column_name
     end
 
+    def ct_order_option
+      closure_tree_options[:order]
+    end
+
+    def ct_order_is_numeric
+      return false unless ct_order_option
+      c = ct_class.columns_hash[ct_order_option]
+      c && c.type == :integer
+    end
+
     def ct_class
       (self.is_a?(Class) ? self : self.class)
     end
 
     def ct_subclass?
       ct_class != ct_class.base_class
+    end
+
+    def ct_order_param
+      ct_order_option ? {:order => ct_order_option} : {}
+    end
+
+    def ct_with_order(order_by)
+      ct_order_option ? "#{order_by}, #{ct_order_option}" : order_by
     end
 
     def ct_attribute_names
@@ -337,6 +384,68 @@ module ClosureTree
 
     def quoted_table_name
       connection.quote_column_name ct_table_name
+    end
+  end
+
+  module DeterministicOrdering
+
+    def ct_order_column
+      o = ct_order_option
+      o.split(' ', 2).first if o
+    end
+
+    def ct_order
+      attributes[ct_order_column]
+    end
+
+    def ct_order= order_value
+      attributes[ct_order_column] = order_value
+    end
+
+    def siblings_after
+      siblings.where("#{ct_order_column} > #{ct_order}")
+    end
+
+    def siblings_before
+      siblings.where("#{ct_order_column} < #{ct_order}")
+    end
+  end
+
+  module DeterministicNumericOrdering
+    def append_sibling(sibling_node, use_update_all = true)
+      sibling_node.ct_order = self.sort_order.to_i - 1
+      # We need to decr the before_siblings to make room for sibling_node:
+      if use_update_all
+        update_all(["#{ct_order_column} = #{ct_order_column} - 1", "updated_at = now()"],
+          "#{quoted_parent_column_name} = #{ct_parent_id} AND #{ct_order_column} <= #{sibling_node.ct_order}")
+      else
+        last_value = sibling_node.ct_order
+        siblings_before.reverse.each do |ea|
+          last_value -= 1
+          ea.ct_order = last_value
+          ea.save!
+        end
+      end
+      sibling_node.parent = self.parent
+      sibling_node.save!
+    end
+
+    def prepend_sibling(sibling_node, use_update_all = true)
+      sibling_node.ct_order = self.sort_order.to_i + 1
+      # We need to incr the before_siblings to make room for sibling_node:
+      if use_update_all
+        update_all(["#{ct_order_column} = #{ct_order_column} + 1", "updated_at = now()"],
+          "#{quoted_parent_column_name} = #{ct_parent_id} AND #{ct_order_column} >= #{sibling_node.ct_order}")
+      else
+        last_value = sibling_node.ct_order
+        siblings_after.each do |ea|
+          last_value += 1
+          ea.ct_order = last_value
+          ea.save!
+        end
+      end
+      sibling_node.parent = self.parent
+      sibling_node.save!
     end
   end
 end

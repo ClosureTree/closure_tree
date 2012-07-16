@@ -5,6 +5,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.string   "name"
     t.string   "title"
     t.integer  "parent_id"
+    t.integer  "sort_order"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
