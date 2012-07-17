@@ -31,9 +31,9 @@ module ClosureTree
         alias :eql? :==
       RUBY
 
-      unless ct_order_option.nil?
+      unless order_option.nil?
         include ClosureTree::DeterministicOrdering
-        include ClosureTree::DeterministicNumericOrdering if ct_order_is_numeric
+        include ClosureTree::DeterministicNumericOrdering if order_is_numeric
       end
 
       include ClosureTree::Model
@@ -47,7 +47,7 @@ module ClosureTree
         :class_name => ct_class.to_s,
         :foreign_key => parent_column_name
 
-      has_many :children, ct_order_param.merge(
+      has_many :children, with_order_option(
         :class_name => ct_class.to_s,
           :foreign_key => parent_column_name,
           :dependent => closure_tree_options[:dependent]
@@ -69,13 +69,13 @@ module ClosureTree
         :foreign_key => "ancestor_id",
         :order => "generations asc",
         :dependent => :destroy
-        # TODO: FIXME: this collection currently ignores sort_order
-        # (because the quoted_table_named would need to be joined in to get to the order column)
+      # TODO: FIXME: this collection currently ignores sort_order
+      # (because the quoted_table_named would need to be joined in to get to the order column)
 
       has_many :self_and_descendants,
         :through => :descendant_hierarchies,
         :source => :descendant,
-        :order => ct_with_order("generations asc")
+        :order => append_order("generations asc")
 
       def self.roots
         where(parent_column_name => nil)
@@ -87,8 +87,8 @@ module ClosureTree
          FROM #{quoted_hierarchy_table_name}
          GROUP BY 1
          HAVING MAX(generations) = 0)")
-        if ct_order_option
-          s.order(ct_order_option)
+        if order_option
+          s.order(order_option)
         end
         s
       end
@@ -158,12 +158,6 @@ module ClosureTree
 
     def siblings
       without_self(self_and_siblings)
-    end
-
-    # This supports adding siblings to root nodes:
-    def add_sibling(sibling_node, save_immediately = true)
-      sibling_node.parent = self.parent
-      sibling_node.save! if save_immediately
     end
 
     # Alias for appending to the children collection.
@@ -348,6 +342,20 @@ module ClosureTree
       closure_tree_options[:order]
     end
 
+    def with_order_option(options)
+      order_option ? options.merge(:order => order_option) : options
+    end
+
+    def append_order(order_by)
+      order_option ? "#{order_by}, #{order_option}" : order_by
+    end
+
+    def order_is_numeric
+      return false unless order_option
+      c = ct_class.columns_hash[order_option]
+      c && c.type == :integer
+    end
+
     def ct_class
       (self.is_a?(Class) ? self : self.class)
     end
@@ -397,9 +405,10 @@ module ClosureTree
       send("#{order_column}=".to_sym, new_order_value)
     end
 
-    def quoted_order_column
+    def quoted_order_column(include_table_name = true)
       require_order_column
-      "#{quoted_table_name}.#{connection.quote_column_name(order_column)}"
+      prefix = include_table_name ? "#{quoted_table_name}." : ""
+      "#{prefix}#{connection.quote_column_name(order_column)}"
     end
 
     def siblings_before
@@ -411,41 +420,37 @@ module ClosureTree
     end
   end
 
+  # This module is only included if the order column is an integer.
   module DeterministicNumericOrdering
     def append_sibling(sibling_node, use_update_all = true)
-      sibling_node.ct_order = self.sort_order.to_i - 1
-      # We need to decr the before_siblings to make room for sibling_node:
-      if use_update_all
-        update_all(["#{ct_order_column} = #{ct_order_column} - 1", "updated_at = now()"],
-          "#{quoted_parent_column_name} = #{ct_parent_id} AND #{ct_order_column} <= #{sibling_node.ct_order}")
-      else
-        last_value = sibling_node.ct_order
-        siblings_before.reverse.each do |ea|
-          last_value -= 1
-          ea.ct_order = last_value
-          ea.save!
-        end
-      end
-      sibling_node.parent = self.parent
-      sibling_node.save!
+      add_sibling(sibling_node, use_update_all, true)
     end
 
     def prepend_sibling(sibling_node, use_update_all = true)
-      sibling_node.ct_order = self.sort_order.to_i + 1
+      add_sibling(sibling_node, use_update_all, false)
+    end
+
+    def add_sibling(sibling_node, use_update_all = true, add_after = true)
+      sibling_node.order_value = self.order_value.to_i + (add_after ? 1 : -1)
       # We need to incr the before_siblings to make room for sibling_node:
       if use_update_all
-        update_all(["#{ct_order_column} = #{ct_order_column} + 1", "updated_at = now()"],
-          "#{quoted_parent_column_name} = #{ct_parent_id} AND #{ct_order_column} >= #{sibling_node.ct_order}")
+        col = quoted_order_column(false)
+        ct_class.update_all(
+          ["#{col} = #{col} #{add_after ? '+' : '-'} 1", "updated_at = now()"],
+            ["#{quoted_parent_column_name} = ? AND #{col} #{add_after ? '>=' : '<='} ?",
+              ct_parent_id,
+              sibling_node.order_value])
       else
-        last_value = sibling_node.ct_order
-        siblings_after.each do |ea|
-          last_value += 1
-          ea.ct_order = last_value
+        last_value = sibling_node.order_value.to_i
+        (add_after ? siblings_after : siblings_before).each do |ea|
+          last_value += (add_after ? 1 : -1)
+          ea.order_value = last_value
           ea.save!
         end
       end
       sibling_node.parent = self.parent
       sibling_node.save!
+      sibling_node.reload
     end
   end
 end
