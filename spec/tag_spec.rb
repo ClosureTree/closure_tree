@@ -76,7 +76,7 @@ shared_examples_for Tag do
       end
 
       it "should create all tags" do
-        Tag.all.should =~ [@root, @mid, @leaf]
+        Tag.all.should == [@root, @mid, @leaf]
       end
 
       it "should return a root and leaf without middle tag" do
@@ -96,9 +96,9 @@ shared_examples_for Tag do
         @leaf.reload.children.should be_empty
       end
 
-      it "should support reparenting" do
+      it "should support re-parenting" do
         @root.children << @leaf
-        Tag.leaves.should =~ [@leaf, @mid]
+        Tag.leaves.should == [@leaf, @mid]
       end
 
       it "cleans up hierarchy references for leaves" do
@@ -194,7 +194,7 @@ shared_examples_for Tag do
         child.add_child(parent) # this should fail
         parent.valid?.should be_false
         child.reload.children.should be_empty
-        parent.reload.children.should =~ [child]
+        parent.reload.children.should == [child]
       end
 
       it "should move non-leaves" do

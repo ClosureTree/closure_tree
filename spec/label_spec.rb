@@ -44,7 +44,7 @@ describe Label do
     it "should support mixed type ancestors" do
       [Label, DateLabel, DirectoryLabel, EventLabel].permutation do |classes|
         nuke_db
-        classes.each{|c|c.all.should(be_empty, "class #{c} wasn't cleaned out") }
+        classes.each { |c| c.all.should(be_empty, "class #{c} wasn't cleaned out") }
         names = ('A'..'Z').to_a.first(classes.size)
         instances = classes.collect { |clazz| clazz.new(:name => names.shift) }
         a = instances.first
@@ -79,24 +79,43 @@ describe Label do
       labels(:c1a).self_and_siblings.to_a.should == [labels(:c1b), labels(:c1a)]
     end
 
-    it "should append a node as sibling of another node" do
+    it "should append a node as sibling of another node (update_all)" do
       labels(:c1b).self_and_siblings.to_a.should == [labels(:c1a), labels(:c1b)]
       labels(:c1b).append_sibling(labels(:c1a))
       labels(:c1b).self_and_siblings.to_a.should == [labels(:c1b), labels(:c1a)]
     end
 
-    it "should move a node before another node" do
+    it "should move a node before another node (update_all)" do
       labels(:c2).ancestry_path.should == %w{a1 b2 c2}
       labels(:b2).prepend_sibling(labels(:c2))
+      labels(:c2).ancestry_path.should == %w{a1 c2}
+      labels(:c2).self_and_siblings.to_a.should == [labels(:b1), labels(:c2), labels(:b2)]
+      labels(:c2).siblings_before.to_a.should == [labels(:b1)]
+      labels(:c2).siblings_after.to_a.should == [labels(:b2)]
+      labels(:b1).siblings_after.to_a.should == [labels(:c2), labels(:b2)]
+    end
+
+    it "should move a node after another node (update_all)" do
+      labels(:c2).ancestry_path.should == %w{a1 b2 c2}
+      labels(:b2).append_sibling(labels(:c2))
+      labels(:c2).ancestry_path.should == %w{a1 c2}
+      labels(:c2).self_and_siblings.to_a.should == [labels(:b1), labels(:b2), labels(:c2)]
+    end
+
+    it "should move a node before another node" do
+      labels(:c2).ancestry_path.should == %w{a1 b2 c2}
+      labels(:b2).prepend_sibling(labels(:c2), false)
       labels(:c2).ancestry_path.should == %w{a1 c2}
       labels(:c2).self_and_siblings.to_a.should == [labels(:b1), labels(:c2), labels(:b2)]
     end
 
     it "should move a node after another node" do
       labels(:c2).ancestry_path.should == %w{a1 b2 c2}
-      labels(:b2).append_sibling(labels(:c2))
+      labels(:b2).append_sibling(labels(:c2), false)
       labels(:c2).ancestry_path.should == %w{a1 c2}
       labels(:c2).self_and_siblings.to_a.should == [labels(:b1), labels(:b2), labels(:c2)]
+      labels(:c2).append_sibling(labels(:e2), false)
+      labels(:e2).self_and_siblings.to_a.should == [labels(:b1), labels(:b2), labels(:c2), labels(:e2)]
     end
   end
 end
