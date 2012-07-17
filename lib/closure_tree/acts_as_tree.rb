@@ -87,10 +87,7 @@ module ClosureTree
          FROM #{quoted_hierarchy_table_name}
          GROUP BY 1
          HAVING MAX(generations) = 0)")
-        if order_option
-          s.order(order_option)
-        end
-        s
+        order_option ? s.order(order_option) : s
       end
     end
   end
