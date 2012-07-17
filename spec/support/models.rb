@@ -1,5 +1,9 @@
 class Tag < ActiveRecord::Base
+<<<<<<< HEAD
   acts_as_tree :dependent => :destroy, :order => "sort_order"
+=======
+  acts_as_tree :dependent => :destroy, :order => "name"
+>>>>>>> elhoyos/deterministic_ordering
   before_destroy :add_destroyed_tag
   attr_accessible :name
 
@@ -29,7 +33,11 @@ class User < ActiveRecord::Base
 end
 
 class Label < ActiveRecord::Base
+<<<<<<< HEAD
   acts_as_tree :order => "name"
+=======
+  acts_as_tree :order => "sort_order"
+>>>>>>> elhoyos/deterministic_ordering
   attr_accessible :name
 
   def to_s

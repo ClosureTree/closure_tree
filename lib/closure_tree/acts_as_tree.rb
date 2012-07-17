@@ -152,7 +152,7 @@ module ClosureTree
 
     def self_and_siblings
       s = self.class.scoped.where(:parent_id => parent)
-      s = s.order(ct_order_option) if ct_order_option
+      s = s.order(quoted_order_column) if quoted_order_column
       s
     end
 
@@ -160,6 +160,7 @@ module ClosureTree
       without_self(self_and_siblings)
     end
 
+    # This supports adding siblings to root nodes:
     def add_sibling(sibling_node, save_immediately = true)
       sibling_node.parent = self.parent
       sibling_node.save! if save_immediately
@@ -327,8 +328,7 @@ module ClosureTree
     end
 
     def hierarchy_table_name
-      # We need to use the table_name, not ct_class.to_s.demodulize,
-      # because the table name may have been overridden
+      # We need to use the table_name, not ct_class.to_s.demodulize, because they may have overridden the table name
       closure_tree_options[:hierarchy_table_name] || ct_table_name.singularize + "_hierarchies"
     end
 
@@ -344,14 +344,8 @@ module ClosureTree
       connection.quote_column_name parent_column_name
     end
 
-    def ct_order_option
+    def order_option
       closure_tree_options[:order]
-    end
-
-    def ct_order_is_numeric
-      return false unless ct_order_option
-      c = ct_class.columns_hash[ct_order_option]
-      c && c.type == :integer
     end
 
     def ct_class
@@ -360,14 +354,6 @@ module ClosureTree
 
     def ct_subclass?
       ct_class != ct_class.base_class
-    end
-
-    def ct_order_param
-      ct_order_option ? {:order => ct_order_option} : {}
-    end
-
-    def ct_with_order(order_by)
-      ct_order_option ? "#{order_by}, #{ct_order_option}" : order_by
     end
 
     def ct_attribute_names
@@ -388,26 +374,40 @@ module ClosureTree
   end
 
   module DeterministicOrdering
-
-    def ct_order_column
-      o = ct_order_option
+    def order_column
+      o = order_option
       o.split(' ', 2).first if o
     end
 
-    def ct_order
-      attributes[ct_order_column]
+    def require_order_column
+      raise ":order value, '#{order_option}', isn't a column" if order_column.nil?
     end
 
-    def ct_order= order_value
-      attributes[ct_order_column] = order_value
+    def order_column_sym
+      require_order_column
+      order_column.to_sym
     end
 
-    def siblings_after
-      siblings.where("#{ct_order_column} > #{ct_order}")
+    def order_value
+      send(order_column_sym)
+    end
+
+    def order_value=(new_order_value)
+      require_order_column
+      send("#{order_column}=".to_sym, new_order_value)
+    end
+
+    def quoted_order_column
+      require_order_column
+      "#{quoted_table_name}.#{connection.quote_column_name(order_column)}"
     end
 
     def siblings_before
-      siblings.where("#{ct_order_column} < #{ct_order}")
+      siblings.where(["#{quoted_order_column} < ?", order_value])
+    end
+
+    def siblings_after
+      siblings.where(["#{quoted_order_column} > ?", order_value])
     end
   end
 
