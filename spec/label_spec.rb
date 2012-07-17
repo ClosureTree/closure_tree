@@ -116,6 +116,8 @@ describe Label do
       labels(:c2).self_and_siblings.to_a.should == [labels(:b1), labels(:b2), labels(:c2)]
       labels(:c2).append_sibling(labels(:e2), false)
       labels(:e2).self_and_siblings.to_a.should == [labels(:b1), labels(:b2), labels(:c2), labels(:e2)]
+      labels(:a1).self_and_descendants.to_a.should == %w(a1 b1 b2 c2 e2 d2 c1a c1b).collect{|ea|labels(ea.to_sym)}
+      labels(:a1).leaves.to_a.should == %w(d2 b2 e2 c1a c1b).collect{|ea|labels(ea.to_sym)}
     end
   end
 end
