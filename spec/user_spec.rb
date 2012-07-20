@@ -98,5 +98,10 @@ describe "empty db" do
       ["Grandparent", "Parent", "First Child", "Second Child"]
     child1.ancestry_path.should ==
       ["Grandparent", "Parent", "First Child"]
+    d = Tag.find_or_create_by_path %w(a b c d)
+    h = Tag.find_or_create_by_path %w(e f g h)
+    e = h.root
+    d.add_child(e) # "d.children << e" would work too, of course
+    h.ancestry_path.should == %w(a b c d e f g h)
   end
 end
