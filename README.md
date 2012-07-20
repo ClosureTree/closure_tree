@@ -152,7 +152,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 
 * ```:parent_column_name``` to override the column name of the parent foreign key in the model's table. This defaults to "parent_id".
 * ```:hierarchy_table_name``` to override the hierarchy table name. This defaults to the singular name of the model + "_hierarchies".
-* ```:dependent``` determines what happens when a node is destroyed. Defaults to ```nil```.
+* ```:dependent``` determines what happens when a node is destroyed. Defaults to ```nullify```.
     * ```:nullify``` will simply set the parent column to null. Each child node will be considered a "root" node. This is the default.
     * ```:delete_all``` will delete all descendant nodes (which circumvents the destroy hooks)
     * ```:destroy``` will destroy all descendant nodes (which runs the destroy hooks on each child node)
