@@ -21,11 +21,22 @@ class User < ActiveRecord::Base
   acts_as_tree :parent_column_name => "referrer_id",
     :name_column => 'email',
     :hierarchy_table_name => 'referral_hierarchies'
+
+  has_many :contracts
+
+  def indirect_contracts
+    Contract.where(:user_id => descendant_ids)
+  end
+
   attr_accessible :email, :referrer
 
   def to_s
     email
   end
+end
+
+class Contract < ActiveRecord::Base
+  belongs_to :user
 end
 
 class Label < ActiveRecord::Base

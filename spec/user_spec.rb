@@ -75,4 +75,15 @@ describe "empty db" do
       User.leaves.should == [@leaf]
     end
   end
+
+  it "supports users with contracts" do
+    u = User.find_or_create_by_path(%w(a@t.co b@t.co c@t.co))
+    u.descendant_ids.should == []
+    u.ancestor_ids.should == [u.parent.id, u.root.id]
+    u.root.descendant_ids.should == [u.parent.id, u.id]
+    u.root.ancestor_ids.should == []
+    c1 = u.contracts.create!
+    c2 = u.parent.contracts.create!
+    u.root.indirect_contracts.to_a.should =~ [c1, c2]
+  end
 end

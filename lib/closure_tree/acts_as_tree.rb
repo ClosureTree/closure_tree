@@ -136,6 +136,10 @@ module ClosureTree
       without_self(self_and_ancestors)
     end
 
+    def ancestor_ids
+      ids_from(ancestors)
+    end
+
     # Returns an array, root first, of self_and_ancestors' values of the +to_s_column+, which defaults
     # to the +name_column+.
     # (so child.ancestry_path == +%w{grandparent parent child}+
@@ -147,6 +151,10 @@ module ClosureTree
       without_self(self_and_descendants)
     end
 
+    def descendant_ids
+      ids_from(descendants)
+    end
+
     def self_and_siblings
       s = self.class.scoped.where(:parent_id => parent)
       quoted_order_column ? s.order(quoted_order_column) : s
@@ -154,6 +162,10 @@ module ClosureTree
 
     def siblings
       without_self(self_and_siblings)
+    end
+
+    def sibling_ids
+      ids_from(siblings)
     end
 
     # Alias for appending to the children collection.
@@ -252,8 +264,12 @@ module ClosureTree
       scope.where(["#{quoted_table_name}.#{self.class.primary_key} != ?", self])
     end
 
+    def ids_from(scope)
+      scope.select(:id).collect(&:id)
+    end
+
     def ct_parent_id
-      send(parent_column_name)
+      read_attribute(parent_column_sym)
     end
 
     # TODO: _parent_id will be removed in the next major version
@@ -393,12 +409,11 @@ module ClosureTree
     end
 
     def order_value
-      send(order_column_sym)
+      read_attribute(order_column_sym)
     end
 
     def order_value=(new_order_value)
-      require_order_column
-      send("#{order_column}=".to_sym, new_order_value)
+      write_attribute(order_column_sym, new_order_value)
     end
 
     def quoted_order_column(include_table_name = true)
