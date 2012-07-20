@@ -178,10 +178,13 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```tag.parent``` returns the node's immediate parent. Root nodes will return nil.
 * ```tag.children``` is a ```has_many``` of immediate children (just those nodes whose parent is the current node).
 * ```tag.ancestors``` is a ordered scope of [ parent, grandparent, great grandparent, … ]. Note that the size of this array will always equal ```tag.depth```.
+* ```tag.ancestor_ids``` is an array of the IDs of the ancestors.
 * ```tag.self_and_ancestors``` returns a scope containing self, parent, grandparent, great grandparent, etc.
 * ```tag.siblings``` returns a scope containing all nodes with the same parent as ```tag```, excluding self.
+* ```tag.sibling_ids``` returns an array of the IDs of the siblings.
 * ```tag.self_and_siblings``` returns a scope containing all nodes with the same parent as ```tag```, including self.
 * ```tag.descendants``` returns a scope of all children, childrens' children, etc., excluding self ordered by depth.
+* ```tag.descendant_ids``` returns an array of the IDs of the descendants.
 * ```tag.self_and_descendants``` returns a scope of all children, childrens' children, etc., including self, ordered by depth.
 * ```tag.destroy``` will destroy a node and do <em>something</em> to its children, which is determined by the ```:dependent``` option passed to ```acts_as_tree```.
 
@@ -281,6 +284,11 @@ Closure tree is [tested under every combination](https://secure.travis-ci.org/mc
 
 
 ## Change log
+
+### 3.2.1
+
+* Added ```ancestor_ids```, ```descendant_ids```, and ```sibling_ids```
+* Added example spec to solve [issue 9](https://github.com/mceachen/closure_tree/issues/9)
 
 ### 3.2.0
 
