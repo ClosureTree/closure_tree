@@ -25,7 +25,7 @@ Note that closure_tree only supports Rails 3.0 and later, and has test coverage 
 
 2.  Run ```bundle install```
 
-3.  Add ```acts_as_tree``` to your hierarchical model(s) (see the <em>Available options</em> section below for details).
+3.  Add ```acts_as_tree``` to your hierarchical model(s). There are a number of [options](#available-options) you can pass in, too.
 
 4.  Add a migration to add a ```parent_id``` column to the model you want to act_as_tree.
     You may want to also [add a column for deterministic ordering of children](#sort_order), but that's optional.
@@ -106,7 +106,6 @@ Then:
 ```ruby
 grandparent.self_and_descendants.collect(&:name)
 => ["Grandparent", "Parent", "First Child", "Second Child"]
-
 
 child1.ancestry_path
 => ["Grandparent", "Parent", "First Child"]
