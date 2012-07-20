@@ -73,16 +73,37 @@ describe Label do
       Label.rebuild!
     end
 
-    it "should prepend a node as sibling of another node" do
-      labels(:c1a).self_and_siblings.to_a.should == [labels(:c1a), labels(:c1b)]
-      labels(:c1a).prepend_sibling(labels(:c1b))
-      labels(:c1a).self_and_siblings.to_a.should == [labels(:c1b), labels(:c1a)]
+    it "orders siblings_before and siblings_after correctly" do
+      labels(:c16).self_and_siblings.to_a.should == [labels(:c16), labels(:c17), labels(:c18), labels(:c19)]
+      labels(:c16).siblings_before.to_a.should == []
+      labels(:c16).siblings_after.to_a.should == [labels(:c17), labels(:c18), labels(:c19)]
     end
 
-    it "should append a node as sibling of another node (update_all)" do
-      labels(:c1b).self_and_siblings.to_a.should == [labels(:c1a), labels(:c1b)]
-      labels(:c1b).append_sibling(labels(:c1a))
-      labels(:c1b).self_and_siblings.to_a.should == [labels(:c1b), labels(:c1a)]
+    it "should prepend a node as a sibling of another node" do
+      labels(:c16).prepend_sibling(labels(:c17))
+      labels(:c16).self_and_siblings.to_a.should == [labels(:c17), labels(:c16), labels(:c18), labels(:c19)]
+      labels(:c19).prepend_sibling(labels(:c16))
+      labels(:c16).self_and_siblings.to_a.should == [labels(:c17), labels(:c18), labels(:c16), labels(:c19)]
+      labels(:c16).siblings_before.to_a.should == [labels(:c17), labels(:c18)]
+      labels(:c16).siblings_after.to_a.should == [labels(:c19)]
+    end
+
+    it "should prepend a node as a sibling of another node (!update_all)" do
+      labels(:c16).prepend_sibling(labels(:c17), false)
+      labels(:c16).self_and_siblings.to_a.should == [labels(:c17), labels(:c16), labels(:c18), labels(:c19)]
+      labels(:c19).reload.prepend_sibling(labels(:c16).reload, false)
+      labels(:c16).self_and_siblings.to_a.should == [labels(:c17), labels(:c18), labels(:c16), labels(:c19)]
+      labels(:c16).siblings_before.to_a.should == [labels(:c17), labels(:c18)]
+      labels(:c16).siblings_after.to_a.should == [labels(:c19)]
+    end
+
+    it "appends a node as a sibling of another node" do
+      labels(:c19).append_sibling(labels(:c17))
+      labels(:c16).self_and_siblings.to_a.should == [labels(:c16), labels(:c18), labels(:c19), labels(:c17)]
+      labels(:c16).append_sibling(labels(:c19))
+      labels(:c16).self_and_siblings.to_a.should == [labels(:c16), labels(:c19), labels(:c18), labels(:c17)]
+      labels(:c16).siblings_before.to_a.should == []
+      labels(:c16).siblings_after.to_a.should == labels(:c16).siblings.to_a
     end
 
     it "should move a node before another node (update_all)" do
@@ -116,8 +137,8 @@ describe Label do
       labels(:c2).self_and_siblings.to_a.should == [labels(:b1), labels(:b2), labels(:c2)]
       labels(:c2).append_sibling(labels(:e2), false)
       labels(:e2).self_and_siblings.to_a.should == [labels(:b1), labels(:b2), labels(:c2), labels(:e2)]
-      labels(:a1).self_and_descendants.to_a.should == %w(a1 b1 b2 c2 e2 d2 c1a c1b).collect{|ea|labels(ea.to_sym)}
-      labels(:a1).leaves.to_a.should == %w(d2 b2 e2 c1a c1b).collect{|ea|labels(ea.to_sym)}
+      labels(:a1).self_and_descendants.collect(&:name).should == %w(a1 b1 b2 c2 e2 d2 c1-six c1-seven c1-eight c1-nine)
+      labels(:a1).leaves.collect(&:name).should == %w(d2 b2 e2 c1-six c1-seven c1-eight c1-nine)
     end
   end
 end

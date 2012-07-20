@@ -149,8 +149,7 @@ module ClosureTree
 
     def self_and_siblings
       s = self.class.scoped.where(:parent_id => parent)
-      s = s.order(quoted_order_column) if quoted_order_column
-      s
+      quoted_order_column ? s.order(quoted_order_column) : s
     end
 
     def siblings
@@ -440,7 +439,7 @@ module ClosureTree
               sibling_node.order_value])
       else
         last_value = sibling_node.order_value.to_i
-        (add_after ? siblings_after : siblings_before).each do |ea|
+        (add_after ? siblings_after : siblings_before.reverse).each do |ea|
           last_value += (add_after ? 1 : -1)
           ea.order_value = last_value
           ea.save!
