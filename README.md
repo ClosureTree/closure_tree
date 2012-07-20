@@ -84,31 +84,32 @@ grandparent = Tag.create(:name => 'Grandparent')
 Child nodes are created by appending to the children collection:
 
 ```ruby
-child = parent.children.create(:name => 'Child')
+parent = grandparent.children.create(:name => 'Parent')
 ```
 
 You can also append to the children collection:
 
 ```ruby
-child = Tag.create(:name => 'Child')
-parent.children << child
+child1 = Tag.create(:name => 'First Child')
+parent.children << child1
 ```
 
 Or call the "add_child" method:
 
 ```ruby
-parent = Tag.create(:name => 'Parent')
-grandparent.add_child parent
+child2 = Tag.create(:name => 'Second Child')
+parent.add_child child2
 ```
 
 Then:
 
 ```ruby
-puts grandparent.self_and_descendants.collect{ |t| t.name }.join(" > ")
-=> "grandparent > parent > child"
+grandparent.self_and_descendants.collect(&:name)
+=> ["Grandparent", "Parent", "First Child", "Second Child"]
 
-child.ancestry_path
-=> ["grandparent", "parent", "child"]
+
+child1.ancestry_path
+=> ["Grandparent", "Parent", "First Child"]
 ```
 
 ### find_or_create_by_path

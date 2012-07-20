@@ -86,4 +86,17 @@ describe "empty db" do
     c2 = u.parent.contracts.create!
     u.root.indirect_contracts.to_a.should =~ [c1, c2]
   end
+
+  it "performs as the readme says it does" do
+    grandparent = Tag.create(:name => 'Grandparent')
+    parent = grandparent.children.create(:name => 'Parent')
+    child1 = Tag.create(:name => 'First Child')
+    parent.children << child1
+    child2 = Tag.create(:name => 'Second Child')
+    parent.add_child child2
+    grandparent.self_and_descendants.collect(&:name).should ==
+      ["Grandparent", "Parent", "First Child", "Second Child"]
+    child1.ancestry_path.should ==
+      ["Grandparent", "Parent", "First Child"]
+  end
 end
