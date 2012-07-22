@@ -76,7 +76,7 @@ shared_examples_for Tag do
       end
 
       it "should create all tags" do
-        Tag.all.should == [@root, @mid, @leaf]
+        Tag.all.should =~ [@root, @mid, @leaf]
       end
 
       it "should return a root and leaf without middle tag" do
