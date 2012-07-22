@@ -147,6 +147,35 @@ h.ancestry_path
 => ["a", "b", "c", "d", "e", "f", "g", "h"]
 ```
 
+### Nested hashes
+
+```hash_tree``` provides a method for rendering a subtree as an
+ordered nested hash:
+
+```ruby
+b = Tag.find_or_create_by_path %w(a b)
+a = b.parent
+b2 = Tag.find_or_create_by_path %w(a b2)
+d1 = b.find_or_create_by_path %w(c1 d1)
+c1 = d1.parent
+d2 = b.find_or_create_by_path %w(c2 d2)
+c2 = d2.parent
+
+Tag.hash_tree
+=> {a => {b => {c1 => {d1 => {}}, c2 => {d2 => {}}}, b2 => {}}}
+
+Tag.hash_tree(:limit_depth => 2)
+=> {a => {b => {}, b2 => {}}}
+
+b.hash_tree
+=> {b => {c1 => {d1 => {}}, c2 => {d2 => {}}}}
+
+b.hash_tree(:limit_depth => 2)
+=> {b => {c1 => {}, c2 => {}}}
+```
+
+HT: [ancestry](https://github.com/stefankroes/ancestry#arrangement) and [elhoyos](https://github.com/mceachen/closure_tree/issues/11)
+
 ### <a id="options"></a>Available options
 
 When you include ```acts_as_tree``` in your model, you can provide a hash to override the following defaults:
@@ -206,35 +235,6 @@ class WhenTag < Tag ; end
 class WhereTag < Tag ; end
 class WhatTag < Tag ; end
 ```
-
-## Nested hashes
-
-```hash_tree``` provides a method for rendering a subtree as an
-ordered nested hash:
-
-```ruby
-b = Tag.find_or_create_by_path %w(a b)
-a = b.parent
-b2 = Tag.find_or_create_by_path %w(a b2)
-d1 = b.find_or_create_by_path %w(c1 d1)
-c1 = d1.parent
-d2 = b.find_or_create_by_path %w(c2 d2)
-c2 = d2.parent
-
-Tag.hash_tree
-=> {a => {b => {c1 => {d1 => {}}, c2 => {d2 => {}}}, b2 => {}}}
-
-Tag.hash_tree(:limit_depth => 2)
-=> {a => {b => {}, b2 => {}}}
-
-b.hash_tree
-=> {b => {c1 => {d1 => {}}, c2 => {d2 => {}}}}
-
-b.hash_tree(:limit_depth => 2)
-=> {b => {c1 => {}, c2 => {}}}
-```
-
-HT: [ancestry](https://github.com/stefankroes/ancestry#arrangement) and [elhoyos](https://github.com/mceachen/closure_tree/issues/11)
 
 ## Deterministic ordering
 
