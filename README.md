@@ -196,7 +196,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```Tag.root``` returns an arbitrary root node
 * ```Tag.roots``` returns all root nodes
 * ```Tag.leaves``` returns all leaf nodes
-* ```Tag.hash_tree``` returns an [ordered, nested hash](nested-hashes) that can be depth-limited.
+* ```Tag.hash_tree``` returns an [ordered, nested hash](#nested-hashes) that can be depth-limited.
 
 ### Instance methods
 
@@ -217,7 +217,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```tag.descendants``` returns a scope of all children, childrens' children, etc., excluding self ordered by depth.
 * ```tag.descendant_ids``` returns an array of the IDs of the descendants.
 * ```tag.self_and_descendants``` returns a scope of all children, childrens' children, etc., including self, ordered by depth.
-* ```tag.hash_tree``` returns an [ordered, nested hash](nested-hashes) that can be depth-limited.
+* ```tag.hash_tree``` returns an [ordered, nested hash](#nested-hashes) that can be depth-limited.
 * ```tag.destroy``` will destroy a node and do <em>something</em> to its children, which is determined by the ```:dependent``` option passed to ```acts_as_tree```.
 
 ## <a id="sti"></a>Polymorphic hierarchies with STI
@@ -319,7 +319,7 @@ Closure tree is [tested under every combination](https://secure.travis-ci.org/mc
 
 ### 3.3.0
 
-* Added [```hash_tree```](nested-hashes).
+* Added [```hash_tree```](#nested-hashes).
 
 ### 3.2.1
 
