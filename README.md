@@ -11,6 +11,7 @@ Closure Tree is a mostly-API-compatible replacement for the
 * Support for polymorphism [STI](#sti) within the hierarchy
 * ```find_or_create_by_path``` for [building out hierarchies quickly and conveniently](#find_or_create_by_path)
 * Support for [deterministic ordering](#deterministic-ordering) of children
+* Support for single-select depth-limited [nested hashes](#nested-hashes)
 * Excellent [test coverage](#testing) in a variety of environments
 
 See [Bill Karwin](http://karwin.blogspot.com/)'s excellent
@@ -166,6 +167,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```Tag.root``` returns an arbitrary root node
 * ```Tag.roots``` returns all root nodes
 * ```Tag.leaves``` returns all leaf nodes
+* ```Tag.hash_tree``` returns an [ordered, nested hash](nested-hashes) that can be depth-limited.
 
 ### Instance methods
 
@@ -186,6 +188,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```tag.descendants``` returns a scope of all children, childrens' children, etc., excluding self ordered by depth.
 * ```tag.descendant_ids``` returns an array of the IDs of the descendants.
 * ```tag.self_and_descendants``` returns a scope of all children, childrens' children, etc., including self, ordered by depth.
+* ```tag.hash_tree``` returns an [ordered, nested hash](nested-hashes) that can be depth-limited.
 * ```tag.destroy``` will destroy a node and do <em>something</em> to its children, which is determined by the ```:dependent``` option passed to ```acts_as_tree```.
 
 ## <a id="sti"></a>Polymorphic hierarchies with STI
@@ -203,6 +206,35 @@ class WhenTag < Tag ; end
 class WhereTag < Tag ; end
 class WhatTag < Tag ; end
 ```
+
+## Nested hashes
+
+```hash_tree``` provides a method for rendering a subtree as an
+ordered nested hash:
+
+```ruby
+b = Tag.find_or_create_by_path %w(a b)
+a = b.parent
+b2 = Tag.find_or_create_by_path %w(a b2)
+d1 = b.find_or_create_by_path %w(c1 d1)
+c1 = d1.parent
+d2 = b.find_or_create_by_path %w(c2 d2)
+c2 = d2.parent
+
+Tag.hash_tree
+=> {a => {b => {c1 => {d1 => {}}, c2 => {d2 => {}}}, b2 => {}}}
+
+Tag.hash_tree(:limit_depth => 2)
+=> {a => {b => {}, b2 => {}}}
+
+b.hash_tree
+=> {b => {c1 => {d1 => {}}, c2 => {d2 => {}}}}
+
+b.hash_tree(:limit_depth => 2)
+=> {b => {c1 => {}, c2 => {}}}
+```
+
+HT: [ancestry](https://github.com/stefankroes/ancestry#arrangement) and [elhoyos](https://github.com/mceachen/closure_tree/issues/11)
 
 ## Deterministic ordering
 
@@ -284,6 +316,10 @@ Closure tree is [tested under every combination](https://secure.travis-ci.org/mc
 
 
 ## Change log
+
+### 3.3.0
+
+* Added [```hash_tree```](nested-hashes).
 
 ### 3.2.1
 

@@ -56,18 +56,18 @@ module ClosureTree
       has_many :ancestor_hierarchies,
         :class_name => hierarchy_class_name,
         :foreign_key => "descendant_id",
-        :order => "generations asc",
+        :order => "#{quoted_hierarchy_table_name}.generations asc",
         :dependent => :destroy
 
       has_many :self_and_ancestors,
         :through => :ancestor_hierarchies,
         :source => :ancestor,
-        :order => "generations asc"
+        :order => "#{quoted_hierarchy_table_name}.generations asc"
 
       has_many :descendant_hierarchies,
         :class_name => hierarchy_class_name,
         :foreign_key => "ancestor_id",
-        :order => "generations asc",
+        :order => "#{quoted_hierarchy_table_name}.generations asc",
         :dependent => :destroy
       # TODO: FIXME: this collection currently ignores sort_order
       # (because the quoted_table_named would need to be joined in to get to the order column)
@@ -75,10 +75,14 @@ module ClosureTree
       has_many :self_and_descendants,
         :through => :descendant_hierarchies,
         :source => :descendant,
-        :order => append_order("generations asc")
+        :order => append_order("#{quoted_hierarchy_table_name}.generations asc")
 
       def self.roots
         where(parent_column_name => nil)
+      end
+
+      def self.hash_tree(options = {})
+        roots.inject(ActiveSupport::OrderedHash.new) { |h, ea| h.merge(ea.hash_tree(options)) }
       end
 
       def self.leaves
@@ -86,7 +90,7 @@ module ClosureTree
         (SELECT ancestor_id
          FROM #{quoted_hierarchy_table_name}
          GROUP BY 1
-         HAVING MAX(generations) = 0)")
+         HAVING MAX(#{quoted_hierarchy_table_name}.generations) = 0)")
         order_option ? s.order(order_option) : s
       end
     end
@@ -201,6 +205,22 @@ module ClosureTree
         node = child
       end
       node
+    end
+
+    def hash_tree(options = {})
+      tree = ActiveSupport::OrderedHash.new
+      tree[self] = ActiveSupport::OrderedHash.new
+      id_to_hash = {self.id => tree[self]}
+      scope = descendants
+      if options[:limit_depth]
+        limit_depth = options[:limit_depth]
+        return {} if limit_depth <= 0
+        scope = scope.where("generations <= #{limit_depth - 1}")
+      end
+      scope.each do |ea|
+        id_to_hash[ea.ct_parent_id][ea] = (id_to_hash[ea.id] = ActiveSupport::OrderedHash.new)
+      end
+      tree
     end
 
     protected
