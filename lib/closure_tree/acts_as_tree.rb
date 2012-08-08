@@ -21,6 +21,7 @@ module ClosureTree
       self.hierarchy_class = Object.const_set hierarchy_class_name, Class.new(ActiveRecord::Base)
 
       self.hierarchy_class.class_eval <<-RUBY
+        self.table_name = "#{hierarchy_class_name.tableize}"
         belongs_to :ancestor, :class_name => "#{ct_class.to_s}"
         belongs_to :descendant, :class_name => "#{ct_class.to_s}"
         attr_accessible :ancestor, :descendant, :generations
