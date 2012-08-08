@@ -4,8 +4,8 @@ shared_examples_for Tag do
   describe "empty db" do
 
     def nuke_db
-      Tag.delete_all
       TagHierarchy.delete_all
+      Tag.delete_all
     end
 
     before :each do

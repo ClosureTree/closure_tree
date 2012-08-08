@@ -3,8 +3,8 @@ require 'spec_helper'
 describe "empty db" do
 
   before :each do
-    User.delete_all
     ReferralHierarchy.delete_all
+    User.delete_all
   end
 
   context "empty db" do
@@ -103,5 +103,16 @@ describe "empty db" do
     e = h.root
     d.add_child(e) # "d.children << e" would work too, of course
     h.ancestry_path.should == %w(a b c d e f g h)
+  end
+
+  it "supports << on unsaved hierarchies" do
+    a = User.new(:name => "a")
+    b = User.new(:name => "b")
+    c = User.new(:name => "c")
+    a.children << b
+    b.children << c
+    a.save
+    User.roots.should == [a]
+    c.ancestry_path.should == %w(a b c)
   end
 end

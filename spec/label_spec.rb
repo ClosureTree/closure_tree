@@ -1,8 +1,8 @@
 require 'spec_helper'
 
 def nuke_db
-  Label.delete_all
   LabelHierarchy.delete_all
+  Label.delete_all
 end
 
 describe Label do
