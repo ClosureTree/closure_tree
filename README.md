@@ -317,6 +317,16 @@ Closure tree is [tested under every combination](https://secure.travis-ci.org/mc
 
 ## Change log
 
+### 3.3.1
+
+* Added support for partially-unsaved hierarchies [issue 13](https://github.com/mceachen/closure_tree/issues/13):
+```
+a = Tag.new(name: "a")
+b = Tag.new(name: "b")
+a.children << b
+a.save
+```
+
 ### 3.3.0
 
 * Added [```hash_tree```](#nested-hashes).

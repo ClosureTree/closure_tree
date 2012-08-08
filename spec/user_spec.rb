@@ -88,14 +88,32 @@ describe "empty db" do
   end
 
 
-  it "supports << on unsaved hierarchies" do
+  it "supports << on shallow unsaved hierarchies" do
     a = User.new(:email => "a")
     b = User.new(:email => "b")
-    c = User.new(:email => "c")
     a.children << b
-    b.children << c
     a.save
     User.roots.should == [a]
-    c.ancestry_path.should == %w(a b c)
+    User.leaves.should == [b]
+    b.ancestry_path.should == %w(a b)
+  end
+
+  it "supports << on deep unsaved hierarchies" do
+    a = User.new(:email => "a")
+    b1 = User.new(:email => "b1")
+    a.children << b1
+    b2 = User.new(:email => "b2")
+    a.children << b2
+    c1 = User.new(:email => "c1")
+    b2.children << c1
+    c2 = User.new(:email => "c2")
+    b2.children << c2
+    d = User.new(:email => "d")
+    c2.children << d
+
+    a.save
+    User.roots.should == [a]
+    User.leaves.should == [b1, c1, d]
+    d.ancestry_path.should == %w(a b2 c2 d)
   end
 end
