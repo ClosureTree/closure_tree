@@ -87,28 +87,11 @@ describe "empty db" do
     u.root.indirect_contracts.to_a.should =~ [c1, c2]
   end
 
-  it "performs as the readme says it does" do
-    grandparent = Tag.create(:name => 'Grandparent')
-    parent = grandparent.children.create(:name => 'Parent')
-    child1 = Tag.create(:name => 'First Child')
-    parent.children << child1
-    child2 = Tag.create(:name => 'Second Child')
-    parent.add_child child2
-    grandparent.self_and_descendants.collect(&:name).should ==
-      ["Grandparent", "Parent", "First Child", "Second Child"]
-    child1.ancestry_path.should ==
-      ["Grandparent", "Parent", "First Child"]
-    d = Tag.find_or_create_by_path %w(a b c d)
-    h = Tag.find_or_create_by_path %w(e f g h)
-    e = h.root
-    d.add_child(e) # "d.children << e" would work too, of course
-    h.ancestry_path.should == %w(a b c d e f g h)
-  end
 
   it "supports << on unsaved hierarchies" do
-    a = User.new(:name => "a")
-    b = User.new(:name => "b")
-    c = User.new(:name => "c")
+    a = User.new(:email => "a")
+    b = User.new(:email => "b")
+    c = User.new(:email => "c")
     a.children << b
     b.children << c
     a.save

@@ -240,6 +240,8 @@ module ClosureTree
 
     def ct_after_save
       rebuild! if changes[parent_column_name] || @was_new_record
+      @was_new_record = false # we aren't new anymore.
+      true # don't cancel anything.
     end
 
     def rebuild!
