@@ -59,4 +59,14 @@ ActiveRecord::Schema.define(:version => 0) do
   add_index :label_hierarchies, [:ancestor_id, :descendant_id], :unique => true
   add_index :label_hierarchies, [:descendant_id]
 
+  create_table "cuisine_types", :force => true do |t|
+    t.string   "name"
+    t.integer  "parent_id"
+  end
+
+  create_table "cuisine_type_hierarchies", :id => false, :force => true do |t|
+    t.integer "ancestor_id",   :null => false
+    t.integer "descendant_id", :null => false
+    t.integer "generations",   :null => false
+  end
 end

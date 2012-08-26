@@ -56,3 +56,7 @@ end
 
 class DirectoryLabel < Label
 end
+
+class CuisineType < ActiveRecord::Base
+  acts_as_tree
+end
