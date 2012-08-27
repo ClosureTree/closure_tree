@@ -113,7 +113,7 @@ describe "empty db" do
 
     a.save
     User.roots.should == [a]
-    User.leaves.should == [b1, c1, d]
+    User.leaves.should =~ [b1, c1, d]
     d.ancestry_path.should == %w(a b2 c2 d)
   end
 end
