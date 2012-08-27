@@ -86,12 +86,19 @@ module ClosureTree
       end
 
       def self.leaves
-        s = where("#{quoted_table_name}.#{primary_key} IN
-        (SELECT ancestor_id
-         FROM #{quoted_hierarchy_table_name}
-         GROUP BY 1
-         HAVING MAX(#{quoted_hierarchy_table_name}.generations) = 0)")
+        s = joins(leaves_join_sql)
         order_option ? s.order(order_option) : s
+      end
+
+      def self.leaves_join_sql
+        <<-SQL
+        INNER JOIN
+        (SELECT ancestor_id
+        FROM #{quoted_hierarchy_table_name}
+        GROUP BY 1
+        HAVING MAX(#{quoted_hierarchy_table_name}.generations) = 0) AS leaves
+        ON (#{quoted_table_name}.#{primary_key} = leaves.ancestor_id)
+        SQL
       end
     end
   end
