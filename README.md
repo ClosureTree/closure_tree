@@ -317,6 +317,10 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 
 ## Change log
 
+### 3.3.2
+
+* Merged calebphillips' patch for a more efficient leaves query
+
 ### 3.3.1
 
 * Added support for partially-unsaved hierarchies [issue 13](https://github.com/mceachen/closure_tree/issues/13):
