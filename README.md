@@ -323,6 +323,11 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 
 ## Change log
 
+
+### 3.4.1
+
+* Reverted .gemspec mistake that changed add_development_dependency to add_runtime_dependency
+
 ### 3.4.0
 
 Fixed [issue 15](https://github.com/mceachen/closure_tree/issues/15):
