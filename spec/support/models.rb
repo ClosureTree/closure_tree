@@ -40,8 +40,8 @@ class Contract < ActiveRecord::Base
 end
 
 class Label < ActiveRecord::Base
+  attr_accessible :name # < - make sure order doesn't matter
   acts_as_tree :order => "sort_order"
-  attr_accessible :name
 
   def to_s
     "#{self.class}: #{name}"

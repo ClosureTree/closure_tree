@@ -47,6 +47,8 @@ module ClosureTree
         :class_name => ct_class.to_s,
         :foreign_key => parent_column_name
 
+      attr_accessible :parent
+
       has_many :children, with_order_option(
         :class_name => ct_class.to_s,
           :foreign_key => parent_column_name,

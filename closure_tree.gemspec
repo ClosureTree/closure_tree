@@ -8,23 +8,21 @@ Gem::Specification.new do |s|
   s.email       = ["matthew-github@mceachen.org"]
   s.homepage    = "http://matthew.mceachen.us/closure_tree"
 
-  s.summary = %q{Hierarchies for ActiveRecord models using a Closure Tree storage algorithm}
-  s.description = <<-desc
-    A mostly-API-compatible replacement for the acts_as_tree and awesome_nested_set gems,
-    but with much better mutation performance thanks to the Closure Tree storage algorithm
-  desc
+  s.summary = %q{Easily and efficiently make your ActiveRecord model support hierarchies}
+  s.description = %q{Easily and efficiently make your ActiveRecord model support hierarchies}
+
   s.files = Dir["lib/**/*"] + ["MIT-LICENSE", "Rakefile", "README.md"]
   s.test_files = `git ls-files -- {test,spec,features}/*`.split("\n")
 
   s.add_runtime_dependency 'activerecord', '>= 3.0.0'
 
-  s.add_development_dependency 'rake'
-  s.add_development_dependency 'yard'
-  s.add_development_dependency 'rspec'
-  s.add_development_dependency 'rails' # FIXME: just for rspec fixture support (!!)
-  s.add_development_dependency 'rspec-rails' # FIXME: just for rspec fixture support (!!)
-  s.add_development_dependency 'mysql2'
-  s.add_development_dependency 'pg'
-  s.add_development_dependency 'sqlite3'
+  s.add_runtime_dependency 'rake'
+  s.add_runtime_dependency 'yard'
+  s.add_runtime_dependency 'rspec'
+  s.add_runtime_dependency 'rails' # FIXME: just for rspec fixture support (!!)
+  s.add_runtime_dependency 'rspec-rails' # FIXME: just for rspec fixture support (!!)
+  s.add_runtime_dependency 'mysql2'
+  s.add_runtime_dependency 'pg'
+  s.add_runtime_dependency 'sqlite3'
   # TODO: gem 'activerecord-jdbcsqlite3-adapter', :platform => :jruby
 end

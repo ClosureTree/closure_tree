@@ -1,6 +1,11 @@
 require 'spec_helper'
 
 shared_examples_for Tag do
+
+  it "has correct accessible_attributes" do
+    Tag.accessible_attributes.to_a.should =~ %w(parent name)
+  end
+
   describe "empty db" do
 
     def nuke_db
@@ -140,9 +145,31 @@ shared_examples_for Tag do
       b.hash_tree(:limit_depth => 3).should == b_tree
       b.hash_tree.should == b_tree
     end
+
+    it "performs as the readme says it does" do
+      grandparent = Tag.create(:name => 'Grandparent')
+      parent = grandparent.children.create(:name => 'Parent')
+      child1 = Tag.create(:name => 'First Child', :parent => parent)
+      child2 = Tag.new(:name => 'Second Child')
+      parent.children << child2
+      child3 = Tag.new(:name => 'Third Child')
+      parent.add_child child3
+      grandparent.self_and_descendants.collect(&:name).should ==
+        ["Grandparent", "Parent", "First Child", "Second Child", "Third Child"]
+      child1.ancestry_path.should ==
+        ["Grandparent", "Parent", "First Child"]
+      child3.ancestry_path.should ==
+        ["Grandparent", "Parent", "Third Child"]
+      d = Tag.find_or_create_by_path %w(a b c d)
+      h = Tag.find_or_create_by_path %w(e f g h)
+      e = h.root
+      d.add_child(e) # "d.children << e" would work too, of course
+      h.ancestry_path.should == %w(a b c d e f g h)
+    end
+
   end
 
-  describe Tag do
+  describe "Tag with fixtures" do
 
     fixtures :tags
 
@@ -353,24 +380,6 @@ shared_examples_for Tag do
       city.self_and_ancestors.should == [city, tags(:california), tags(:united_states), tags(:places)]
     end
 
-    it "performs as the readme says it does" do
-      grandparent = Tag.create(:name => 'Grandparent')
-      parent = grandparent.children.create(:name => 'Parent')
-      child1 = Tag.create(:name => 'First Child')
-      parent.children << child1
-      child2 = Tag.create(:name => 'Second Child')
-      parent.add_child child2
-      grandparent.self_and_descendants.collect(&:name).should ==
-        ["Grandparent", "Parent", "First Child", "Second Child"]
-      child1.ancestry_path.should ==
-        ["Grandparent", "Parent", "First Child"]
-      d = Tag.find_or_create_by_path %w(a b c d)
-      h = Tag.find_or_create_by_path %w(e f g h)
-      e = h.root
-      d.add_child(e) # "d.children << e" would work too, of course
-      h.ancestry_path.should == %w(a b c d e f g h)
-    end
-
   end
 end
 
@@ -385,4 +394,5 @@ describe "Tag with AR whitelisted attributes enabled" do
   end
   it_behaves_like Tag
 end
+
 

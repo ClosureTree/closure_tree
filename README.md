@@ -88,25 +88,31 @@ Child nodes are created by appending to the children collection:
 parent = grandparent.children.create(:name => 'Parent')
 ```
 
-You can also append to the children collection:
+Or by giving the parent to the constructor:
 
 ```ruby
-child1 = Tag.create(:name => 'First Child')
-parent.children << child1
+child1 = Tag.create(:name => 'First Child', :parent => parent)
 ```
 
-Or call the "add_child" method:
+Or by appending to the children collection:
 
 ```ruby
-child2 = Tag.create(:name => 'Second Child')
-parent.add_child child2
+child2 = Tag.new(:name => 'Second Child')
+parent.children << child2
+```
+
+Or by calling the "add_child" method:
+
+```ruby
+child3 = Tag.new(:name => 'Third Child')
+parent.add_child child3
 ```
 
 Then:
 
 ```ruby
 grandparent.self_and_descendants.collect(&:name)
-=> ["Grandparent", "Parent", "First Child", "Second Child"]
+=> ["Grandparent", "Parent", "First Child", "Second Child", "Third Child"]
 
 child1.ancestry_path
 => ["Grandparent", "Parent", "First Child"]
@@ -116,9 +122,9 @@ child1.ancestry_path
 
 We can do all the node creation and add_child calls with one method call:
 
-  ```ruby
-  child = Tag.find_or_create_by_path(["grandparent", "parent", "child"])
-  ```
+```ruby
+child = Tag.find_or_create_by_path(["grandparent", "parent", "child"])
+```
 
 You can ```find``` as well as ```find_or_create``` by "ancestry paths".
 Ancestry paths may be built using any column in your model. The default
@@ -316,6 +322,12 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 
 
 ## Change log
+
+### 3.4.0
+
+Fixed [issue 15](https://github.com/mceachen/closure_tree/issues/15):
+* "parent" is now attr_accessible, which adds support for constructor-provided parents.
+* updated readme accordingly
 
 ### 3.3.2
 
