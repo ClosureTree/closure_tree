@@ -130,6 +130,26 @@ describe Label do
       labels(:c2).self_and_siblings.to_a.should == [labels(:b1), labels(:c2), labels(:b2)]
     end
 
+    it "should move a node before another node which has an uninitialized sort_order" do
+      labels(:f3).ancestry_path.should == %w{f3}
+      labels(:e2).children << labels(:f3)
+      labels(:f3).reload.ancestry_path.should == %w{a1 b2 c2 d2 e2 f3}
+      labels(:f3).self_and_siblings.to_a.should == [labels(:f3)]
+      labels(:f3).prepend_sibling labels(:f4)
+      labels(:f3).siblings_before.to_a.should == [labels(:f4)]
+      labels(:f3).self_and_siblings.to_a.should == [labels(:f4), labels(:f3)]
+    end
+
+    it "should move a node after another node which has an uninitialized sort_order" do
+      labels(:f3).ancestry_path.should == %w{f3}
+      labels(:e2).children << labels(:f3)
+      labels(:f3).reload.ancestry_path.should == %w{a1 b2 c2 d2 e2 f3}
+      labels(:f3).self_and_siblings.to_a.should == [labels(:f3)]
+      labels(:f3).append_sibling labels(:f4)
+      labels(:f3).siblings_after.to_a.should == [labels(:f4)]
+      labels(:f3).self_and_siblings.to_a.should == [labels(:f3), labels(:f4)]
+    end
+
     it "should move a node after another node" do
       labels(:c2).ancestry_path.should == %w{a1 b2 c2}
       labels(:b2).append_sibling(labels(:c2), false)
