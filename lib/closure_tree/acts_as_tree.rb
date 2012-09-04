@@ -158,7 +158,7 @@ module ClosureTree
     end
 
     def self_and_siblings
-      s = self.class.scoped.where(:parent_id => parent)
+      s = self.class.scoped.where(parent_column_sym => parent)
       quoted_order_column ? s.order(quoted_order_column) : s
     end
 

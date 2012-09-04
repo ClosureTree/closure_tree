@@ -47,7 +47,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.string   "name"
     t.string   "type"
     t.integer  "sort_order"
-    t.integer  "parent_id"
+    t.integer  "mother_id"
   end
 
   create_table "label_hierarchies", :id => false, :force => true do |t|
