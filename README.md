@@ -334,7 +334,7 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 ### 3.5.0
 
 * Added ```find_all_by_generation```
-  for [feature request 17](https://github.com/mceachen/closure_tree/issues/17)).
+  for [feature request 17](https://github.com/mceachen/closure_tree/issues/17).
 
 ### 3.4.2
 
