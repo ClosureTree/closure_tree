@@ -125,14 +125,7 @@ module ClosureTree
     end
 
     def leaves
-      return [self] if leaf?
-      self.class.leaves.where(<<-SQL
-#{quoted_table_name}.#{self.class.primary_key} IN (
-          SELECT descendant_id
-          FROM #{quoted_hierarchy_table_name}
-          WHERE ancestor_id = #{id})
-      SQL
-      )
+      self_and_descendants.leaves
     end
 
     def depth
@@ -272,15 +265,19 @@ module ClosureTree
     end
 
     def delete_hierarchy_references
+      # The crazy double-wrapped sub-subselect works around MySQL's limitation of subselects on the same table that is being mutated.
+      # It shouldn't affect performance of postgresql.
+      # See http://dev.mysql.com/doc/refman/5.0/en/subquery-errors.html
+      # Also: PostgreSQL doesn't support INNER JOIN on DELETE, so we can't use that.
       connection.execute <<-SQL
-        DELETE #{quoted_hierarchy_table_name}
-        FROM #{quoted_hierarchy_table_name}
-        INNER JOIN (
+        DELETE FROM #{quoted_hierarchy_table_name}
+        WHERE descendant_id IN (
           SELECT DISTINCT descendant_id
-          FROM #{quoted_hierarchy_table_name}
-          WHERE ancestor_id = #{id}
-        ) AS leaves
-        WHERE #{quoted_hierarchy_table_name}.descendant_id = leaves.descendant_id
+          FROM ( SELECT descendant_id
+            FROM #{quoted_hierarchy_table_name}
+            WHERE ancestor_id = #{id}
+          ) AS x )
+          OR descendant_id = #{id}
       SQL
     end
 
