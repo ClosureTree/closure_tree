@@ -66,8 +66,8 @@ describe Label do
   end
 
   context "find_all_by_generation" do
-    nuke_db
-    before :each do
+    before :all do
+      nuke_db
       @d1 = Label.find_or_create_by_path %w(a b c1 d1)
       @d2 = Label.find_or_create_by_path %w(a b c2 d2)
       @c1 = @d1.parent
