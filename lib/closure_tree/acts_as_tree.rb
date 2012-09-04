@@ -474,6 +474,8 @@ module ClosureTree
 
     def add_sibling(sibling_node, use_update_all = true, add_after = true)
       fail "can't add self as sibling" if self == sibling_node
+      # issue 18: we need to set the order_value explicitly so subsequent orders will work.
+      update_attribute(:order_value, 0) if self.order_value.nil?
       sibling_node.order_value = self.order_value.to_i + (add_after ? 1 : -1)
       # We need to incr the before_siblings to make room for sibling_node:
       if use_update_all
