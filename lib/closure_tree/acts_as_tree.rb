@@ -88,19 +88,15 @@ module ClosureTree
       end
 
       def self.leaves
-        s = joins(leaves_join_sql)
-        order_option ? s.order(order_option) : s
-      end
-
-      def self.leaves_join_sql
-        <<-SQL
-        INNER JOIN
-        (SELECT ancestor_id
-        FROM #{quoted_hierarchy_table_name}
-        GROUP BY 1
-        HAVING MAX(#{quoted_hierarchy_table_name}.generations) = 0) AS leaves
-        ON (#{quoted_table_name}.#{primary_key} = leaves.ancestor_id)
+        s = joins(<<-SQL)
+          INNER JOIN (
+            SELECT ancestor_id
+            FROM #{quoted_hierarchy_table_name}
+            GROUP BY 1
+            HAVING MAX(#{quoted_hierarchy_table_name}.generations) = 0
+          ) AS leaves ON (#{quoted_table_name}.#{primary_key} = leaves.ancestor_id)
         SQL
+        order_option ? s.order(order_option) : s
       end
     end
   end
@@ -276,18 +272,15 @@ module ClosureTree
     end
 
     def delete_hierarchy_references
-      # The crazy double-wrapped sub-subselect works around MySQL's limitation of subselects on the same table that is being mutated.
-      # It shouldn't affect performance of postgresql.
-      # See http://dev.mysql.com/doc/refman/5.0/en/subquery-errors.html
       connection.execute <<-SQL
-        DELETE FROM #{quoted_hierarchy_table_name}
-        WHERE descendant_id IN (
+        DELETE #{quoted_hierarchy_table_name}
+        FROM #{quoted_hierarchy_table_name}
+        INNER JOIN (
           SELECT DISTINCT descendant_id
-          FROM ( SELECT descendant_id
-            FROM #{quoted_hierarchy_table_name}
-            WHERE ancestor_id = #{id}
-          ) AS x )
-          OR descendant_id = #{id}
+          FROM #{quoted_hierarchy_table_name}
+          WHERE ancestor_id = #{id}
+        ) AS leaves
+        WHERE #{quoted_hierarchy_table_name}.descendant_id = leaves.descendant_id
       SQL
     end
 
