@@ -205,6 +205,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```Tag.hash_tree``` returns an [ordered, nested hash](#nested-hashes) that can be depth-limited.
 * ```Tag.find_by_path(path)``` returns the node whose name path is ```path```. See (#find_or_create_by_path).
 * ```Tag.find_or_create_by_path(path)``` returns the node whose name path is ```path```, and will create the node if it doesn't exist already.See (#find_or_create_by_path).
+* ```Tag.find_all_by_generation(generation_level)``` returns the descendant nodes who are ```generation_level``` away from a root. ```Tag.find_all_by_generation(0)``` is equivalent to ```Tag.roots```.
 
 ### Instance methods
 
@@ -329,6 +330,11 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 * MySQL, PostgreSQL, and SQLite.
 
 ## Change log
+
+### 3.5.0
+
+* Added ```find_all_by_generation```
+  for [feature request 17](https://github.com/mceachen/closure_tree/issues/17)).
 
 ### 3.4.2
 

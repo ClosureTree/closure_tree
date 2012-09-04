@@ -68,13 +68,19 @@ describe Label do
   context "find_all_by_generation" do
     nuke_db
     before :each do
-      @a = Label.find_or_create_by_path %w(a)
-      @b = Label.find_or_create_by_path %w(a b)
       @d1 = Label.find_or_create_by_path %w(a b c1 d1)
       @d2 = Label.find_or_create_by_path %w(a b c2 d2)
+      @c1 = @d1.parent
+      @c2 = @d2.parent
+      @b = @c1.parent
+      @a = @b.parent
     end
 
-    it "works for roots" do
+    it "finds roots from the class method" do
+      Label.find_all_by_generation(1).to_a.should == [@b]
+    end
+
+    it "finds roots from themselves" do
       @a.find_all_by_generation(0).to_a.should == [@a]
     end
 
@@ -82,10 +88,19 @@ describe Label do
       @b.find_all_by_generation(0).to_a.should == [@b]
     end
 
+    it "finds children for roots" do
+      Label.find_all_by_generation(1).to_a.should == [@b]
+    end
+
     it "finds children" do
       @a.find_all_by_generation(1).to_a.should == [@b]
       @b.find_all_by_generation(1).to_a.should == [@c1, @c2]
     end
+
+    it "finds grandchildren for roots" do
+      Label.find_all_by_generation(2).to_a.should == [@c1, @c2]
+    end
+
     it "finds grandchildren" do
       @a.find_all_by_generation(2).to_a.should == [@c1, @c2]
       @b.find_all_by_generation(2).to_a.should == [@d1, @d2]
