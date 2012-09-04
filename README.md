@@ -1,4 +1,4 @@
-# Closure Tree [![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
+# Closure Tree
 
 Closure Tree is a mostly-API-compatible replacement for the
 [ancestry](https://github.com/stefankroes/ancestry),
