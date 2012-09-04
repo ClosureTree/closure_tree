@@ -324,6 +324,11 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 ## Change log
 
 
+### 3.4.2
+
+* Fixed [issue 18](https://github.com/mceachen/closure_tree/issues/18), which affected
+  append_node/prepend_node ordering when the first node didn't have an explicit order_by value
+
 ### 3.4.1
 
 * Reverted .gemspec mistake that changed add_development_dependency to add_runtime_dependency
