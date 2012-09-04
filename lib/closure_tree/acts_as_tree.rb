@@ -94,7 +94,7 @@ module ClosureTree
             FROM #{quoted_hierarchy_table_name}
             GROUP BY 1
             HAVING MAX(#{quoted_hierarchy_table_name}.generations) = 0
-          ) AS leaves ON (#{quoted_table_name}.#{primary_key} = leaves.ancestor_id)
+          ) AS leaves ON #{quoted_table_name}.#{primary_key} = leaves.ancestor_id
         SQL
         order_option ? s.order(order_option) : s
       end
@@ -203,6 +203,19 @@ module ClosureTree
         node = child
       end
       node
+    end
+
+    def find_all_by_generation(generation_level)
+      s = self.class.joins(<<-SQL)
+          INNER JOIN (
+            SELECT descendant_id
+            FROM #{quoted_hierarchy_table_name}
+            WHERE ancestor_id = #{self.id}
+            GROUP BY 1
+            HAVING MAX(#{quoted_hierarchy_table_name}.generations) = #{generation_level.to_i}
+          ) AS descendants ON #{quoted_table_name}.#{self.class.primary_key} = descendants.descendant_id
+      SQL
+      order_option ? s.order(order_option) : s
     end
 
     def hash_tree(options = {})

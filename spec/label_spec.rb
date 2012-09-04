@@ -65,6 +65,33 @@ describe Label do
     end
   end
 
+  context "find_all_by_generation" do
+    nuke_db
+    before :each do
+      @a = Label.find_or_create_by_path %w(a)
+      @b = Label.find_or_create_by_path %w(a b)
+      @d1 = Label.find_or_create_by_path %w(a b c1 d1)
+      @d2 = Label.find_or_create_by_path %w(a b c2 d2)
+    end
+
+    it "works for roots" do
+      @a.find_all_by_generation(0).to_a.should == [@a]
+    end
+
+    it "finds itself for non-roots" do
+      @b.find_all_by_generation(0).to_a.should == [@b]
+    end
+
+    it "finds children" do
+      @a.find_all_by_generation(1).to_a.should == [@b]
+      @b.find_all_by_generation(1).to_a.should == [@c1, @c2]
+    end
+    it "finds grandchildren" do
+      @a.find_all_by_generation(2).to_a.should == [@c1, @c2]
+      @b.find_all_by_generation(2).to_a.should == [@d1, @d2]
+    end
+  end
+
   context "Deterministic siblings sort with custom integer column" do
     nuke_db
     fixtures :labels

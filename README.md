@@ -203,6 +203,8 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```Tag.roots``` returns all root nodes
 * ```Tag.leaves``` returns all leaf nodes
 * ```Tag.hash_tree``` returns an [ordered, nested hash](#nested-hashes) that can be depth-limited.
+* ```Tag.find_by_path(path)``` returns the node whose name path is ```path```. See (#find_or_create_by_path).
+* ```Tag.find_or_create_by_path(path)``` returns the node whose name path is ```path```, and will create the node if it doesn't exist already.See (#find_or_create_by_path).
 
 ### Instance methods
 
@@ -224,6 +226,12 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```tag.descendant_ids``` returns an array of the IDs of the descendants.
 * ```tag.self_and_descendants``` returns a scope of all children, childrens' children, etc., including self, ordered by depth.
 * ```tag.hash_tree``` returns an [ordered, nested hash](#nested-hashes) that can be depth-limited.
+* ```tag.find_by_path(path)``` returns the node whose name path *from ```tag```* is ```path```. See (#find_or_create_by_path).
+* ```tag.find_or_create_by_path(path)``` returns the node whose name path *from ```tag```* is ```path```, and will create the node if it doesn't exist already.See (#find_or_create_by_path).
+* ```tag.find_all_by_generation(generation_level)``` returns the descendant nodes who are ```generation_level``` away from ```tag```.
+    * ```tag.find_all_by_generation(0).to_a``` == ```[tag]```
+    * ```tag.find_all_by_generation(1)``` == ```tag.children```
+    * ```tag.find_all_by_generation(2)``` will return the tag's grandchildren, and so on.
 * ```tag.destroy``` will destroy a node and do <em>something</em> to its children, which is determined by the ```:dependent``` option passed to ```acts_as_tree```.
 
 ## <a id="sti"></a>Polymorphic hierarchies with STI
@@ -320,9 +328,7 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 * The latest Rails 3.0, 3.1, and 3.2 branches, and
 * MySQL, PostgreSQL, and SQLite.
 
-
 ## Change log
-
 
 ### 3.4.2
 
