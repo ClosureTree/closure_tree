@@ -88,7 +88,7 @@ module ClosureTree
       end
 
       def find_all_by_generation(generation_level)
-        s = self.class.joins(<<-SQL)
+        s = joins(<<-SQL)
           INNER JOIN (
             SELECT #{primary_key} as root_id
             FROM #{quoted_table_name}
@@ -100,7 +100,7 @@ module ClosureTree
             GROUP BY 1, 2
             HAVING MAX(#{quoted_hierarchy_table_name}.generations) = #{generation_level.to_i}
           ) AS descendants
-          ON #{quoted_table_name}.#{self.class.primary_key} = descendants.descendant_id
+          ON #{quoted_table_name}.#{primary_key} = descendants.descendant_id
             AND roots.root_id = ancestor_id
         SQL
         order_option ? s.order(order_option) : s
