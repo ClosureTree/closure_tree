@@ -87,9 +87,24 @@ module ClosureTree
         roots.inject(ActiveSupport::OrderedHash.new) { |h, ea| h.merge(ea.hash_tree(options)) }
       end
 
-      def self.find_all_by_generation(generation_level)
-        # TODO: make this be a proper SQL select, not an inject.
-        roots.inject([]) { |a, ea| a + ea.find_all_by_generation(generation_level).to_a }
+      def find_all_by_generation(generation_level)
+        s = joins(<<-SQL)
+          INNER JOIN (
+            SELECT #{primary_key} as root_id
+            FROM #{quoted_table_name}
+            WHERE #{quoted_parent_column_name} IS NULL
+          ) AS roots ON (1 = 1)
+          INNER JOIN (
+            SELECT ancestor_id, descendant_id
+            FROM #{quoted_hierarchy_table_name}
+            GROUP BY 1, 2
+            HAVING MAX(generations) = #{generation_level.to_i}
+          ) AS descendants ON (
+            #{quoted_table_name}.#{primary_key} = descendants.descendant_id
+            AND roots.root_id = descendants.ancestor_id
+          )
+        SQL
+        order_option ? s.order(order_option) : s
       end
 
       def self.leaves
@@ -99,7 +114,7 @@ module ClosureTree
             FROM #{quoted_hierarchy_table_name}
             GROUP BY 1
             HAVING MAX(#{quoted_hierarchy_table_name}.generations) = 0
-          ) AS leaves ON #{quoted_table_name}.#{primary_key} = leaves.ancestor_id
+          ) AS leaves ON (#{quoted_table_name}.#{primary_key} = leaves.ancestor_id)
         SQL
         order_option ? s.order(order_option) : s
       end
@@ -218,7 +233,7 @@ module ClosureTree
             WHERE ancestor_id = #{self.id}
             GROUP BY 1
             HAVING MAX(#{quoted_hierarchy_table_name}.generations) = #{generation_level.to_i}
-          ) AS descendants ON #{quoted_table_name}.#{self.class.primary_key} = descendants.descendant_id
+          ) AS descendants ON (#{quoted_table_name}.#{self.class.primary_key} = descendants.descendant_id)
       SQL
       order_option ? s.order(order_option) : s
     end

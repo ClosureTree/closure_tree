@@ -64,46 +64,54 @@ describe Label do
       end
     end
   end
-
   context "find_all_by_generation" do
     before :all do
       nuke_db
-      @d1 = Label.find_or_create_by_path %w(a b c1 d1)
-      @d2 = Label.find_or_create_by_path %w(a b c2 d2)
+      @d1 = Label.find_or_create_by_path %w(a1 b1 c1 d1)
       @c1 = @d1.parent
+      @b1 = @c1.parent
+      @a1 = @b1.parent
+      @d2 = Label.find_or_create_by_path %w(a1 b1 c2 d2)
       @c2 = @d2.parent
-      @b = @c1.parent
-      @a = @b.parent
+      @d3 = Label.find_or_create_by_path %w(a2 b2 c3 d3)
+      @c3 = @d3.parent
+      @b2 = @c3.parent
+      @a2 = @b2.parent
+      Label.update_all("sort_order = id")
     end
 
     it "finds roots from the class method" do
-      Label.find_all_by_generation(1).to_a.should == [@b]
+      Label.find_all_by_generation(0).to_a.should == [@a1, @a2]
     end
 
     it "finds roots from themselves" do
-      @a.find_all_by_generation(0).to_a.should == [@a]
+      @a1.find_all_by_generation(0).to_a.should == [@a1]
     end
 
     it "finds itself for non-roots" do
-      @b.find_all_by_generation(0).to_a.should == [@b]
+      @b1.find_all_by_generation(0).to_a.should == [@b1]
     end
 
     it "finds children for roots" do
-      Label.find_all_by_generation(1).to_a.should == [@b]
+      Label.find_all_by_generation(1).to_a.should == [@b1, @b2]
     end
 
     it "finds children" do
-      @a.find_all_by_generation(1).to_a.should == [@b]
-      @b.find_all_by_generation(1).to_a.should == [@c1, @c2]
+      @a1.find_all_by_generation(1).to_a.should == [@b1]
+      @b1.find_all_by_generation(1).to_a.should == [@c1, @c2]
     end
 
     it "finds grandchildren for roots" do
-      Label.find_all_by_generation(2).to_a.should == [@c1, @c2]
+      Label.find_all_by_generation(2).to_a.should == [@c1, @c2, @c3]
     end
 
     it "finds grandchildren" do
-      @a.find_all_by_generation(2).to_a.should == [@c1, @c2]
-      @b.find_all_by_generation(2).to_a.should == [@d1, @d2]
+      @a1.find_all_by_generation(2).to_a.should == [@c1, @c2]
+      @b1.find_all_by_generation(2).to_a.should == [@d1, @d2]
+    end
+
+    it "finds great-grandchildren for roots" do
+      Label.find_all_by_generation(3).to_a.should == [@d1, @d2, @d3]
     end
   end
 
