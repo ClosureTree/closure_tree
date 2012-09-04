@@ -323,6 +323,10 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 
 ## Change log
 
+### 3.4.3
+
+* Fixed [issue 19](https://github.com/mceachen/closure_tree/issues/19), which caused
+  ```self_and_siblings``` to fail if ```parent_id``` was not the ```parent_column_name```
 
 ### 3.4.2
 
