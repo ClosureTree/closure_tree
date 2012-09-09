@@ -1,4 +1,4 @@
 source :rubygems
 gemspec :path => '..'
 
-gem 'activerecord', '4.0.0.beta'
+gem 'activerecord', :git => "git://github.com/rails/rails.git"
