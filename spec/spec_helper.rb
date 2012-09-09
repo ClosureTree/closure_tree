@@ -1,6 +1,14 @@
 $:.unshift(File.dirname(__FILE__) + '/../lib')
 plugin_test_dir = File.dirname(__FILE__)
 
+# Don't run the test for activerecord 4 if we're using ruby 1.8.7:
+ruby_major_version, ruby_minor_version = RUBY_VERSION.split('.')[0..1]
+if ENV['BUNDLE_GEMFILE'] =~ /rails-4/ &&
+  ruby_major_version == "1" &&
+  ruby_minor_version == "8"
+  puts "this is going to fail."
+end
+
 require 'rubygems'
 require 'bundler/setup'
 
