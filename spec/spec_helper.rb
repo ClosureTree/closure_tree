@@ -24,6 +24,8 @@ ActiveRecord::Base.logger = log
 require 'yaml'
 require 'erb'
 ENV["DB"] ||= "sqlite3mem"
+ActiveRecord::Base.table_name_prefix = "p_"
+ActiveRecord::Base.table_name_suffix = "_s"
 ActiveRecord::Base.configurations = YAML::load(ERB.new(IO.read(plugin_test_dir + "/db/database.yml")).result)
 ActiveRecord::Base.establish_connection(ENV["DB"])
 ActiveRecord::Migration.verbose = false

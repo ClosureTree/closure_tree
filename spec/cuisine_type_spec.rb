@@ -25,6 +25,6 @@ describe CuisineType do
   end
 
   it "sets the table_name of the hierarchy class properly" do
-    CuisineTypeHierarchy.table_name.should == "cuisine_type_hierarchies"
+    CuisineTypeHierarchy.table_name.should == ActiveRecord::Base.table_name_prefix + "cuisine_type_hierarchies" + ActiveRecord::Base.table_name_suffix
   end
 end
