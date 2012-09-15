@@ -18,6 +18,17 @@ See [Bill Karwin](http://karwin.blogspot.com/)'s excellent
 [Models for hierarchical data presentation](http://www.slideshare.net/billkarwin/models-for-hierarchical-data)
 for a description of different tree storage algorithms.
 
+## Table of Contents
+
+	- [Installation](#installation)
+	- [Usage](#usage)
+	- [Accessing Data](#accessing-data)
+	- [Polymorphic hierarchies with STI](#sti)
+	- [Deterministic ordering](#deterministic-ordering)
+	- [FAQ](#faq)
+	- [Testing](#testing)
+	- [Change log](#change-log)
+
 ## Installation
 
 Note that closure_tree only supports Rails 3.0 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
@@ -320,6 +331,15 @@ b.append_sibling(c)
 root.children.collect(&:name)
 => ["a", "b", "c"]
 ```
+
+## FAQ
+
+### Does this gem support multiple parents?
+
+No. This gem's API is based on the assumption that each node has either 0 or 1 parent.
+
+The underlying closure tree structure will support multiple parents, but there would be many
+breaking-API changes to support it. I'm open to suggestions and pull requests.
 
 ## Testing
 
