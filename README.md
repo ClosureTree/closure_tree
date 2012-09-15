@@ -20,14 +20,14 @@ for a description of different tree storage algorithms.
 
 ## Table of Contents
 
-	- [Installation](#installation)
-	- [Usage](#usage)
-	- [Accessing Data](#accessing-data)
-	- [Polymorphic hierarchies with STI](#sti)
-	- [Deterministic ordering](#deterministic-ordering)
-	- [FAQ](#faq)
-	- [Testing](#testing)
-	- [Change log](#change-log)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Accessing Data](#accessing-data)
+- [Polymorphic hierarchies with STI](#sti)
+- [Deterministic ordering](#deterministic-ordering)
+- [FAQ](#faq)
+- [Testing](#testing)
+- [Change log](#change-log)
 
 ## Installation
 
