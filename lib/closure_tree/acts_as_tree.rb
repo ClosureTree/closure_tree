@@ -393,7 +393,8 @@ module ClosureTree
     end
 
     def hierarchy_class_name
-      hierarchy_table_name.singularize.camelize
+      # We need to strip prefix and suffix from table to generate the class name
+      remove_prefix_and_suffix(hierarchy_table_name).singularize.camelize
     end
 
     def quoted_hierarchy_table_name
@@ -444,6 +445,10 @@ module ClosureTree
 
     def quoted_table_name
       connection.quote_column_name ct_table_name
+    end
+
+    def remove_prefix_and_suffix(table)
+      table.gsub(/^(#{ActiveRecord::Base.table_name_prefix})(.+)(#{ActiveRecord::Base.table_name_suffix})$/,  "\\2")
     end
   end
 
