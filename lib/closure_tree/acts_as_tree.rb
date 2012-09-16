@@ -390,7 +390,12 @@ module ClosureTree
     def hierarchy_table_name
       # We need to use the table_name, not ct_class.to_s.demodulize, because they may have overridden the table name
       # We also need to escape prefix/suffix before singularizing, and then re-add afterwards
-      closure_tree_options[:hierarchy_table_name] || ActiveRecord::Base.table_name_prefix + remove_prefix_and_suffix(ct_table_name).singularize + "_hierarchies" + ActiveRecord::Base.table_name_suffix
+      closure_tree_options[:hierarchy_table_name] ||= begin
+        ActiveRecord::Base.table_name_prefix +
+          remove_prefix_and_suffix(ct_table_name).singularize +
+          "_hierarchies" +
+          ActiveRecord::Base.table_name_suffix
+      end
     end
 
     def hierarchy_class_name
@@ -449,7 +454,9 @@ module ClosureTree
     end
 
     def remove_prefix_and_suffix(table)
-      table.gsub(/^(#{ActiveRecord::Base.table_name_prefix})(.+)(#{ActiveRecord::Base.table_name_suffix})$/,  "\\2")
+      prefix = Regexp.escape(ActiveRecord::Base.table_name_prefix)
+      suffix = Regexp.escape(ActiveRecord::Base.table_name_suffix)
+      table.gsub(/^#{prefix}(.+)#{suffix}$/, "\\2")
     end
   end
 
