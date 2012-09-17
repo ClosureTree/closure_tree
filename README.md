@@ -354,7 +354,7 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 
 ### 3.6.0
 
-* Added support for
+* Added support for:
   * ```:hierarchy_class_name``` as an option
   * ActiveRecord::Base.table_name_prefix
   * ActiveRecord::Base.table_name_suffix
