@@ -20,8 +20,8 @@ ActiveRecord::Schema.define(:version => 0) do
     t.string   "name"
   end
 
-  add_index :tag_hierarchies, [:ancestor_id, :descendant_id], :unique => true
-  add_index :tag_hierarchies, [:descendant_id]
+  add_index "tag_hierarchies", [:ancestor_id, :descendant_id], :unique => true, :name => "tag_anc_desc_idx"
+  add_index "tag_hierarchies", [:descendant_id], :name => "tag_desc_idx"
 
   create_table "users", :force => true do |t|
     t.string   "email"
@@ -40,8 +40,8 @@ ActiveRecord::Schema.define(:version => 0) do
     t.integer "generations",   :null => false
   end
 
-  add_index :referral_hierarchies, [:ancestor_id, :descendant_id], :unique => true
-  add_index :referral_hierarchies, [:descendant_id]
+  add_index "referral_hierarchies", [:ancestor_id, :descendant_id], :unique => true, :name => "ref_anc_desc_idx"
+  add_index "referral_hierarchies", [:descendant_id], :name => "ref_desc_idx"
 
   create_table "labels", :force => true do |t|
     t.string   "name"
@@ -56,8 +56,8 @@ ActiveRecord::Schema.define(:version => 0) do
     t.integer "generations",   :null => false
   end
 
-  add_index :label_hierarchies, [:ancestor_id, :descendant_id], :unique => true
-  add_index :label_hierarchies, [:descendant_id]
+  add_index "label_hierarchies", [:ancestor_id, :descendant_id], :unique => true, :name => "lh_anc_desc_idx"
+  add_index "label_hierarchies", [:descendant_id], :name => "lh_desc_idx"
 
   create_table "cuisine_types", :force => true do |t|
     t.string   "name"

@@ -31,6 +31,8 @@ module ClosureTree
         alias :eql? :==
       RUBY
 
+      self.hierarchy_class.table_name = hierarchy_table_name
+
       unless order_option.nil?
         include ClosureTree::DeterministicOrdering
         include ClosureTree::DeterministicNumericOrdering if order_is_numeric
@@ -388,19 +390,17 @@ module ClosureTree
     end
 
     def hierarchy_table_name
-      # We need to use the table_name, not ct_class.to_s.demodulize, because they may have overridden the table name
-      # We also need to escape prefix/suffix before singularizing, and then re-add afterwards
-      closure_tree_options[:hierarchy_table_name] ||= begin
-        ActiveRecord::Base.table_name_prefix +
-          remove_prefix_and_suffix(ct_table_name).singularize +
-          "_hierarchies" +
-          ActiveRecord::Base.table_name_suffix
-      end
+      # We need to use the table_name, not something like ct_class.to_s.demodulize + "_hierarchies",
+      # because they may have overridden the table name, which is what we want to be consistent with
+      # in order for the schema to make sense.
+      tablename = closure_tree_options[:hierarchy_table_name] ||
+        remove_prefix_and_suffix(ct_table_name).singularize + "_hierarchies"
+
+      ActiveRecord::Base.table_name_prefix + tablename + ActiveRecord::Base.table_name_suffix
     end
 
     def hierarchy_class_name
-      # We need to strip prefix and suffix from table to generate the class name
-      remove_prefix_and_suffix(hierarchy_table_name).singularize.camelize
+      closure_tree_options[:hierarchy_class_name] || ct_class.to_s + "Hierarchy"
     end
 
     def quoted_hierarchy_table_name
@@ -453,10 +453,10 @@ module ClosureTree
       connection.quote_column_name ct_table_name
     end
 
-    def remove_prefix_and_suffix(table)
+    def remove_prefix_and_suffix(table_name)
       prefix = Regexp.escape(ActiveRecord::Base.table_name_prefix)
       suffix = Regexp.escape(ActiveRecord::Base.table_name_suffix)
-      table.gsub(/^#{prefix}(.+)#{suffix}$/, "\\2")
+      table_name.gsub(/^#{prefix}(.+)#{suffix}$/, "\\1")
     end
   end
 

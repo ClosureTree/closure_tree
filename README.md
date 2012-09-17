@@ -198,7 +198,8 @@ HT: [ancestry](https://github.com/stefankroes/ancestry#arrangement) and [elhoyos
 When you include ```acts_as_tree``` in your model, you can provide a hash to override the following defaults:
 
 * ```:parent_column_name``` to override the column name of the parent foreign key in the model's table. This defaults to "parent_id".
-* ```:hierarchy_table_name``` to override the hierarchy table name. This defaults to the singular name of the model + "_hierarchies".
+* ```:hierarchy_table_name``` to override the hierarchy class name. This defaults to the singular name of the model + "Hierarchy", like ```TagHierarchy```.
+* ```:hierarchy_table_name``` to override the hierarchy table name. This defaults to the singular name of the model + "_hierarchies", like ```tag_hierarchies```.
 * ```:dependent``` determines what happens when a node is destroyed. Defaults to ```nullify```.
     * ```:nullify``` will simply set the parent column to null. Each child node will be considered a "root" node. This is the default.
     * ```:delete_all``` will delete all descendant nodes (which circumvents the destroy hooks)
@@ -350,6 +351,13 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 * MySQL, PostgreSQL, and SQLite.
 
 ## Change log
+
+### 3.6.0
+
+* Added support for
+  * ```:hierarchy_class_name``` as an option
+  * ActiveRecord::Base.table_name_prefix
+  * ActiveRecord::Base.table_name_suffix
 
 ### 3.5.2
 

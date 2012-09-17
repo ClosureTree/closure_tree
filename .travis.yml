@@ -14,7 +14,7 @@ env:
   - DB=sqlite3
   - DB=mysql
   - DB=postgresql
-script: bundle exec rake
+script: bundle exec rake specs_with_db_ixes
 
 before_script:
   - mysql -e 'create database closure_tree_test'
