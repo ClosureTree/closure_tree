@@ -20,6 +20,7 @@ end
 class User < ActiveRecord::Base
   acts_as_tree :parent_column_name => "referrer_id",
     :name_column => 'email',
+    :hierarchy_class_name => 'ReferralHierarchy',
     :hierarchy_table_name => 'referral_hierarchies'
 
   has_many :contracts

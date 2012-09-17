@@ -31,6 +31,8 @@ module ClosureTree
         alias :eql? :==
       RUBY
 
+      self.hierarchy_class.table_name = hierarchy_table_name
+
       unless order_option.nil?
         include ClosureTree::DeterministicOrdering
         include ClosureTree::DeterministicNumericOrdering if order_is_numeric
@@ -388,12 +390,17 @@ module ClosureTree
     end
 
     def hierarchy_table_name
-      # We need to use the table_name, not ct_class.to_s.demodulize, because they may have overridden the table name
-      closure_tree_options[:hierarchy_table_name] || ct_table_name.singularize + "_hierarchies"
+      # We need to use the table_name, not something like ct_class.to_s.demodulize + "_hierarchies",
+      # because they may have overridden the table name, which is what we want to be consistent with
+      # in order for the schema to make sense.
+      tablename = closure_tree_options[:hierarchy_table_name] ||
+        remove_prefix_and_suffix(ct_table_name).singularize + "_hierarchies"
+
+      ActiveRecord::Base.table_name_prefix + tablename + ActiveRecord::Base.table_name_suffix
     end
 
     def hierarchy_class_name
-      hierarchy_table_name.singularize.camelize
+      closure_tree_options[:hierarchy_class_name] || ct_class.to_s + "Hierarchy"
     end
 
     def quoted_hierarchy_table_name
@@ -444,6 +451,12 @@ module ClosureTree
 
     def quoted_table_name
       connection.quote_column_name ct_table_name
+    end
+
+    def remove_prefix_and_suffix(table_name)
+      prefix = Regexp.escape(ActiveRecord::Base.table_name_prefix)
+      suffix = Regexp.escape(ActiveRecord::Base.table_name_suffix)
+      table_name.gsub(/^#{prefix}(.+)#{suffix}$/, "\\1")
     end
   end
 
