@@ -23,7 +23,7 @@ for a description of different tree storage algorithms.
 - [Installation](#installation)
 - [Usage](#usage)
 - [Accessing Data](#accessing-data)
-- [Polymorphic hierarchies with STI](#sti)
+- [Polymorphic hierarchies with STI](#polymorphic-hierarchies-with-sti)
 - [Deterministic ordering](#deterministic-ordering)
 - [FAQ](#faq)
 - [Testing](#testing)
@@ -247,7 +247,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
     * ```tag.find_all_by_generation(2)``` will return the tag's grandchildren, and so on.
 * ```tag.destroy``` will destroy a node and do <em>something</em> to its children, which is determined by the ```:dependent``` option passed to ```acts_as_tree```.
 
-## <a id="sti"></a>Polymorphic hierarchies with STI
+## Polymorphic hierarchies with STI
 
 Polymorphic models using single table inheritance (STI) are supported:
 
