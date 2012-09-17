@@ -300,37 +300,40 @@ When you enable ```order```, you'll also have the following new methods injected
 
 If your ```order``` column is an integer attribute, you'll also have these:
 
-* ```tag.add_sibling_before(sibling_node)``` which will
-  1. move ```tag``` to the same parent as ```sibling_node```,
-  2. decrement the sort_order values of the nodes before the ```sibling_node``` by one, and
-  3. set ```tag```'s order column to 1 less than the ```sibling_node```'s value.
+* ```node1.prepend_sibling(node2)``` which will
+  1. set ```node2``` to the same parent as ```node1```,
+  2. set ```node2```'s order column to 1 less than ```node1```'s value, and
+  3. decrement the order_column of all children of node1's parents whose order_column is <>>= node2's new value by 1.
 
-* ```tag.add_sibling_after(sibling_node)``` which will
-  1. move ```tag``` to the same parent as ```sibling_node```,
-  2. increment the sort_order values of the nodes after the ```sibling_node``` by one, and
-  3. set ```tag```'s order column to 1 more than the ```sibling_node```'s value.
+* ```node1.append_sibling(node2)``` which will
+  1. set ```node2``` to the same parent as ```node1```,
+  2. set ```node2```'s order column to 1 more than ```node1```'s value, and
+  3. increment the order_column of all children of node1's parents whose order_column is >= node2's new value by 1.
 
 ```ruby
+
 root = OrderedTag.create(:name => "root")
 a = OrderedTag.create(:name => "a", :parent => "root")
 b = OrderedTag.create(:name => "b")
 c = OrderedTag.create(:name => "c")
 
+# We have to call 'root.reload.children' because root won't be in sync with the database otherwise:
+
 a.append_sibling(b)
-root.children.collect(&:name)
+root.reload.children.collect(&:name)
 => ["a", "b"]
 
 a.prepend_sibling(b)
-root.children.collect(&:name)
+root.reload.children.collect(&:name)
 => ["b", "a"]
 
 a.append_sibling(c)
-root.children.collect(&:name)
-=> ["a", "c", "b"]
+root.reload.children.collect(&:name)
+=> ["b", "a", "c"]
 
 b.append_sibling(c)
-root.children.collect(&:name)
-=> ["a", "b", "c"]
+root.reload.children.collect(&:name)
+=> ["b", "c", "a"]
 ```
 
 ## FAQ
@@ -351,6 +354,11 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 * MySQL, PostgreSQL, and SQLite.
 
 ## Change log
+
+### 3.6.1
+
+* Fixed [issue 20](https://github.com/mceachen/closure_tree/issues/20), which affected
+  deterministic ordering when siblings where different STI classes. Thanks, [edwinramirez](https://github.com/edwinramirez)!
 
 ### 3.6.0
 

@@ -115,6 +115,51 @@ describe Label do
     end
   end
 
+  context "deterministically orders with polymorphic siblings" do
+    before :each do
+      @parent = Label.create!(:name => "parent")
+      @a = EventLabel.new(:name => "a")
+      @b = DirectoryLabel.new(:name => "b")
+      @c = DateLabel.new(:name => "c")
+      @parent.children << @a
+      @a.append_sibling(@b)
+      @b.append_sibling(@c)
+    end
+
+    it "when inserted before" do
+      @b.append_sibling(@a)
+      # Have to reload because the sort_order will have changed out from under the references:
+      @b.reload.sort_order.should be < @a.reload.sort_order
+      @a.reload.sort_order.should be < @c.reload.sort_order
+    end
+
+    it "when inserted before" do
+      @b.append_sibling(@a, use_update_all = false)
+      # Have to reload because the sort_order will have changed out from under the references:
+      @b.reload.sort_order.should be < @a.reload.sort_order
+      @a.reload.sort_order.should be < @c.reload.sort_order
+    end
+  end
+  
+  it "behaves like the readme" do
+    root = Label.create(:name => "root")
+    a = Label.create(:name => "a", :parent => root)
+    b = Label.create(:name => "b")
+    c = Label.create(:name => "c")
+
+    a.append_sibling(b)
+    root.reload.children.collect(&:name).should == %w(a b)
+
+    a.prepend_sibling(b)
+    root.reload.children.collect(&:name).should == %w(b a)
+
+    a.append_sibling(c)
+    root.reload.children.collect(&:name).should == %w(b a c)
+
+    b.append_sibling(c)
+    root.reload.children.collect(&:name).should == %w(b c a)
+  end
+
   context "Deterministic siblings sort with custom integer column" do
     nuke_db
     fixtures :labels

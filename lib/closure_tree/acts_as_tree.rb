@@ -5,6 +5,7 @@ module ClosureTree
       class_attribute :closure_tree_options
 
       self.closure_tree_options = {
+        :ct_base_class => self,
         :parent_column_name => 'parent_id',
         :dependent => :nullify, # or :destroy or :delete_all -- see the README
         :name_column => 'name'
@@ -180,7 +181,7 @@ module ClosureTree
     end
 
     def self_and_siblings
-      s = self.class.scoped.where(parent_column_sym => parent)
+      s = ct_base_class.where(parent_column_sym => parent)
       quoted_order_column ? s.order(quoted_order_column) : s
     end
 
@@ -228,14 +229,14 @@ module ClosureTree
     end
 
     def find_all_by_generation(generation_level)
-      s = self.class.joins(<<-SQL)
+      s = ct_base_class.joins(<<-SQL)
           INNER JOIN (
             SELECT descendant_id
             FROM #{quoted_hierarchy_table_name}
             WHERE ancestor_id = #{self.id}
             GROUP BY 1
             HAVING MAX(#{quoted_hierarchy_table_name}.generations) = #{generation_level.to_i}
-          ) AS descendants ON (#{quoted_table_name}.#{self.class.primary_key} = descendants.descendant_id)
+          ) AS descendants ON (#{quoted_table_name}.#{ct_base_class.primary_key} = descendants.descendant_id)
       SQL
       order_option ? s.order(order_option) : s
     end
@@ -317,7 +318,7 @@ module ClosureTree
     end
 
     def without_self(scope)
-      scope.where(["#{quoted_table_name}.#{self.class.primary_key} != ?", self])
+      scope.where(["#{quoted_table_name}.#{ct_base_class.primary_key} != ?", self])
     end
 
     def ids_from(scope)
@@ -433,6 +434,11 @@ module ClosureTree
       (self.is_a?(Class) ? self : self.class)
     end
 
+    # This is the "topmost" class. This will only potentially not be ct_class if you are using STI.
+    def ct_base_class
+      ct_class.closure_tree_options[:ct_base_class]
+    end
+
     def ct_subclass?
       ct_class != ct_class.base_class
     end
@@ -516,7 +522,8 @@ module ClosureTree
       # We need to incr the before_siblings to make room for sibling_node:
       if use_update_all
         col = quoted_order_column(false)
-        ct_class.update_all(
+        # issue 21: we have to use the base class, so STI doesn't get in the way of only updating the child class instances:
+        ct_base_class.update_all(
           ["#{col} = #{col} #{add_after ? '+' : '-'} 1", "updated_at = now()"],
             ["#{quoted_parent_column_name} = ? AND #{col} #{add_after ? '>=' : '<='} ?",
               ct_parent_id,
@@ -531,7 +538,7 @@ module ClosureTree
       end
       sibling_node.parent = self.parent
       sibling_node.save!
-      sibling_node.reload
+      sibling_node.reload # <- because siblings_before and siblings_after will have changed.
     end
   end
 end
