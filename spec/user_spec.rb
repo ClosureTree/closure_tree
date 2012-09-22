@@ -87,7 +87,6 @@ describe "empty db" do
     u.root.indirect_contracts.to_a.should =~ [c1, c2]
   end
 
-
   it "supports << on shallow unsaved hierarchies" do
     a = User.new(:email => "a")
     b = User.new(:email => "b")
@@ -115,5 +114,15 @@ describe "empty db" do
     User.roots.should == [a]
     User.leaves.should =~ [b1, c1, d]
     d.ancestry_path.should == %w(a b2 c2 d)
+  end
+
+  it "supports siblings" do
+    User.closure_tree_options[:sort_order].should be_nil
+    a = User.create(:email => "a")
+    b1 = a.children.create(:email => "b1")
+    b2 = a.children.create(:email => "b2")
+    b3 = a.children.create(:email => "b3")
+    a.siblings.should be_empty
+    b1.siblings.should =~ [b2, b3]
   end
 end
