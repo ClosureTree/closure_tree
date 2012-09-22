@@ -182,7 +182,7 @@ module ClosureTree
 
     def self_and_siblings
       s = ct_base_class.where(parent_column_sym => parent)
-      quoted_order_column ? s.order(quoted_order_column) : s
+      order_option.present? ? s.order(quoted_order_column) : s
     end
 
     def siblings
