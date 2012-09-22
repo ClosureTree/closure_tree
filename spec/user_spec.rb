@@ -117,7 +117,7 @@ describe "empty db" do
   end
 
   it "supports siblings" do
-    User.closure_tree_options[:sort_order].should be_nil
+    User.order_option.should be_nil
     a = User.create(:email => "a")
     b1 = a.children.create(:email => "b1")
     b2 = a.children.create(:email => "b2")
