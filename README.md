@@ -5,9 +5,15 @@ Closure Tree is a mostly-API-compatible replacement for the
 [acts_as_tree](https://github.com/amerine/acts_as_tree) and
 [awesome_nested_set](https://github.com/collectiveidea/awesome_nested_set/) gems, giving you:
 
-* Much better mutation performance thanks to the Closure Tree storage algorithm
-* Very efficient select performance (again, thanks to Closure Tree)
-* Efficient subtree selects
+* Best-in-class select performance:
+  * Fetch your whole ancestor lineage in 1 SELECT.
+  * Grab all your descendants: 1 SELECT.
+  * Get all your siblings: 1 SELECT.
+  * Fetch all [7-degrees-of-bacon in a nested hash](#nested-hashes): 1 SELECT.
+* Best-in-class mutation performance:
+  * 2 SQL INSERTs on node creation
+  * 3 SQL INSERT/UPDATEs on node reparenting
+* Support for reparenting children (and all their progeny)
 * Support for polymorphism [STI](#sti) within the hierarchy
 * ```find_or_create_by_path``` for [building out hierarchies quickly and conveniently](#find_or_create_by_path)
 * Support for [deterministic ordering](#deterministic-ordering) of children
