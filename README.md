@@ -361,6 +361,11 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 
 ## Change log
 
+### 3.6.2
+
+* Fixed [issue 23](https://github.com/mceachen/closure_tree/issues/23), which added support for ```#siblings```
+  when sort_order wasn't specified. Thanks, [garygreyling](https://github.com/garygreyling)!
+
 ### 3.6.1
 
 * Fixed [issue 20](https://github.com/mceachen/closure_tree/issues/20), which affected
