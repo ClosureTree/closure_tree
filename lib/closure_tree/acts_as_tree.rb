@@ -86,8 +86,34 @@ module ClosureTree
         where(parent_column_name => nil)
       end
 
+      # Note that options[:limit_depth] defaults to 10. This might be crazy-big, depending on your tree shape.
       def self.hash_tree(options = {})
-        roots.inject(ActiveSupport::OrderedHash.new) { |h, ea| h.merge(ea.hash_tree(options)) }
+        tree = ActiveSupport::OrderedHash.new
+        id_to_hash = {}
+        limit_depth = (options[:limit_depth] || 10).to_i
+        scope = joins(<<-SQL)
+          INNER JOIN (
+            SELECT #{primary_key} as root_id
+              FROM #{quoted_table_name}
+              WHERE #{quoted_parent_column_name} IS NULL
+            ) AS roots ON (1 = 1)
+          INNER JOIN (
+            SELECT ancestor_id, descendant_id, MAX(generations) as max_gen
+            FROM #{quoted_hierarchy_table_name}
+            GROUP BY 1, 2
+            HAVING MAX(generations) <= #{limit_depth - 1}
+          ) AS nodes ON (roots.root_id = nodes.ancestor_id) AND
+            #{quoted_table_name}.#{primary_key} = nodes.descendant_id
+        SQL
+        scope.order(append_order("max_gen")).each do |ea|
+          h = id_to_hash[ea.id] = ActiveSupport::OrderedHash.new
+          if ea.root?
+            tree[ea] = h
+          else
+            id_to_hash[ea.ct_parent_id][ea] = h
+          end
+        end
+        tree
       end
 
       def find_all_by_generation(generation_level)
@@ -257,6 +283,10 @@ module ClosureTree
       tree
     end
 
+    def ct_parent_id
+      read_attribute(parent_column_sym)
+    end
+
     protected
 
     def ct_validate
@@ -325,9 +355,6 @@ module ClosureTree
       scope.select(:id).collect(&:id)
     end
 
-    def ct_parent_id
-      read_attribute(parent_column_sym)
-    end
 
     # TODO: _parent_id will be removed in the next major version
     alias :_parent_id :ct_parent_id

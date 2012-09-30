@@ -5,12 +5,12 @@ Closure Tree is a mostly-API-compatible replacement for the
 [acts_as_tree](https://github.com/amerine/acts_as_tree) and
 [awesome_nested_set](https://github.com/collectiveidea/awesome_nested_set/) gems, giving you:
 
-* Best-in-class select performance:
+* *Best-in-class select performance*:
   * Fetch your whole ancestor lineage in 1 SELECT.
   * Grab all your descendants: 1 SELECT.
   * Get all your siblings: 1 SELECT.
   * Fetch all [7-degrees-of-bacon in a nested hash](#nested-hashes): 1 SELECT.
-* Best-in-class mutation performance:
+* *Best-in-class mutation performance*:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
 * Support for reparenting children (and all their progeny)
@@ -360,6 +360,12 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 * MySQL, PostgreSQL, & SQLite.
 
 ## Change log
+
+
+### 3.6.3
+
+* Fixed [issue 24](https://github.com/mceachen/closure_tree/issues/24), which optimized ```#hash_tree```
+  for roots. Thanks, [Saverio Trioni](https://github.com/rewritten)!
 
 ### 3.6.2
 
