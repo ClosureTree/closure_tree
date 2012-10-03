@@ -473,3 +473,4 @@ a.save
 
 * https://github.com/collectiveidea/awesome_nested_set
 * https://github.com/patshaughnessy/class_factory
+* JetBrains, which provides an [open-source license to RubyMine for this project](http://www.jetbrains.com/ruby/buy/buy.jsp#openSource).
