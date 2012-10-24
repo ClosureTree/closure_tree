@@ -352,7 +352,7 @@ module ClosureTree
     end
 
     def ids_from(scope)
-      scope.select(:id).collect(&:id)
+      scope.uniq.pluck(:id)
     end
 
 
