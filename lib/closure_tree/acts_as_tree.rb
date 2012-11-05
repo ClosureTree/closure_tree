@@ -352,9 +352,12 @@ module ClosureTree
     end
 
     def ids_from(scope)
-      scope.try(:pluck, :id) || scope.select(:id).collect(&:id)
+      if scope.respond_to? :pluck
+        scope.pluck(:id)
+      else
+        scope.select(:id).collect(&:id)
+      end
     end
-
 
     # TODO: _parent_id will be removed in the next major version
     alias :_parent_id :ct_parent_id
