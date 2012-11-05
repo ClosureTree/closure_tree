@@ -480,3 +480,4 @@ a.save
 * https://github.com/patshaughnessy/class_factory
 * JetBrains, which provides an [open-source license](http://www.jetbrains.com/ruby/buy/buy.jsp#openSource) to
   [RubyMine](http://www.jetbrains.com/ruby/features/) for the development of this project.
+
