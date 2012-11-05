@@ -363,8 +363,9 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 
 ### 3.6.4
 
-* Use ```.pluck``` when available for ```.ids_from```. Addresses [issue 26](https://github
-.com/mceachen/closure_tree/issues/26). Thanks, [Chris Sturgill](https://github.com/sturgill)!
+* Use ```.pluck``` when available for ```.ids_from```. Addresses
+ [issue 26](https://github.com/mceachen/closure_tree/issues/26). Thanks,
+ [Chris Sturgill](https://github.com/sturgill)!
 
 ### 3.6.3
 
