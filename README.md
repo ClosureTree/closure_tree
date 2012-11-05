@@ -361,6 +361,10 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 
 ## Change log
 
+### 3.6.4
+
+* Use ```.pluck``` when available for ```.ids_from```. Addresses [issue 26](https://github
+.com/mceachen/closure_tree/issues/26). Thanks, [Chris Sturgill](https://github.com/sturgill)!
 
 ### 3.6.3
 
@@ -370,7 +374,7 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 ### 3.6.2
 
 * Fixed [issue 23](https://github.com/mceachen/closure_tree/issues/23), which added support for ```#siblings```
-  when sort_order wasn't specified. Thanks, [garygreyling](https://github.com/garygreyling)!
+  when sort_order wasn't specified. Thanks, [Gary Greyling](https://github.com/garygreyling)!
 
 ### 3.6.1
 
