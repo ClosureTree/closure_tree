@@ -361,6 +361,12 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 
 ## Change log
 
+### 3.6.5
+
+* Use ```quote_table_name``` instead of ```quote_column_name```
+ [issue 29](https://github.com/mceachen/closure_tree/issues/29). Thanks,
+ [Marcello Barnaba](https://github.com/vjt)!
+
 ### 3.6.4
 
 * Use ```.pluck``` when available for ```.ids_from```. Addresses
