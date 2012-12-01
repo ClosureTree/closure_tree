@@ -435,7 +435,7 @@ module ClosureTree
     end
 
     def quoted_hierarchy_table_name
-      connection.quote_column_name hierarchy_table_name
+      connection.quote_table_name hierarchy_table_name
     end
 
     def quoted_parent_column_name
@@ -486,7 +486,7 @@ module ClosureTree
     end
 
     def quoted_table_name
-      connection.quote_column_name ct_table_name
+      connection.quote_table_name ct_table_name
     end
 
     def remove_prefix_and_suffix(table_name)
