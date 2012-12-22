@@ -50,7 +50,9 @@ module ClosureTree
         :class_name => ct_class.to_s,
         :foreign_key => parent_column_name
 
-      attr_accessible :parent
+      unless defined?(ActiveModel::ForbiddenAttributesProtection) && ancestors.include?(ActiveModel::ForbiddenAttributesProtection)
+        attr_accessible :parent
+      end
 
       has_many :children, with_order_option(
         :class_name => ct_class.to_s,
