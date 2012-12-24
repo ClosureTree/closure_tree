@@ -384,6 +384,11 @@ shared_examples_for Tag do
 end
 
 describe Tag do
+  it "should not include ActiveModel::ForbiddenAttributesProtection" do
+    if defined?(ActiveModel::ForbiddenAttributesProtection)
+      Tag.ancestors.should_not include(ActiveModel::ForbiddenAttributesProtection)
+    end
+  end
   it_behaves_like Tag
 end
 
@@ -392,9 +397,15 @@ describe "Tag with AR whitelisted attributes enabled" do
     ActiveRecord::Base.attr_accessible(nil) # turn on whitelisted attributes
     ActiveRecord::Base.descendants.each { |ea| ea.reset_column_information }
   end
+  it "should not include ActiveModel::ForbiddenAttributesProtection" do
+    if defined?(ActiveModel::ForbiddenAttributesProtection)
+      Tag.ancestors.should_not include(ActiveModel::ForbiddenAttributesProtection)
+    end
+  end
   it_behaves_like Tag
 end
 
+# This has to be the last one, because we include strong parameters into Tag
 describe "Tag with strong parameters" do
   before(:all) do
     require 'strong_parameters'
