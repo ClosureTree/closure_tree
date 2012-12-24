@@ -390,9 +390,18 @@ end
 describe "Tag with AR whitelisted attributes enabled" do
   before(:all) do
     ActiveRecord::Base.attr_accessible(nil) # turn on whitelisted attributes
-    ActiveRecord::Base.descendants.each{|ea|ea.reset_column_information}
+    ActiveRecord::Base.descendants.each { |ea| ea.reset_column_information }
   end
   it_behaves_like Tag
 end
 
+describe "Tag with strong parameters" do
+  before(:all) do
+    require 'strong_parameters'
+    class Tag
+      include ActiveModel::ForbiddenAttributesProtection
+    end
+  end
+  it_behaves_like Tag
+end
 

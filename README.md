@@ -361,6 +361,11 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 
 ## Change log
 
+### 3.6.6
+
+* Added support for Rails 4's [strong parameter](https://github.com/rails/strong_parameters).
+Thanks, [James Miller](https://github.com/bensie)!
+
 ### 3.6.5
 
 * Use ```quote_table_name``` instead of ```quote_column_name```. Addresses
