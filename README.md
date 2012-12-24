@@ -1,9 +1,13 @@
 # Closure Tree [![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
 
-Closure Tree is a mostly-API-compatible replacement for the
+__Closure_tree is a Rails gem that supports nested, tree-like relationships between ActiveRecord
+models.__
+
+Mostly API-compatible with other popular nesting gems for Rails, like
 [ancestry](https://github.com/stefankroes/ancestry),
 [acts_as_tree](https://github.com/amerine/acts_as_tree) and
-[awesome_nested_set](https://github.com/collectiveidea/awesome_nested_set/) gems, giving you:
+[awesome_nested_set](https://github.com/collectiveidea/awesome_nested_set/),
+with some great advantages:
 
 * __Best-in-class select performance__:
   * Fetch your whole ancestor lineage in 1 SELECT.
