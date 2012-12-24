@@ -7,7 +7,7 @@ Mostly API-compatible with other popular nesting gems for Rails, like
 [ancestry](https://github.com/stefankroes/ancestry),
 [acts_as_tree](https://github.com/amerine/acts_as_tree) and
 [awesome_nested_set](https://github.com/collectiveidea/awesome_nested_set/),
-with some great advantages:
+closure_tree has some great features:
 
 * __Best-in-class select performance__:
   * Fetch your whole ancestor lineage in 1 SELECT.
