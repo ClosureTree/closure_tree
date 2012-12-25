@@ -1,7 +1,10 @@
 # Closure Tree [![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
 
-__Closure_tree is a Rails gem that supports nested, tree-like relationships for an ActiveRecord
-model,__ useful for things like hierarchical tagging, pages in CMSes, and user referrals.
+__Closure_tree is a Rails gem that lets your ActiveRecord
+models act as nodes in a [tree data structure](http://en.wikipedia
+.org/wiki/Tree_%28data_structure%29).
+__ Example usages include hierarchical tagging, pages in CMSes,
+and user referrals.
 
 Mostly API-compatible with other popular nesting gems for Rails, like
 [ancestry](https://github.com/stefankroes/ancestry),
