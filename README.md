@@ -1,6 +1,7 @@
 # Closure Tree [![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
 
-## Closure_tree lets your ActiveRecord models act as nodes in a [tree data structure](http://en.wikipedia.org/wiki/Tree_%28data_structure%29)
+### Closure_tree lets your ActiveRecord models act as nodes in a [tree data structure](http://en
+.wikipedia.org/wiki/Tree_%28data_structure%29)
 
 Common applications include modeling hierarchical data, like tags, page graphs in CMSes,
 and tracking user referrals.
