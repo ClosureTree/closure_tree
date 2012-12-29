@@ -367,6 +367,11 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 
 ## Change log
 
+### 3.6.8
+
+* [Don Morrison](https://github.com/elskwid) massaged the [#hash_tree](#nested-hashes) query to
+be more efficient.
+
 ### 3.6.7
 
 * Added workaround for ActiveRecord::Observer usage pre-db-creation. Addresses
