@@ -1,8 +1,22 @@
 require 'spec_helper'
 
-def nuke_db
+def delete_all_labels
   LabelHierarchy.delete_all
   Label.delete_all
+end
+
+def create_label_hierarchy
+  @d1 = Label.find_or_create_by_path %w(a1 b1 c1 d1)
+  @c1 = @d1.parent
+  @b1 = @c1.parent
+  @a1 = @b1.parent
+  @d2 = Label.find_or_create_by_path %w(a1 b1 c2 d2)
+  @c2 = @d2.parent
+  @d3 = Label.find_or_create_by_path %w(a2 b2 c3 d3)
+  @c3 = @d3.parent
+  @b2 = @c3.parent
+  @a2 = @b2.parent
+  Label.update_all("sort_order = id")
 end
 
 describe Label do
@@ -43,7 +57,7 @@ describe Label do
   context "Mixed class tree" do
     it "should support mixed type ancestors" do
       [Label, DateLabel, DirectoryLabel, EventLabel].permutation do |classes|
-        nuke_db
+        delete_all_labels
         classes.each { |c| c.all.should(be_empty, "class #{c} wasn't cleaned out") }
         names = ('A'..'Z').to_a.first(classes.size)
         instances = classes.collect { |clazz| clazz.new(:name => names.shift) }
@@ -66,18 +80,8 @@ describe Label do
   end
   context "find_all_by_generation" do
     before :all do
-      nuke_db
-      @d1 = Label.find_or_create_by_path %w(a1 b1 c1 d1)
-      @c1 = @d1.parent
-      @b1 = @c1.parent
-      @a1 = @b1.parent
-      @d2 = Label.find_or_create_by_path %w(a1 b1 c2 d2)
-      @c2 = @d2.parent
-      @d3 = Label.find_or_create_by_path %w(a2 b2 c3 d3)
-      @c3 = @d3.parent
-      @b2 = @c3.parent
-      @a2 = @b2.parent
-      Label.update_all("sort_order = id")
+      delete_all_labels
+      create_label_hierarchy
     end
 
     it "finds roots from the class method" do
@@ -115,6 +119,29 @@ describe Label do
     end
   end
 
+  context "loading through self_and_ scopes" do
+    before :all do
+      delete_all_labels
+      create_label_hierarchy
+    end
+
+    it "self_and_descendants should result in one select" do
+      DB_QUERIES.clear
+      # The to_a forces the scope to materialize:
+      a1_array = @a1.self_and_descendants.to_a
+      a1_array.collect { |ea| ea.name }.should == %w(a1 b1 c1 c2 d1 d2)
+      DB_QUERIES.size.should == 1
+    end
+
+    it "self_and_ancestors should result in one select" do
+      DB_QUERIES.clear
+      # The to_a forces the scope to materialize:
+      d1_array = @d1.self_and_ancestors.to_a
+      d1_array.collect { |ea| ea.name }.should == %w(d1 c1 b1 a1)
+      DB_QUERIES.size.should == 1
+    end
+  end
+
   context "deterministically orders with polymorphic siblings" do
     before :each do
       @parent = Label.create!(:name => "parent")
@@ -140,7 +167,7 @@ describe Label do
       @a.reload.sort_order.should be < @c.reload.sort_order
     end
   end
-  
+
   it "behaves like the readme" do
     root = Label.create(:name => "root")
     a = Label.create(:name => "a", :parent => root)
@@ -161,7 +188,7 @@ describe Label do
   end
 
   context "Deterministic siblings sort with custom integer column" do
-    nuke_db
+    delete_all_labels
     fixtures :labels
 
     before :each do
