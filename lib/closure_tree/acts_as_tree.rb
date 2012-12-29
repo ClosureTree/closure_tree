@@ -110,8 +110,12 @@ module ClosureTree
           ON #{quoted_hierarchy_table_name}.descendant_id = generation_depth.descendant_id
         SQL
 
-        scope = scope.order(append_order("generation_depth.depth"))
+        # Filter self-references (this eases pressure on the hash assembly)
+        scope = scope.where(<<-SQL)
+          #{quoted_table_name}.parent_id IS NULL OR #{quoted_hierarchy_table_name}.generations != 0
+        SQL
 
+        scope = scope.order(append_order("generation_depth.depth"))
         scope.each do |ea|
           h = id_to_hash[ea.id] = ActiveSupport::OrderedHash.new
           if ea.root?
