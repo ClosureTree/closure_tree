@@ -93,21 +93,26 @@ module ClosureTree
         tree = ActiveSupport::OrderedHash.new
         id_to_hash = {}
         limit_depth = (options[:limit_depth] || 10).to_i
-        scope = joins(<<-SQL)
+
+        # Simple join with hierarchy for ancestor, descendant, and generation
+        scope = joins(:ancestor_hierarchies)
+
+        # Deepest generation, within limit, for each descendant
+        scope = scope.joins(<<-SQL)
           INNER JOIN (
-            SELECT #{primary_key} as root_id
-              FROM #{quoted_table_name}
-              WHERE #{quoted_parent_column_name} IS NULL
-            ) AS roots ON (1 = 1)
-          INNER JOIN (
-            SELECT ancestor_id, descendant_id, MAX(generations) as max_gen
+            SELECT
+              #{quoted_hierarchy_table_name}.descendant_id,
+              MAX(#{quoted_hierarchy_table_name}.generations) AS depth
             FROM #{quoted_hierarchy_table_name}
-            GROUP BY 1, 2
-            HAVING MAX(generations) <= #{limit_depth - 1}
-          ) AS nodes ON (roots.root_id = nodes.ancestor_id) AND
-            #{quoted_table_name}.#{primary_key} = nodes.descendant_id
+            GROUP BY #{quoted_hierarchy_table_name}.descendant_id
+            HAVING MAX(#{quoted_hierarchy_table_name}.generations) <= #{limit_depth - 1}
+          ) AS generation_depth
+          ON #{quoted_hierarchy_table_name}.descendant_id = generation_depth.descendant_id
         SQL
-        scope.order(append_order("max_gen")).each do |ea|
+
+        scope = scope.order(append_order("generation_depth.depth"))
+
+        scope.each do |ea|
           h = id_to_hash[ea.id] = ActiveSupport::OrderedHash.new
           if ea.root?
             tree[ea] = h
