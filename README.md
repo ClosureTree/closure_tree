@@ -367,6 +367,12 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 
 ## Change log
 
+### 3.6.7
+
+* Added workaround for ActiveRecord::Observer usage pre-db-creation. Addresses
+  [issue 32](https://github.com/mceachen/closure_tree/issues/32).
+  Thanks, [Don Morrison](https://github.com/elskwid)!
+
 ### 3.6.6
 
 * Added support for Rails 4's [strong parameter](https://github.com/rails/strong_parameters).
