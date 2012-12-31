@@ -93,29 +93,29 @@ module ClosureTree
       def self.hash_tree(options = {})
         limit_depth = options[:limit_depth]
 
-        build_nested_hash do
-          # Simple join with hierarchy for ancestor, descendant, and generation
-          scope = joins(:ancestor_hierarchies)
+        # Simple join with hierarchy for ancestor, descendant, and generation
+        scope = select("DISTINCT(#{quoted_table_name}.id), #{quoted_table_name}.*").
+          joins(:ancestor_hierarchies)
 
-          if limit_depth
-            # Deepest generation, within limit, for each descendant
-            generation_depth = <<-SQL
-              INNER JOIN (
-                SELECT
-                  #{quoted_hierarchy_table_name}.descendant_id,
-                  MAX(#{quoted_hierarchy_table_name}.generations) AS depth
-                FROM #{quoted_hierarchy_table_name}
-                GROUP BY #{quoted_hierarchy_table_name}.descendant_id
-                HAVING MAX(#{quoted_hierarchy_table_name}.generations) <= #{limit_depth - 1}
-              ) AS generation_depth
-              ON #{quoted_hierarchy_table_name}.descendant_id = generation_depth.descendant_id
-            SQL
-
-            scope.joins(generation_depth).order(append_order("generation_depth.depth"))
-          else
-            scope.order(append_order("#{quoted_hierarchy_table_name}.generations"))
-          end
+        tree_scope = if limit_depth
+          # Deepest generation, within limit, for each descendant
+          # NOTE: Postgres requires HAVING clauses to always contains aggregate functions (!!)
+          generation_depth = <<-SQL
+            INNER JOIN (
+              SELECT
+                #{quoted_hierarchy_table_name}.descendant_id,
+                MAX(#{quoted_hierarchy_table_name}.generations) AS depth
+              FROM #{quoted_hierarchy_table_name}
+              GROUP BY #{quoted_hierarchy_table_name}.descendant_id
+              HAVING MAX(#{quoted_hierarchy_table_name}.generations) <= #{limit_depth - 1}
+            ) AS generation_depth
+            ON #{quoted_hierarchy_table_name}.descendant_id = generation_depth.descendant_id
+          SQL
+          scope.joins(generation_depth).order(append_order("generation_depth.depth"))
+        else
+          scope.order(append_order("#{quoted_hierarchy_table_name}.generations"))
         end
+        build_hash_tree(tree_scope)
       end
 
       def find_all_by_generation(generation_level)
@@ -273,11 +273,13 @@ module ClosureTree
       limit_depth = options[:limit_depth]
       return {} if limit_depth && limit_depth <= 0
 
-      self.class.build_nested_hash(self) do
-        scope = descendants
-        scope = scope.where("generations <= #{limit_depth - 1}") if limit_depth
-        scope # return scope
+      tree_scope = descendants
+
+      if limit_depth
+        tree_scope = tree_scope.where("generations <= #{limit_depth - 1}")
       end
+
+      self.class.build_hash_tree(tree_scope, self)
     end
 
     def ct_parent_id
@@ -392,8 +394,8 @@ module ClosureTree
         root.find_or_create_by_path(path, attributes)
       end
 
-      # Builds nested hash structure using the returned scope from yield
-      def build_nested_hash(root = nil)
+      # Builds nested hash structure using the scope returned from the passed in scope
+      def build_hash_tree(tree_scope, root = nil)
         tree = ActiveSupport::OrderedHash.new
         id_to_hash = {}
 
@@ -401,10 +403,6 @@ module ClosureTree
           tree[root] = ActiveSupport::OrderedHash.new
           id_to_hash = {root.id => tree[root]}
         end
-
-        return tree unless block_given?
-
-        tree_scope = yield
 
         tree_scope.each do |ea|
           h = id_to_hash[ea.id] = ActiveSupport::OrderedHash.new

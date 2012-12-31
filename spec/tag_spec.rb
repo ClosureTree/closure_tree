@@ -124,28 +124,6 @@ shared_examples_for Tag do
       end
     end
 
-    it "builds hash_trees properly" do
-      b = Tag.find_or_create_by_path %w(a b)
-      a = b.parent
-      b2 = Tag.find_or_create_by_path %w(a b2)
-      d1 = b.find_or_create_by_path %w(c1 d1)
-      c1 = d1.parent
-      d2 = b.find_or_create_by_path %w(c2 d2)
-      c2 = d2.parent
-      Tag.hash_tree(:limit_depth => 0).should == {}
-      Tag.hash_tree(:limit_depth => 1).should == {a => {}}
-      Tag.hash_tree(:limit_depth => 2).should == {a => {b => {}, b2 => {}}}
-      tree = {a => {b => {c1 => {d1 => {}}, c2 => {d2 => {}}}, b2 => {}}}
-      Tag.hash_tree(:limit_depth => 4).should == tree
-      Tag.hash_tree.should == tree
-      b.hash_tree(:limit_depth => 0).should == {}
-      b.hash_tree(:limit_depth => 1).should == {b => {}}
-      b.hash_tree(:limit_depth => 2).should == {b => {c1 => {}, c2 => {}}}
-      b_tree = {b => {c1 => {d1 => {}}, c2 => {d2 => {}}}}
-      b.hash_tree(:limit_depth => 3).should == b_tree
-      b.hash_tree.should == b_tree
-    end
-
     it "performs as the readme says it does" do
       grandparent = Tag.create(:name => 'Grandparent')
       parent = grandparent.children.create(:name => 'Parent')
