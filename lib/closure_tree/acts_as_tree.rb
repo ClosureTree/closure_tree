@@ -148,15 +148,16 @@ module ClosureTree
       end
 
       def self.leaves
-        s = joins(<<-SQL)
-          INNER JOIN (
-            SELECT ancestor_id
+        scope = where(<<-SQL)
+          #{quoted_table_name}.#{primary_key} IN (
+            SELECT #{quoted_hierarchy_table_name}.ancestor_id
             FROM #{quoted_hierarchy_table_name}
-            GROUP BY 1
+            GROUP BY #{quoted_hierarchy_table_name}.ancestor_id
             HAVING MAX(#{quoted_hierarchy_table_name}.generations) = 0
-          ) AS leaves ON (#{quoted_table_name}.#{primary_key} = leaves.ancestor_id)
+          )
         SQL
-        order_option ? s.order(order_option) : s
+
+        order_option ? scope.order(order_option) : scope
       end
     end
   end
@@ -266,16 +267,17 @@ module ClosureTree
     end
 
     def find_all_by_generation(generation_level)
-      s = ct_base_class.joins(<<-SQL)
-          INNER JOIN (
-            SELECT descendant_id
-            FROM #{quoted_hierarchy_table_name}
-            WHERE ancestor_id = #{self.id}
-            GROUP BY 1
-            HAVING MAX(#{quoted_hierarchy_table_name}.generations) = #{generation_level.to_i}
-          ) AS descendants ON (#{quoted_table_name}.#{ct_base_class.primary_key} = descendants.descendant_id)
+      # Use subselect since we don't need data from the other table
+      scope = ct_base_class.where(<<-SQL)
+        #{quoted_table_name}.#{ct_base_class.primary_key} IN (
+          SELECT #{quoted_hierarchy_table_name}.descendant_id
+          FROM #{quoted_hierarchy_table_name}
+          WHERE #{quoted_hierarchy_table_name}.ancestor_id = #{self.id}
+          AND #{quoted_hierarchy_table_name}.generations = #{generation_level.to_i}
+        )
       SQL
-      order_option ? s.order(order_option) : s
+
+      order_option ? scope.order(order_option) : scope
     end
 
     def hash_tree(options = {})
