@@ -203,6 +203,11 @@ b.hash_tree(:limit_depth => 2)
 => {b => {c1 => {}, c2 => {}}}
 ```
 
+**If your tree is large (or might become so), use :limit_depth.**
+
+Without this option, ```hash_tree``` will load the entire contents of that table into RAM. Your
+server may not be happy trying to do this.
+
 HT: [ancestry](https://github.com/stefankroes/ancestry#arrangement) and [elhoyos](https://github.com/mceachen/closure_tree/issues/11)
 
 ### <a id="options"></a>Available options
@@ -367,10 +372,11 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 
 ## Change log
 
-### 3.6.8
+### 3.6.9
 
 * [Don Morrison](https://github.com/elskwid) massaged the [#hash_tree](#nested-hashes) query to
-be more efficient.
+be more efficient, and found a bug in ```hash_tree```'s query that resulted in duplicate rows,
+wasting time on the ruby side.
 
 ### 3.6.7
 
