@@ -91,25 +91,7 @@ module ClosureTree
       # There is no default depth limit. This might be crazy-big, depending
       # on your tree shape. Hash huge trees at your own peril!
       def self.hash_tree(options = {})
-        limit_depth = options[:limit_depth]
-
-        tree_scope = if limit_depth
-          # Deepest generation, within limit, for each descendant
-          # NOTE: Postgres requires HAVING clauses to always contains aggregate functions (!!)
-          generation_depth = <<-SQL
-            INNER JOIN (
-              SELECT descendant_id, MAX(generations) as depth
-              FROM #{quoted_hierarchy_table_name}
-              GROUP BY descendant_id
-              HAVING MAX(generations) <= #{limit_depth - 1}
-            ) AS generation_depth
-              ON #{quoted_table_name}.#{primary_key} = generation_depth.descendant_id
-          SQL
-          scoped.joins(generation_depth).order(append_order("generation_depth.depth"))
-        else
-          all # Yeah. You probably didn't want to do this.
-        end
-        build_hash_tree(tree_scope)
+        build_hash_tree(hash_tree_scope(options[:limit_depth]))
       end
 
       def find_all_by_generation(generation_level)
@@ -263,17 +245,17 @@ module ClosureTree
       order_option ? s.order(order_option) : s
     end
 
-    def hash_tree(options = {})
-      limit_depth = options[:limit_depth]
-      return {} if limit_depth && limit_depth <= 0
-
-      tree_scope = descendants
-
+    def hash_tree_scope(limit_depth = nil)
+      scope = self_and_descendants
       if limit_depth
-        tree_scope = tree_scope.where("generations <= #{limit_depth - 1}")
+        scope.where("#{quoted_hierarchy_table_name}.generations <= #{limit_depth - 1}")
+      else
+        scope
       end
+    end
 
-      self.class.build_hash_tree(tree_scope, self)
+    def hash_tree(options = {})
+      self.class.build_hash_tree(hash_tree_scope(options[:limit_depth]))
     end
 
     def ct_parent_id
@@ -388,15 +370,25 @@ module ClosureTree
         root.find_or_create_by_path(path, attributes)
       end
 
+      def hash_tree_scope(limit_depth = nil)
+        # Deepest generation, within limit, for each descendant
+        # NOTE: Postgres requires HAVING clauses to always contains aggregate functions (!!)
+        generation_depth = <<-SQL
+          INNER JOIN (
+            SELECT descendant_id, MAX(generations) as depth
+            FROM #{quoted_hierarchy_table_name}
+            GROUP BY descendant_id
+            #{"HAVING MAX(generations) <= #{limit_depth - 1}" if limit_depth}
+          ) AS generation_depth
+            ON #{quoted_table_name}.#{primary_key} = generation_depth.descendant_id
+        SQL
+        scoped.joins(generation_depth).order(append_order("generation_depth.depth"))
+      end
+
       # Builds nested hash structure using the scope returned from the passed in scope
-      def build_hash_tree(tree_scope, root = nil)
+      def build_hash_tree(tree_scope)
         tree = ActiveSupport::OrderedHash.new
         id_to_hash = {}
-
-        if root
-          tree[root] = ActiveSupport::OrderedHash.new
-          id_to_hash = {root.id => tree[root]}
-        end
 
         tree_scope.each do |ea|
           h = id_to_hash[ea.id] = ActiveSupport::OrderedHash.new
