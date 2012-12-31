@@ -1,11 +1,15 @@
 require 'spec_helper'
 
+# I want to assert that the spec has no dupe records, and I didn't want to pull
+# in rr or mocha just for this spec.
+
 module HashTreeScopeValidator
   def build_hash_tree(tree_scope, root = nil)
     @tree_hash_scope = tree_scope
     super
   end
 
+  # overrides acts_as_tree#tree_hash_scope
   def tree_hash_scope
     @tree_hash_scope
   end
@@ -14,8 +18,7 @@ end
 describe Tag do
 
   def hash_tree(target, *args)
-    target.send(:hash_tree, *args).
-      tap { |ea| a = Tag.tree_hash_scope.to_a ; a.should == a.uniq }
+    target.send(:hash_tree, *args).tap { a = Tag.tree_hash_scope.to_a ; a.should == a.uniq }
   end
 
   it "builds hash_trees properly" do
