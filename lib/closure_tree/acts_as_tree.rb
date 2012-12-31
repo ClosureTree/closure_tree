@@ -56,8 +56,8 @@ module ClosureTree
 
       has_many :children, with_order_option(
         :class_name => ct_class.to_s,
-          :foreign_key => parent_column_name,
-          :dependent => closure_tree_options[:dependent]
+        :foreign_key => parent_column_name,
+        :dependent => closure_tree_options[:dependent]
       )
 
       has_many :ancestor_hierarchies,
@@ -93,27 +93,21 @@ module ClosureTree
       def self.hash_tree(options = {})
         limit_depth = options[:limit_depth]
 
-        # Simple join with hierarchy for ancestor, descendant, and generation
-        scope = select("DISTINCT(#{quoted_table_name}.id), #{quoted_table_name}.*").
-          joins(:ancestor_hierarchies)
-
         tree_scope = if limit_depth
           # Deepest generation, within limit, for each descendant
           # NOTE: Postgres requires HAVING clauses to always contains aggregate functions (!!)
           generation_depth = <<-SQL
             INNER JOIN (
-              SELECT
-                #{quoted_hierarchy_table_name}.descendant_id,
-                MAX(#{quoted_hierarchy_table_name}.generations) AS depth
+              SELECT descendant_id, MAX(generations) as depth
               FROM #{quoted_hierarchy_table_name}
-              GROUP BY #{quoted_hierarchy_table_name}.descendant_id
-              HAVING MAX(#{quoted_hierarchy_table_name}.generations) <= #{limit_depth - 1}
+              GROUP BY descendant_id
+              HAVING MAX(generations) <= #{limit_depth - 1}
             ) AS generation_depth
-            ON #{quoted_hierarchy_table_name}.descendant_id = generation_depth.descendant_id
+              ON #{quoted_table_name}.#{primary_key} = generation_depth.descendant_id
           SQL
-          scope.joins(generation_depth).order(append_order("generation_depth.depth"))
+          scoped.joins(generation_depth).order(append_order("generation_depth.depth"))
         else
-          scope.order(append_order("#{quoted_hierarchy_table_name}.generations"))
+          joins(:self_and_descendants)
         end
         build_hash_tree(tree_scope)
       end
@@ -464,7 +458,9 @@ module ClosureTree
     end
 
     def order_option
-      closure_tree_options[:order]
+      if closure_tree_options[:order]
+        quoted_table_name + "." + closure_tree_options[:order]
+      end
     end
 
     def with_order_option(options)
@@ -577,9 +573,9 @@ module ClosureTree
         # issue 21: we have to use the base class, so STI doesn't get in the way of only updating the child class instances:
         ct_base_class.update_all(
           ["#{col} = #{col} #{add_after ? '+' : '-'} 1", "updated_at = now()"],
-            ["#{quoted_parent_column_name} = ? AND #{col} #{add_after ? '>=' : '<='} ?",
-              ct_parent_id,
-              sibling_node.order_value])
+          ["#{quoted_parent_column_name} = ? AND #{col} #{add_after ? '>=' : '<='} ?",
+            ct_parent_id,
+            sibling_node.order_value])
       else
         last_value = sibling_node.order_value.to_i
         (add_after ? siblings_after : siblings_before.reverse).each do |ea|

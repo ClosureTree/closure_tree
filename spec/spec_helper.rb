@@ -14,9 +14,9 @@ require 'action_controller' # rspec-rails needs this :(
 
 require 'closure_tree'
 
-#log = Logger.new(STDOUT)
-#log.sev_threshold = Logger::DEBUG
-#ActiveRecord::Base.logger = log
+log = Logger.new(STDOUT)
+log.sev_threshold = Logger::DEBUG
+ActiveRecord::Base.logger = log
 
 require 'yaml'
 require 'erb'
