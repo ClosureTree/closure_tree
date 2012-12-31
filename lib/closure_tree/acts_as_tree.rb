@@ -458,9 +458,7 @@ module ClosureTree
     end
 
     def order_option
-      if closure_tree_options[:order]
-        quoted_table_name + "." + closure_tree_options[:order]
-      end
+      closure_tree_options[:order]
     end
 
     def with_order_option(options)
