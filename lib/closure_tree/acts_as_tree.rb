@@ -106,7 +106,7 @@ module ClosureTree
                   MAX(#{quoted_hierarchy_table_name}.generations) AS depth
                 FROM #{quoted_hierarchy_table_name}
                 GROUP BY #{quoted_hierarchy_table_name}.descendant_id
-                HAVING MAX(#{quoted_hierarchy_table_name}.generations) <= #{limit_depth - 1}
+                HAVING depth <= #{limit_depth - 1}
               ) AS generation_depth
               ON #{quoted_hierarchy_table_name}.descendant_id = generation_depth.descendant_id
             SQL
