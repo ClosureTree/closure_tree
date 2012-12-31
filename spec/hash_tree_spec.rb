@@ -13,8 +13,9 @@ end
 
 describe Tag do
 
-  def assert_scope_has_no_dupes(scope)
-    scope.to_a.should == scope.to_a.uniq
+  def hash_tree(target, *args)
+    target.send(:hash_tree, *args).
+      tap { |ea| a = Tag.tree_hash_scope.to_a ; a.should == a.uniq }
   end
 
   it "builds hash_trees properly" do
@@ -29,36 +30,26 @@ describe Tag do
     c1 = d1.parent
     d2 = b.find_or_create_by_path %w(c2 d2)
     c2 = d2.parent
-    Tag.hash_tree(:limit_depth => 0).should == {}
-    assert_scope_has_no_dupes(Tag.tree_hash_scope)
+    hash_tree(Tag, :limit_depth => 0).should == {}
 
-    Tag.hash_tree(:limit_depth => 1).should == {a => {}}
-    assert_scope_has_no_dupes(Tag.tree_hash_scope)
+    hash_tree(Tag, :limit_depth => 1).should == {a => {}}
 
-    Tag.hash_tree(:limit_depth => 2).should == {a => {b => {}, b2 => {}}}
-    assert_scope_has_no_dupes(Tag.tree_hash_scope)
+    hash_tree(Tag, :limit_depth => 2).should == {a => {b => {}, b2 => {}}}
 
     tree = {a => {b => {c1 => {d1 => {}}, c2 => {d2 => {}}}, b2 => {}}}
-    Tag.hash_tree(:limit_depth => 4).should == tree
-    assert_scope_has_no_dupes(Tag.tree_hash_scope)
+    hash_tree(Tag, :limit_depth => 4).should == tree
 
-    Tag.hash_tree.should == tree
-    assert_scope_has_no_dupes(Tag.tree_hash_scope)
+    hash_tree(Tag).should == tree
 
-    b.hash_tree(:limit_depth => 0).should == {}
-    assert_scope_has_no_dupes(Tag.tree_hash_scope)
+    hash_tree(b, :limit_depth => 0).should == {}
 
-    b.hash_tree(:limit_depth => 1).should == {b => {}}
-    assert_scope_has_no_dupes(Tag.tree_hash_scope)
+    hash_tree(b, :limit_depth => 1).should == {b => {}}
 
-    b.hash_tree(:limit_depth => 2).should == {b => {c1 => {}, c2 => {}}}
-    assert_scope_has_no_dupes(Tag.tree_hash_scope)
+    hash_tree(b, :limit_depth => 2).should == {b => {c1 => {}, c2 => {}}}
 
     b_tree = {b => {c1 => {d1 => {}}, c2 => {d2 => {}}}}
-    b.hash_tree(:limit_depth => 3).should == b_tree
-    assert_scope_has_no_dupes(Tag.tree_hash_scope)
+    hash_tree(b, :limit_depth => 3).should == b_tree
 
-    b.hash_tree.should == b_tree
-    assert_scope_has_no_dupes(Tag.tree_hash_scope)
+    hash_tree(b).should == b_tree
   end
 end

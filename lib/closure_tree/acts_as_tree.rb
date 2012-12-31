@@ -107,7 +107,7 @@ module ClosureTree
           SQL
           scoped.joins(generation_depth).order(append_order("generation_depth.depth"))
         else
-          joins(:self_and_descendants)
+          all # Yeah. You probably didn't want to do this.
         end
         build_hash_tree(tree_scope)
       end
