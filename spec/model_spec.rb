@@ -81,7 +81,7 @@ describe "The model" do
       end
     end
 
-    describe "with generation_level" do
+    describe "with only" do
       it "0 returns `a`" do
         results = Tag.with_depths(:only => 0)
         results.all.size.should eq(1)
