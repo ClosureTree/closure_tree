@@ -62,6 +62,12 @@ module ClosureTree
           scope = scope.having(having) if generation
           scope
         end
+
+        # ActiveRecord doesn't always know how the aliased column data should
+        # be returned. These methods just `to_i` to help.
+        [:node_id, :height, :depth].each do |field|
+          define_method(field) { self[field].to_i }
+        end
       RUBY
 
       self.hierarchy_class.table_name = hierarchy_table_name
@@ -202,11 +208,18 @@ module ClosureTree
       self_and_descendants.leaves
     end
 
+    # We may have a calculated field available, if so, use it
+    # Calculated field available after joining with ModelHierarchy.depths
     def depth
-      ancestors.size
+      (read_attribute(:depth) || ancestors.size).to_i
     end
 
     alias :level :depth
+
+    # Calculated field available after joining with ModelHierarchy.heights
+    def height
+      read_attribute(:height).to_i
+    end
 
     def ancestors
       without_self(self_and_ancestors)
