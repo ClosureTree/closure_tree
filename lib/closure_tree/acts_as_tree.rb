@@ -130,7 +130,7 @@ module ClosureTree
         # options are passed straight through to `generation_depths`
         depths = hierarchy_class.depths(options)
 
-        scope = select("*")
+        scope = select("#{quoted_table_name}.*, depths.*")
         scope = scope.joins(<<-SQL)
           INNER JOIN (#{depths.to_sql}) AS depths
           ON #{quoted_table_name}.#{primary_key} = depths.node_id
@@ -146,7 +146,7 @@ module ClosureTree
         # options are passed straight through to `depths`
         heights = hierarchy_class.heights(options)
 
-        scope = select("*")
+        scope = select("#{quoted_table_name}.*, heights.*")
         scope = scope.joins(<<-SQL)
           INNER JOIN (#{heights.to_sql}) AS heights
           ON #{quoted_table_name}.#{primary_key} = heights.node_id
