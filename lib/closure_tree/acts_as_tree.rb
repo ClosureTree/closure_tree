@@ -162,15 +162,8 @@ module ClosureTree
       end
 
       def self.leaves
-        s = joins(<<-SQL)
-          INNER JOIN (
-            SELECT ancestor_id
-            FROM #{quoted_hierarchy_table_name}
-            GROUP BY 1
-            HAVING MAX(#{quoted_hierarchy_table_name}.generations) = 0
-          ) AS leaves ON (#{quoted_table_name}.#{primary_key} = leaves.ancestor_id)
-        SQL
-        order_option ? s.order(order_option) : s
+        with_heights :only => 0
+      end
       end
     end
   end
