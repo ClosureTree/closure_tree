@@ -40,8 +40,8 @@ describe "The generated hierarchy model" do
   describe "HierarchyModel.depths" do
     let(:results) { TagHierarchy.depths }
 
-    def descendant(tag)
-      results.find{ |r| r.descendant_id == tag.id }
+    def node(tag)
+      results.find{ |r| r.node_id == tag.id }
     end
 
     before do
@@ -62,16 +62,16 @@ describe "The generated hierarchy model" do
     end
 
     it "returns the correct depth (max generations)" do
-      descendant(@a).depth.should eq(0)
+      node(@a).depth.should eq(0)
 
-      descendant(@b).depth.should eq(1)
-      descendant(@b2).depth.should eq(1)
+      node(@b).depth.should eq(1)
+      node(@b2).depth.should eq(1)
 
-      descendant(@c1).depth.should eq(2)
-      descendant(@c2).depth.should eq(2)
+      node(@c1).depth.should eq(2)
+      node(@c2).depth.should eq(2)
 
-      descendant(@d1).depth.should eq(3)
-      descendant(@d2).depth.should eq(3)
+      node(@d1).depth.should eq(3)
+      node(@d2).depth.should eq(3)
     end
 
     describe "with limit" do
@@ -84,7 +84,7 @@ describe "The generated hierarchy model" do
         results = TagHierarchy.depths(:limit => 0)
         results.all.size.should eq(1)
 
-        result_ids = results.map(&:descendant_id)
+        result_ids = results.map(&:node_id)
         result_ids.should include(@a.id)
       end
 
@@ -92,7 +92,7 @@ describe "The generated hierarchy model" do
         results = TagHierarchy.depths(:limit => 1)
         results.all.size.should eq(3)
 
-        result_ids = results.map(&:descendant_id)
+        result_ids = results.map(&:node_id)
         result_ids.should include(@a.id)
         result_ids.should include(@b.id)
         result_ids.should include(@b2.id)
@@ -106,7 +106,7 @@ describe "The generated hierarchy model" do
         results = TagHierarchy.depths(:limit => 2)
         results.all.size.should eq(5)
 
-        result_ids = results.map(&:descendant_id)
+        result_ids = results.map(&:node_id)
         result_ids.should include(@a.id)
         result_ids.should include(@b.id)
         result_ids.should include(@b2.id)
@@ -120,7 +120,7 @@ describe "The generated hierarchy model" do
         results = TagHierarchy.depths(:limit => 3)
         results.all.size.should eq(7)
 
-        result_ids = results.map(&:descendant_id)
+        result_ids = results.map(&:node_id)
         result_ids.should include(@a.id)
         result_ids.should include(@b.id)
         result_ids.should include(@b2.id)
@@ -140,14 +140,14 @@ describe "The generated hierarchy model" do
       it "0 returns hierarchy for `a`" do
         results = TagHierarchy.depths(:only => 0)
         results.all.size.should eq(1)
-        results.map(&:descendant_id).should include(@a.id)
+        results.map(&:node_id).should include(@a.id)
       end
 
       it "1 returns hierarchies for `b`, `b2`" do
         results = TagHierarchy.depths(:only => 1)
         results.all.size.should eq(2)
 
-        result_ids = results.map(&:descendant_id)
+        result_ids = results.map(&:node_id)
         result_ids.should_not include(@a.id)
         result_ids.should include(@b.id)
         result_ids.should include(@b2.id)
@@ -161,7 +161,7 @@ describe "The generated hierarchy model" do
         results = TagHierarchy.depths(:only => 2)
         results.all.size.should eq(2)
 
-        result_ids = results.map(&:descendant_id)
+        result_ids = results.map(&:node_id)
         result_ids.should_not include(@a.id)
         result_ids.should_not include(@b.id)
         result_ids.should_not include(@b2.id)
@@ -175,7 +175,7 @@ describe "The generated hierarchy model" do
         results = TagHierarchy.depths(:only => 3)
         results.all.size.should eq(2)
 
-        result_ids = results.map(&:descendant_id)
+        result_ids = results.map(&:node_id)
         result_ids.should_not include(@a.id)
         result_ids.should_not include(@b.id)
         result_ids.should_not include(@b2.id)

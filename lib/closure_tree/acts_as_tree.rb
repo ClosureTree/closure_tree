@@ -41,8 +41,8 @@ module ClosureTree
           # already in a 'string' so we can't interpolate these
           having = "MAX(generations)" + relation + generation.to_s
 
-          scope = select("descendant_id, MAX(generations) AS depth")
-          scope = scope.group("descendant_id")
+          scope = select("descendant_id AS node_id, MAX(generations) AS depth")
+          scope = scope.group("node_id")
           scope = scope.having(having) if generation
           scope
         end
@@ -109,7 +109,7 @@ module ClosureTree
 
         scope = joins(<<-SQL)
           INNER JOIN (#{depths.to_sql}) AS depths
-          ON #{quoted_table_name}.#{primary_key} = depths.descendant_id
+          ON #{quoted_table_name}.#{primary_key} = depths.node_id
         SQL
 
         scope.order(append_order("depths.depth"))
