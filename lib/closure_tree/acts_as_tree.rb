@@ -123,7 +123,8 @@ module ClosureTree
         # options are passed straight through to `generation_depths`
         depths = hierarchy_class.depths(options)
 
-        scope = joins(<<-SQL)
+        scope = select("*")
+        scope = scope.joins(<<-SQL)
           INNER JOIN (#{depths.to_sql}) AS depths
           ON #{quoted_table_name}.#{primary_key} = depths.node_id
         SQL
