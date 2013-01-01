@@ -17,7 +17,7 @@ describe "The model" do
   end
 
   describe "Model.with_depths" do
-    let(:results) { Tag.with_depths }
+    let(:results) { Tag.with_depths.order("depths.depth") }
 
     it "returns one row for each tag" do
       results.all.size.should eq(7)
@@ -135,7 +135,7 @@ describe "The model" do
   end
 
   describe "Model.with_heights" do
-    let(:results) { Tag.with_heights }
+    let(:results) { Tag.with_heights.order("heights.height DESC") }
 
     it "returns one row for each tag" do
       results.all.size.should eq(7)
