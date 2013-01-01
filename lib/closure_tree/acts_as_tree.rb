@@ -116,7 +116,7 @@ module ClosureTree
         :source => :descendant,
         :order => append_order("#{quoted_hierarchy_table_name}.generations asc")
 
-      # Model joined with HierarchyModel.generation_depths
+      # Model joined with HierarchyModel.depths
       #  :limit => N to limit the generations (up to and including N)
       #  :only => N to match a specific generation
       def self.with_depths(options = {})
