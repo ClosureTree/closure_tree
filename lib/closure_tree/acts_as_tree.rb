@@ -34,7 +34,7 @@ module ClosureTree
         # Scope with `descendant_id` and `depth`, grouped by the descendant
         #  :limit => N to limit the generations (up to and including N)
         #  :only => N to match a specific generation
-        def self.generation_depths(options = {})
+        def self.depths(options = {})
           generation = options[:limit] || options[:only]
           relation   = options[:limit] ? " <= " : " = "
 
@@ -105,7 +105,7 @@ module ClosureTree
       #  :only => N to match a specific generation
       def self.with_depths(options = {})
         # options are passed straight through to `generation_depths`
-        depths = hierarchy_class.generation_depths(options)
+        depths = hierarchy_class.depths(options)
 
         scope = joins(<<-SQL)
           INNER JOIN (#{depths.to_sql}) AS depths
