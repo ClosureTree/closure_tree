@@ -135,8 +135,8 @@ module ClosureTree
           INNER JOIN (#{depths.to_sql}) AS depths
           ON #{quoted_table_name}.#{primary_key} = depths.node_id
         SQL
-
-        scope.order(append_order("depths.depth"))
+        scope = scope.order("depths.depth")
+        scope
       end
 
       # Model joined with HierarchyModel.heights. Height is steps to a leaf.
@@ -151,7 +151,8 @@ module ClosureTree
           INNER JOIN (#{heights.to_sql}) AS heights
           ON #{quoted_table_name}.#{primary_key} = heights.node_id
         SQL
-        scope.order(append_order("heights.height DESC"))
+        scope = scope.order("heights.height DESC")
+        scope
       end
 
       def self.roots
@@ -165,15 +166,15 @@ module ClosureTree
       end
 
       def self.at_depth(depth)
-        with_depths :only => depth
+        with_depths(:only => depth).order(order_option)
       end
 
       def self.leaves
-        with_heights :only => 0
+        with_heights(:only => 0).order(order_option)
       end
 
       def self.at_height(height)
-        with_heights :only => height
+        with_heights(:only => height).order(order_option)
       end
 
       class << self
