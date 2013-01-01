@@ -225,7 +225,7 @@ describe "The model" do
         results.should_not include(@d2)
       end
 
-      it "0 returns `d1`, `d2`" do
+      it "0 returns `b2`, `d1`, `d2`" do
         results = Tag.with_heights(:only => 0)
         results.all.size.should eq(3)
 
