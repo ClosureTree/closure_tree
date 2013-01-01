@@ -100,6 +100,21 @@ module ClosureTree
         :source => :descendant,
         :order => append_order("#{quoted_hierarchy_table_name}.generations asc")
 
+      # Model joined with HierarchyModel.generation_depths
+      #  :limit => N to limit the generations (up to and including N)
+      #  :only => N to match a specific generation
+      def self.with_depths(options = {})
+        # options are passed straight through to `generation_depths`
+        depths = hierarchy_class.generation_depths(options)
+
+        scope = joins(<<-SQL)
+          INNER JOIN (#{depths.to_sql}) AS depths
+          ON #{quoted_table_name}.#{primary_key} = depths.descendant_id
+        SQL
+
+        scope.order(append_order("depths.depth"))
+      end
+
       def self.roots
         where(parent_column_name => nil)
       end
