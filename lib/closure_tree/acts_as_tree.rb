@@ -160,7 +160,6 @@ module ClosureTree
       def self.at_depth(depth)
         with_depths :only => depth
       end
-      alias :find_all_by_generation :at_depth
 
       def self.leaves
         with_heights :only => 0
@@ -168,6 +167,10 @@ module ClosureTree
 
       def self.at_height(height)
         with_heights :only => height
+      end
+
+      class << self
+        alias :find_all_by_generation :at_depth
       end
     end
   end
