@@ -308,12 +308,8 @@ module ClosureTree
     end
 
     def hash_tree_scope(limit_depth = nil)
-      scope = self_and_descendants
-      if limit_depth
-        scope.where("#{quoted_hierarchy_table_name}.generations <= #{limit_depth - 1}")
-      else
-        scope
-      end
+      # Starting from a node so no need to decrement `limit_depth`
+      self_and_descendants.with_depths(:limit => limit_depth)
     end
 
     def hash_tree(options = {})
