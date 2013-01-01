@@ -220,6 +220,10 @@ module ClosureTree
       self_and_ancestors.where(parent_column_name.to_sym => nil).first
     end
 
+    def tree(options = {})
+      self_and_descendants.tree(options)
+    end
+
     def leaves
       self_and_descendants.leaves
     end

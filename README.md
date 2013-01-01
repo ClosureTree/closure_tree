@@ -230,7 +230,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 
 * ```Tag.root``` returns an arbitrary root node
 * ```Tag.roots``` returns all root nodes
-* ```Tag.tree``` returns ordered nodes that can be depth-limited or only of a specific depth (```Tag.at_depth```).
+* ```Tag.tree``` returns ordered nodes for the entire tree. Optionally limited by depth.
 * ```Tag.leaves``` returns all leaf nodes
 * ```Tag.hash_tree``` returns an [ordered, nested hash](#nested-hashes) that can be depth-limited.
 * ```Tag.find_by_path(path)``` returns the node whose name path is ```path```. See (#find_or_create_by_path).
@@ -243,6 +243,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 
 * ```tag.root``` returns the root for this node
 * ```tag.root?``` returns true if this is a root node
+* ```tag.tree``` returns ordered nodes for the tree starting at the current node. Optionally limited by depth.
 * ```tag.child?``` returns true if this is a child node. It has a parent.
 * ```tag.leaf?``` returns true if this is a leaf node. It has no children.
 * ```tag.leaves``` is scoped to all leaf nodes in self_and_descendants.

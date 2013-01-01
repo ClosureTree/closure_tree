@@ -318,4 +318,22 @@ describe "The model" do
       results.should_not include(@b2)
     end
   end
+
+  # Instance methods as it says ... right there.
+  describe "instance methods" do
+    describe "Model#tree" do
+      it "returns all nodes starting at `a`" do
+        tree = @a.tree.all
+        tree.size.should eq(7)
+        tree.first.should eq(@a)
+        tree.last.should eq(@d2)
+      end
+
+      it "returns nodes limited to depth starting at `a" do
+        tree = @a.tree(:limit_depth => 1)
+        tree.size.should eq(1)
+        tree.first.should eq(@a)
+      end
+    end
+  end
 end
