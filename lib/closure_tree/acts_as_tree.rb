@@ -31,14 +31,14 @@ module ClosureTree
         end
         alias :eql? :==
 
-        # Scope with `descendant_id` and `depth`, grouped by the descendant
-        #  :limit => N to limit the generations (up to and including N)
-        #  :only => N to match a specific generation
+        # Scope with `node_id` and `depth`, grouped by the descendant. Depth is
+        # steps away from a root node.
+        #  :limit => N to limit the depth (including N)
+        #  :only => N to match a specific depth
         def self.depths(options = {})
           generation = options[:limit] || options[:only]
           relation   = options[:limit] ? " <= " : " = "
 
-          # already in a 'string' so we can't interpolate these
           having = "MAX(generations)" + relation + generation.to_s
 
           scope = select("descendant_id AS node_id, MAX(generations) AS depth")
@@ -47,14 +47,14 @@ module ClosureTree
           scope
         end
 
-        # Scope with `ancestor_id` and `depth`, grouped by the descendant
-        #  :limit => N to limit the generations (up to and including N)
-        #  :only => N to match a specific generation
+        # Scope with `node_id` and `height`, grouped by the ancestor. Height is
+        # steps from node to a leaf.
+        #  :limit => N to limit the height (including N)
+        #  :only => N to match a specific height
         def self.heights(options = {})
           generation = options[:limit] || options[:only]
           relation   = options[:limit] ? " >= " : " = "
 
-          # already in a 'string' so we can't interpolate these
           having = "MAX(generations)" + relation + generation.to_s
 
           scope = select("ancestor_id AS node_id, MAX(generations) AS height")
@@ -116,9 +116,9 @@ module ClosureTree
         :source => :descendant,
         :order => append_order("#{quoted_hierarchy_table_name}.generations asc")
 
-      # Model joined with HierarchyModel.depths
-      #  :limit => N to limit the generations (up to and including N)
-      #  :only => N to match a specific generation
+      # Model joined with HierarchyModel.depths. Depth is steps away from root.
+      #  :limit => N to limit the depth (including N)
+      #  :only => N to match a specific depth
       def self.with_depths(options = {})
         # options are passed straight through to `generation_depths`
         depths = hierarchy_class.depths(options)
@@ -132,9 +132,9 @@ module ClosureTree
         scope.order(append_order("depths.depth"))
       end
 
-      # Model joined with HierarchyModel.heights
-      #  :limit => N to limit the generations (up to and including N)
-      #  :only => N to match a specific generation
+      # Model joined with HierarchyModel.heights. Height is steps to a leaf.
+      #  :limit => N to limit the height (including N)
+      #  :only => N to match a specific height
       def self.with_heights(options = {})
         # options are passed straight through to `depths`
         heights = hierarchy_class.heights(options)
