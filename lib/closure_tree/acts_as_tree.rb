@@ -126,23 +126,7 @@ module ClosureTree
       end
 
       def find_all_by_generation(generation_level)
-        s = joins(<<-SQL)
-          INNER JOIN (
-            SELECT #{primary_key} as root_id
-            FROM #{quoted_table_name}
-            WHERE #{quoted_parent_column_name} IS NULL
-          ) AS roots ON (1 = 1)
-          INNER JOIN (
-            SELECT ancestor_id, descendant_id
-            FROM #{quoted_hierarchy_table_name}
-            GROUP BY 1, 2
-            HAVING MAX(generations) = #{generation_level.to_i}
-          ) AS descendants ON (
-            #{quoted_table_name}.#{primary_key} = descendants.descendant_id
-            AND roots.root_id = descendants.ancestor_id
-          )
-        SQL
-        order_option ? s.order(order_option) : s
+        with_depths :only => generation_level
       end
 
       def self.leaves
