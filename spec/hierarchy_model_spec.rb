@@ -1,9 +1,14 @@
 require 'spec_helper'
 
 describe "The generated hierarchy model" do
-  let(:model) { TagHierarchy.new }
+  let(:model)      { TagHierarchy.new }
+  let(:table_name) do
+    ActiveRecord::Base.table_name_prefix +
+    "tag_hierarchies" +
+    ActiveRecord::Base.table_name_suffix
+  end
 
-  it { model.class.table_name.should eq("tag_hierarchies") }
+  it { model.class.table_name.should eq(table_name) }
 
   describe "attributes" do
     it { model.should respond_to(:ancestor_id) }
