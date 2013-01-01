@@ -74,6 +74,7 @@ module ClosureTree
 
       unless order_option.nil?
         include ClosureTree::DeterministicOrdering
+        extend ClosureTree::DeterministicOrdering
         include ClosureTree::DeterministicNumericOrdering if order_is_numeric
       end
 
@@ -518,7 +519,7 @@ module ClosureTree
     end
 
     def append_order(order_by)
-      order_option ? "#{order_by}, #{order_option}" : order_by
+      order_option ? "#{order_by}, #{quoted_order_column}" : order_by
     end
 
     def order_is_numeric
