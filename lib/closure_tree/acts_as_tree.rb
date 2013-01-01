@@ -34,7 +34,7 @@ module ClosureTree
         # Scope with `descendant_id` and `depth`, grouped by the descendant
         #  :limit => N to limit the generations (up to and including N)
         #  :only => N to match a specific generation
-        def self.generation_depth(options = {})
+        def self.generation_depths(options = {})
           generation = options[:limit] || options[:only]
           relation   = options[:limit] ? " <= " : " = "
 

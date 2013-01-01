@@ -37,8 +37,8 @@ describe "The generated hierarchy model" do
     end
   end
 
-  describe "HierarchyModel.generation_depth" do
-    let(:results) { TagHierarchy.generation_depth }
+  describe "HierarchyModel.generation_depths" do
+    let(:results) { TagHierarchy.generation_depths }
 
     def descendant(tag)
       results.find{ |r| r.descendant_id == tag.id }
@@ -76,12 +76,12 @@ describe "The generated hierarchy model" do
 
     describe "with limit" do
       it "<0 returns nothing" do
-        results = TagHierarchy.generation_depth(:limit => -1)
+        results = TagHierarchy.generation_depths(:limit => -1)
         results.all.size.should eq(0)
       end
 
       it "0 returns hierarchy for `a`" do
-        results = TagHierarchy.generation_depth(:limit => 0)
+        results = TagHierarchy.generation_depths(:limit => 0)
         results.all.size.should eq(1)
 
         result_ids = results.map(&:descendant_id)
@@ -89,7 +89,7 @@ describe "The generated hierarchy model" do
       end
 
       it "1 returns hierarchies for `a`, `b`, `b2`" do
-        results = TagHierarchy.generation_depth(:limit => 1)
+        results = TagHierarchy.generation_depths(:limit => 1)
         results.all.size.should eq(3)
 
         result_ids = results.map(&:descendant_id)
@@ -103,7 +103,7 @@ describe "The generated hierarchy model" do
       end
 
       it "2 returns hierarchies for `a`, `b`, `b2`, `c1`, `c2`" do
-        results = TagHierarchy.generation_depth(:limit => 2)
+        results = TagHierarchy.generation_depths(:limit => 2)
         results.all.size.should eq(5)
 
         result_ids = results.map(&:descendant_id)
@@ -117,7 +117,7 @@ describe "The generated hierarchy model" do
       end
 
       it "3 returns hierarchies for all tags" do
-        results = TagHierarchy.generation_depth(:limit => 3)
+        results = TagHierarchy.generation_depths(:limit => 3)
         results.all.size.should eq(7)
 
         result_ids = results.map(&:descendant_id)
@@ -131,20 +131,20 @@ describe "The generated hierarchy model" do
       end
 
       it "nil returns all records" do
-        results = TagHierarchy.generation_depth(:limit => nil)
+        results = TagHierarchy.generation_depths(:limit => nil)
         results.all.size.should eq(7)
       end
     end
 
     describe "with only" do
       it "0 returns hierarchy for `a`" do
-        results = TagHierarchy.generation_depth(:only => 0)
+        results = TagHierarchy.generation_depths(:only => 0)
         results.all.size.should eq(1)
         results.map(&:descendant_id).should include(@a.id)
       end
 
       it "1 returns hierarchies for `b`, `b2`" do
-        results = TagHierarchy.generation_depth(:only => 1)
+        results = TagHierarchy.generation_depths(:only => 1)
         results.all.size.should eq(2)
 
         result_ids = results.map(&:descendant_id)
@@ -158,7 +158,7 @@ describe "The generated hierarchy model" do
       end
 
       it "2 returns hierarchies for `c1`, `c2`" do
-        results = TagHierarchy.generation_depth(:only => 2)
+        results = TagHierarchy.generation_depths(:only => 2)
         results.all.size.should eq(2)
 
         result_ids = results.map(&:descendant_id)
@@ -172,7 +172,7 @@ describe "The generated hierarchy model" do
       end
 
       it "3 returns hierarchies for `d1`, `d2`" do
-        results = TagHierarchy.generation_depth(:only => 3)
+        results = TagHierarchy.generation_depths(:only => 3)
         results.all.size.should eq(2)
 
         result_ids = results.map(&:descendant_id)
@@ -186,7 +186,7 @@ describe "The generated hierarchy model" do
       end
 
       it "nil returns all records" do
-        results = TagHierarchy.generation_depth(:only => nil)
+        results = TagHierarchy.generation_depths(:only => nil)
         results.all.size.should eq(7)
       end
     end
