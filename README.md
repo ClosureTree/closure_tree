@@ -230,6 +230,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 
 * ```Tag.root``` returns an arbitrary root node
 * ```Tag.roots``` returns all root nodes
+* ```Tag.tree``` returns ordered nodes that can be depth-limited or only of a specific depth (```Tag.at_depth```).
 * ```Tag.leaves``` returns all leaf nodes
 * ```Tag.hash_tree``` returns an [ordered, nested hash](#nested-hashes) that can be depth-limited.
 * ```Tag.find_by_path(path)``` returns the node whose name path is ```path```. See (#find_or_create_by_path).

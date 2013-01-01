@@ -134,6 +134,58 @@ describe "The model" do
     end
   end
 
+  describe "Model.tree" do
+    describe "with no option" do
+      it "returns all tags" do
+        results = Tag.tree
+        results.all.size.should eq(7) # no dups
+        results.all.should eq([@a, @b, @b2, @c1, @c2, @d1, @d2]) # ordering
+
+        results.should include(@a)
+        results.should include(@b)
+        results.should include(@b2)
+        results.should include(@c1)
+        results.should include(@c2)
+        results.should include(@d1)
+        results.should include(@d2)
+      end
+    end
+
+    describe "with :limit_depth option" do
+      # ordered version of with_depths :limit
+      it "3 returns all tags" do
+        results = Tag.tree(:limit_depth => 4)
+        results.all.size.should eq(7) # no dups
+        results.all.should eq([@a, @b, @b2, @c1, @c2, @d1, @d2]) # ordering
+
+        results.should include(@a)
+        results.should include(@b)
+        results.should include(@b2)
+        results.should include(@c1)
+        results.should include(@c2)
+        results.should include(@d1)
+        results.should include(@d2)
+      end
+    end
+
+    describe "with :only option" do
+      # ordered version of with_depths :only
+      it "3 returns `d1`, `d2`" do
+        results = Tag.tree(:generation_level => 3)
+        results.all.size.should eq(2) # no dups
+        results.all.should eq([@d1, @d2]) # ordering
+
+        results.should_not include(@a)
+        results.should_not include(@b)
+        results.should_not include(@b2)
+        results.should_not include(@c1)
+        results.should_not include(@c2)
+        results.should include(@d1)
+        results.should include(@d2)
+      end
+    end
+  end
+
   describe "Model.with_heights" do
     let(:results) { Tag.with_heights.order("heights.height DESC") }
 

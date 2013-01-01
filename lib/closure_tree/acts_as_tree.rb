@@ -159,6 +159,20 @@ module ClosureTree
         where(parent_column_name => nil)
       end
 
+      # Options:
+      #  => :limit_depth => Limit of node depth for return.
+      #  => :generation_level => Specific generation of node to return.
+      def self.tree(options = {})
+        limit_depth      = options.delete(:limit_depth)
+        generation_level = options.delete(:generation_level)
+
+        # Convert into limit / only internal options
+        options[:limit] = limit_depth ? (limit_depth - 1) : nil
+        options[:only]  = generation_level
+
+        with_depths(options).order(order_option)
+      end
+
       # There is no default depth limit. This might be crazy-big, depending
       # on your tree shape. Hash huge trees at your own peril!
       def self.hash_tree(options = {})
