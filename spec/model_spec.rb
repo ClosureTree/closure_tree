@@ -245,4 +245,25 @@ describe "The model" do
     end
   end
 
+  # at_depth is an alias for find_all_by_generation
+  describe "Model.at_depth" do
+    it "returns `b`, `b2`" do
+      results = Tag.at_depth(1)
+      results.all.size.should eq(2)
+      results.should_not include(@a)
+      results.should include(@b)
+      results.should include(@b2)
+    end
+  end
+
+  # at_height
+  describe "Model.at_height" do
+    it "returns `b`" do
+      results = Tag.at_height(2)
+      results.all.size.should eq(1)
+      results.should_not include(@a)
+      results.should include(@b)
+      results.should_not include(@b2)
+    end
+  end
 end

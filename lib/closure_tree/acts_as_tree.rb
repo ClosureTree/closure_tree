@@ -157,13 +157,17 @@ module ClosureTree
         build_hash_tree(hash_tree_scope(options[:limit_depth]))
       end
 
-      def find_all_by_generation(generation_level)
-        with_depths :only => generation_level
+      def self.at_depth(depth)
+        with_depths :only => depth
       end
+      alias :find_all_by_generation :at_depth
 
       def self.leaves
         with_heights :only => 0
       end
+
+      def self.at_height(height)
+        with_heights :only => height
       end
     end
   end
