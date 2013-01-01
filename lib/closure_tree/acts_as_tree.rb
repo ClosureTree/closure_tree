@@ -132,6 +132,21 @@ module ClosureTree
         scope.order(append_order("depths.depth"))
       end
 
+      # Model joined with HierarchyModel.heights
+      #  :limit => N to limit the generations (up to and including N)
+      #  :only => N to match a specific generation
+      def self.with_heights(options = {})
+        # options are passed straight through to `depths`
+        heights = hierarchy_class.heights(options)
+
+        scope = select("*")
+        scope = scope.joins(<<-SQL)
+          INNER JOIN (#{heights.to_sql}) AS heights
+          ON #{quoted_table_name}.#{primary_key} = heights.node_id
+        SQL
+        scope.order(append_order("heights.height DESC"))
+      end
+
       def self.roots
         where(parent_column_name => nil)
       end
