@@ -36,4 +36,159 @@ describe "The generated hierarchy model" do
       model1.should eq(model2)
     end
   end
+
+  describe "HierarchyModel.generation_depth" do
+    let(:results) { TagHierarchy.generation_depth }
+
+    def descendant(tag)
+      results.find{ |r| r.descendant_id == tag.id }
+    end
+
+    before do
+      TagHierarchy.delete_all
+      Tag.delete_all
+
+      @b  = Tag.find_or_create_by_path %w(a b)
+      @a  = @b.parent
+      @b2 = Tag.find_or_create_by_path %w(a b2)
+      @d1 = @b.find_or_create_by_path %w(c1 d1)
+      @c1 = @d1.parent
+      @d2 = @b.find_or_create_by_path %w(c2 d2)
+      @c2 = @d2.parent
+    end
+
+    it "returns one row for each descendant" do
+      results.all.size.should eq(7)
+    end
+
+    it "returns the correct depth (max generations)" do
+      descendant(@a).depth.should eq(0)
+
+      descendant(@b).depth.should eq(1)
+      descendant(@b2).depth.should eq(1)
+
+      descendant(@c1).depth.should eq(2)
+      descendant(@c2).depth.should eq(2)
+
+      descendant(@d1).depth.should eq(3)
+      descendant(@d2).depth.should eq(3)
+    end
+
+    describe "with limit" do
+      it "<0 returns nothing" do
+        results = TagHierarchy.generation_depth(:limit => -1)
+        results.all.size.should eq(0)
+      end
+
+      it "0 returns hierarchy for `a`" do
+        results = TagHierarchy.generation_depth(:limit => 0)
+        results.all.size.should eq(1)
+
+        result_ids = results.map(&:descendant_id)
+        result_ids.should include(@a.id)
+      end
+
+      it "1 returns hierarchies for `a`, `b`, `b2`" do
+        results = TagHierarchy.generation_depth(:limit => 1)
+        results.all.size.should eq(3)
+
+        result_ids = results.map(&:descendant_id)
+        result_ids.should include(@a.id)
+        result_ids.should include(@b.id)
+        result_ids.should include(@b2.id)
+        result_ids.should_not include(@c1.id)
+        result_ids.should_not include(@c2.id)
+        result_ids.should_not include(@d1.id)
+        result_ids.should_not include(@d2.id)
+      end
+
+      it "2 returns hierarchies for `a`, `b`, `b2`, `c1`, `c2`" do
+        results = TagHierarchy.generation_depth(:limit => 2)
+        results.all.size.should eq(5)
+
+        result_ids = results.map(&:descendant_id)
+        result_ids.should include(@a.id)
+        result_ids.should include(@b.id)
+        result_ids.should include(@b2.id)
+        result_ids.should include(@c1.id)
+        result_ids.should include(@c2.id)
+        result_ids.should_not include(@d1.id)
+        result_ids.should_not include(@d2.id)
+      end
+
+      it "3 returns hierarchies for all tags" do
+        results = TagHierarchy.generation_depth(:limit => 3)
+        results.all.size.should eq(7)
+
+        result_ids = results.map(&:descendant_id)
+        result_ids.should include(@a.id)
+        result_ids.should include(@b.id)
+        result_ids.should include(@b2.id)
+        result_ids.should include(@c1.id)
+        result_ids.should include(@c2.id)
+        result_ids.should include(@d1.id)
+        result_ids.should include(@d2.id)
+      end
+
+      it "nil returns all records" do
+        results = TagHierarchy.generation_depth(:limit => nil)
+        results.all.size.should eq(7)
+      end
+    end
+
+    describe "with only" do
+      it "0 returns hierarchy for `a`" do
+        results = TagHierarchy.generation_depth(:only => 0)
+        results.all.size.should eq(1)
+        results.map(&:descendant_id).should include(@a.id)
+      end
+
+      it "1 returns hierarchies for `b`, `b2`" do
+        results = TagHierarchy.generation_depth(:only => 1)
+        results.all.size.should eq(2)
+
+        result_ids = results.map(&:descendant_id)
+        result_ids.should_not include(@a.id)
+        result_ids.should include(@b.id)
+        result_ids.should include(@b2.id)
+        result_ids.should_not include(@c1.id)
+        result_ids.should_not include(@c2.id)
+        result_ids.should_not include(@d1.id)
+        result_ids.should_not include(@d2.id)
+      end
+
+      it "2 returns hierarchies for `c1`, `c2`" do
+        results = TagHierarchy.generation_depth(:only => 2)
+        results.all.size.should eq(2)
+
+        result_ids = results.map(&:descendant_id)
+        result_ids.should_not include(@a.id)
+        result_ids.should_not include(@b.id)
+        result_ids.should_not include(@b2.id)
+        result_ids.should include(@c1.id)
+        result_ids.should include(@c2.id)
+        result_ids.should_not include(@d1.id)
+        result_ids.should_not include(@d2.id)
+      end
+
+      it "3 returns hierarchies for `d1`, `d2`" do
+        results = TagHierarchy.generation_depth(:only => 3)
+        results.all.size.should eq(2)
+
+        result_ids = results.map(&:descendant_id)
+        result_ids.should_not include(@a.id)
+        result_ids.should_not include(@b.id)
+        result_ids.should_not include(@b2.id)
+        result_ids.should_not include(@c1.id)
+        result_ids.should_not include(@c2.id)
+        result_ids.should include(@d1.id)
+        result_ids.should include(@d2.id)
+      end
+
+      it "nil returns all records" do
+        results = TagHierarchy.generation_depth(:only => nil)
+        results.all.size.should eq(7)
+      end
+    end
+  end
 end

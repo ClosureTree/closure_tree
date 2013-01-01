@@ -30,6 +30,22 @@ module ClosureTree
           self.attributes == comparison_object.attributes
         end
         alias :eql? :==
+
+        # Scope with `descendant_id` and `depth`, grouped by the descendant
+        #  :limit => N to limit the generations (up to and including N)
+        #  :only => N to match a specific generation
+        def self.generation_depth(options = {})
+          generation = options[:limit] || options[:only]
+          relation   = options[:limit] ? " <= " : " = "
+
+          # already in a 'string' so we can't interpolate these
+          having = "MAX(generations)" + relation + generation.to_s
+
+          scope = select("descendant_id, MAX(generations) AS depth")
+          scope = scope.group("descendant_id")
+          scope = scope.having(having) if generation
+          scope
+        end
       RUBY
 
       self.hierarchy_class.table_name = hierarchy_table_name
