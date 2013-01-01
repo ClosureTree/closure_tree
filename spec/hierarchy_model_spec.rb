@@ -304,13 +304,7 @@ describe "The generated hierarchy model" do
         results.all.size.should eq(1)
 
         result_ids = results.map(&:node_id)
-        result_ids.should_not include(@a.id)
         result_ids.should include(@b.id)
-        result_ids.should_not include(@b2.id)
-        result_ids.should_not include(@c1.id)
-        result_ids.should_not include(@c2.id)
-        result_ids.should_not include(@d1.id)
-        result_ids.should_not include(@d2.id)
       end
 
       it "1 returns hierarchies for `c1`, `c2`" do
