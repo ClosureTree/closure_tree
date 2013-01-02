@@ -190,6 +190,41 @@ describe "The generated hierarchy model" do
         results.all.size.should eq(7)
       end
     end
+
+    describe "with :node option" do
+      it "`a` returns all records" do
+        results = TagHierarchy.depths(:node => @a.id)
+        results.all.size.should eq(7)
+      end
+
+      it "`b` returns `b`, `c1`, `c2`, `d1`, `d2`" do
+        results = TagHierarchy.depths(:node => @b.id)
+        results.all.size.should eq(5)
+
+        result_ids = results.map(&:node_id)
+        result_ids.should_not include(@a.id)
+        result_ids.should include(@b.id)
+        result_ids.should_not include(@b2.id)
+        result_ids.should include(@c1.id)
+        result_ids.should include(@c2.id)
+        result_ids.should include(@d1.id)
+        result_ids.should include(@d2.id)
+      end
+
+      it "`b2` returns `b2`" do
+        results = TagHierarchy.depths(:node => @b2.id)
+        results.all.size.should eq(1)
+
+        result_ids = results.map(&:node_id)
+        result_ids.should_not include(@a.id)
+        result_ids.should_not include(@b.id)
+        result_ids.should include(@b2.id)
+        result_ids.should_not include(@c1.id)
+        result_ids.should_not include(@c2.id)
+        result_ids.should_not include(@d1.id)
+        result_ids.should_not include(@d2.id)
+      end
+    end
   end
 
   describe "HierarchyModel.heights" do
@@ -338,6 +373,45 @@ describe "The generated hierarchy model" do
       it "nil returns all records" do
         results = TagHierarchy.heights(:only => nil)
         results.all.size.should eq(7)
+      end
+    end
+
+    describe "with :node option" do
+      it "`a` returns `a`" do
+        results = TagHierarchy.heights(:node => @a.id)
+        results.all.size.should eq(1)
+        result_ids = results.map(&:node_id)
+
+        result_ids.should include(@a.id)
+        result_ids.should_not include(@b.id)
+      end
+
+      it "`b` returns `a`, `b`" do
+        results = TagHierarchy.heights(:node => @b.id)
+        results.all.size.should eq(2)
+
+        result_ids = results.map(&:node_id)
+        result_ids.should include(@a.id)
+        result_ids.should include(@b.id)
+        result_ids.should_not include(@b2.id)
+        result_ids.should_not include(@c1.id)
+        result_ids.should_not include(@c2.id)
+        result_ids.should_not include(@d1.id)
+        result_ids.should_not include(@d2.id)
+      end
+
+      it "`d2` returns `a`, `b`, `c2`, `d2`" do
+        results = TagHierarchy.heights(:node => @d2.id)
+        results.all.size.should eq(4)
+
+        result_ids = results.map(&:node_id)
+        result_ids.should include(@a.id)
+        result_ids.should include(@b.id)
+        result_ids.should_not include(@b2.id)
+        result_ids.should_not include(@c1.id)
+        result_ids.should include(@c2.id)
+        result_ids.should_not include(@d1.id)
+        result_ids.should include(@d2.id)
       end
     end
   end

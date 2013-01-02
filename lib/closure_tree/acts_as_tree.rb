@@ -34,7 +34,8 @@ module ClosureTree
         # Scope with `node_id` and `depth`, grouped by the descendant. Depth is
         # steps away from a root node.
         #  :limit => N to limit the depth (including N)
-        #  :only => N to match a specific depth
+        #  :only  => N to match a specific depth
+        #  :node  => node_id to start at
         def self.depths(options = {})
           generation = options[:limit] || options[:only]
           relation   = options[:limit] ? " <= " : " = "
@@ -42,6 +43,7 @@ module ClosureTree
           having = "MAX(generations)" + relation + generation.to_s
 
           scope = select("descendant_id AS node_id, MAX(generations) AS depth")
+          scope = scope.where("ancestor_id = ?", options[:node]) if options[:node]
           scope = scope.group("node_id")
           scope = scope.having(having) if generation
           scope
@@ -50,7 +52,8 @@ module ClosureTree
         # Scope with `node_id` and `height`, grouped by the ancestor. Height is
         # steps from node to a leaf.
         #  :limit => N to limit the height (including N)
-        #  :only => N to match a specific height
+        #  :only  => N to match a specific height
+        #  :node  => node_id to start at
         def self.heights(options = {})
           generation = options[:limit] || options[:only]
           relation   = options[:limit] ? " >= " : " = "
@@ -58,6 +61,7 @@ module ClosureTree
           having = "MAX(generations)" + relation + generation.to_s
 
           scope = select("ancestor_id AS node_id, MAX(generations) AS height")
+          scope = scope.where("descendant_id = ?", options[:node]) if options[:node]
           scope = scope.group("node_id")
           scope = scope.having(having) if generation
           scope
