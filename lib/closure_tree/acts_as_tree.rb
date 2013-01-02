@@ -325,11 +325,6 @@ module ClosureTree
       order_option ? s.order(order_option) : s
     end
 
-    def hash_tree_scope(limit_depth = nil)
-      # Starting from a node so no need to decrement `limit_depth`
-      self_and_descendants.with_depths(:limit => limit_depth)
-    end
-
     def hash_tree(options = {})
       # TODO: Verify that limit_depth is what we expect for this.
       options[:limit_depth] += 1 if options[:limit_depth]
@@ -446,11 +441,6 @@ module ClosureTree
           root = create!(attributes.merge(name_sym => name))
         end
         root.find_or_create_by_path(path, attributes)
-      end
-
-      def hash_tree_scope(limit_depth = nil)
-        limit = limit_depth ? (limit_depth - 1) : nil
-        with_depths(:limit => limit).order(order_option)
       end
 
       # Builds nested hash structure using the scope returned from the passed in scope

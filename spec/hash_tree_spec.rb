@@ -34,35 +34,6 @@ describe Tag do
     end
   end
 
-  def assert_no_dupes(scope)
-    # the named scope is complicated enough that an incorrect join could result in unnecessarily
-    # duplicated rows:
-    a = scope.collect { |ea| ea.id }
-    a.should == a.uniq
-  end
-
-  context "#hash_tree_scope" do
-    it "no dupes for any depth" do
-      (0..5).each do |ea|
-        assert_no_dupes(Tag.hash_tree_scope(ea))
-      end
-    end
-    it "no limit holdum" do
-      assert_no_dupes(Tag.hash_tree_scope)
-    end
-  end
-
-  context ".hash_tree_scope" do
-    it "no dupes for any depth" do
-      (0..5).each do |ea|
-        assert_no_dupes(@a.hash_tree_scope(ea))
-      end
-    end
-    it "no limit holdum" do
-      assert_no_dupes(@a.hash_tree_scope)
-    end
-  end
-
   context ".hash_tree" do
     before :each do
     end
