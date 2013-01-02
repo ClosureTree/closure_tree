@@ -317,16 +317,9 @@ module ClosureTree
     end
 
     def find_all_by_generation(generation_level)
-      s = ct_base_class.joins(<<-SQL)
-          INNER JOIN (
-            SELECT descendant_id
-            FROM #{quoted_hierarchy_table_name}
-            WHERE ancestor_id = #{self.id}
-            GROUP BY 1
-            HAVING MAX(#{quoted_hierarchy_table_name}.generations) = #{generation_level.to_i}
-          ) AS descendants ON (#{quoted_table_name}.#{ct_base_class.primary_key} = descendants.descendant_id)
-      SQL
-      order_option ? s.order(order_option) : s
+      self_and_descendants.
+        with_depths(:node => self.id, :only => generation_level).
+        order(order_option)
     end
 
     def hash_tree(options = {})
