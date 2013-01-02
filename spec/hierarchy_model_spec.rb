@@ -74,7 +74,7 @@ describe "The generated hierarchy model" do
       node(@d2).depth.should eq(3)
     end
 
-    describe "with limit" do
+    describe "with :limit option" do
       it "<0 returns nothing" do
         results = TagHierarchy.depths(:limit => -1)
         results.all.size.should eq(0)
@@ -136,7 +136,7 @@ describe "The generated hierarchy model" do
       end
     end
 
-    describe "with only" do
+    describe "with :only option" do
       it "0 returns hierarchy for `a`" do
         results = TagHierarchy.depths(:only => 0)
         results.all.size.should eq(1)
