@@ -176,7 +176,7 @@ module ClosureTree
       # There is no default depth limit. This might be crazy-big, depending
       # on your tree shape. Hash huge trees at your own peril!
       def self.hash_tree(options = {})
-        build_hash_tree(hash_tree_scope(options[:limit_depth]))
+        build_hash_tree tree(options)
       end
 
       def self.at_depth(depth)
@@ -331,7 +331,9 @@ module ClosureTree
     end
 
     def hash_tree(options = {})
-      self.class.build_hash_tree(hash_tree_scope(options[:limit_depth]))
+      # TODO: Verify that limit_depth is what we expect for this.
+      options[:limit_depth] += 1 if options[:limit_depth]
+      self.class.build_hash_tree tree(options)
     end
 
     def ct_parent_id
