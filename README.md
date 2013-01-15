@@ -215,7 +215,7 @@ HT: [ancestry](https://github.com/stefankroes/ancestry#arrangement) and [elhoyos
 When you include ```acts_as_tree``` in your model, you can provide a hash to override the following defaults:
 
 * ```:parent_column_name``` to override the column name of the parent foreign key in the model's table. This defaults to "parent_id".
-* ```:hierarchy_table_name``` to override the hierarchy class name. This defaults to the singular name of the model + "Hierarchy", like ```TagHierarchy```.
+* ```:hierarchy_class_name``` to override the hierarchy class name. This defaults to the singular name of the model + "Hierarchy", like ```TagHierarchy```.
 * ```:hierarchy_table_name``` to override the hierarchy table name. This defaults to the singular name of the model + "_hierarchies", like ```tag_hierarchies```.
 * ```:dependent``` determines what happens when a node is destroyed. Defaults to ```nullify```.
     * ```:nullify``` will simply set the parent column to null. Each child node will be considered a "root" node. This is the default.
@@ -230,16 +230,20 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 
 * ```Tag.root``` returns an arbitrary root node
 * ```Tag.roots``` returns all root nodes
+* ```Tag.tree``` returns ordered nodes for the entire tree. Optionally limited by depth.
 * ```Tag.leaves``` returns all leaf nodes
 * ```Tag.hash_tree``` returns an [ordered, nested hash](#nested-hashes) that can be depth-limited.
 * ```Tag.find_by_path(path)``` returns the node whose name path is ```path```. See (#find_or_create_by_path).
 * ```Tag.find_or_create_by_path(path)``` returns the node whose name path is ```path```, and will create the node if it doesn't exist already.See (#find_or_create_by_path).
-* ```Tag.find_all_by_generation(generation_level)``` returns the descendant nodes who are ```generation_level``` away from a root. ```Tag.find_all_by_generation(0)``` is equivalent to ```Tag.roots```.
+* ```Tag.at_depth(depth)``` returns the descendant nodes who are ```depth``` away from a root. ```Tag.at_depth(0)``` is equivalent to ```Tag.roots```.
+* ```Tag.find_all_by_generation(generation_level)``` is an alias for ```at_depth```.
+* ```Tag.at_height(height)``` returns the nodes who have ```height``` away from a leaf. ```Tag.at_height(0)``` is equivalent to ```Tag.leaves```.
 
 ### Instance methods
 
 * ```tag.root``` returns the root for this node
 * ```tag.root?``` returns true if this is a root node
+* ```tag.tree``` returns ordered nodes for the tree starting at the current node. Optionally limited by depth.
 * ```tag.child?``` returns true if this is a child node. It has a parent.
 * ```tag.leaf?``` returns true if this is a leaf node. It has no children.
 * ```tag.leaves``` is scoped to all leaf nodes in self_and_descendants.

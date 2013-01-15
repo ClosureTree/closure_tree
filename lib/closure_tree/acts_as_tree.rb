@@ -30,12 +30,55 @@ module ClosureTree
           self.attributes == comparison_object.attributes
         end
         alias :eql? :==
+
+        # Scope with `node_id` and `depth`, grouped by the descendant. Depth is
+        # steps away from a root node.
+        #  :limit => N to limit the depth (including N)
+        #  :only  => N to match a specific depth
+        #  :node  => node_id to start at
+        def self.depths(options = {})
+          generation = options[:limit] || options[:only]
+          relation   = options[:limit] ? " <= " : " = "
+
+          having = "MAX(generations)" + relation + generation.to_s
+
+          scope = select("descendant_id AS node_id, MAX(generations) AS depth")
+          scope = scope.where("ancestor_id = ?", options[:node]) if options[:node]
+          scope = scope.group("node_id")
+          scope = scope.having(having) if generation
+          scope
+        end
+
+        # Scope with `node_id` and `height`, grouped by the ancestor. Height is
+        # steps from node to a leaf.
+        #  :limit => N to limit the height (including N)
+        #  :only  => N to match a specific height
+        #  :node  => node_id to start at
+        def self.heights(options = {})
+          generation = options[:limit] || options[:only]
+          relation   = options[:limit] ? " >= " : " = "
+
+          having = "MAX(generations)" + relation + generation.to_s
+
+          scope = select("ancestor_id AS node_id, MAX(generations) AS height")
+          scope = scope.where("descendant_id = ?", options[:node]) if options[:node]
+          scope = scope.group("node_id")
+          scope = scope.having(having) if generation
+          scope
+        end
+
+        # ActiveRecord doesn't always know how the aliased column data should
+        # be returned. These methods just `to_i` to help.
+        [:node_id, :height, :depth].each do |field|
+          define_method(field) { self[field].to_i }
+        end
       RUBY
 
       self.hierarchy_class.table_name = hierarchy_table_name
 
       unless order_option.nil?
         include ClosureTree::DeterministicOrdering
+        extend ClosureTree::DeterministicOrdering
         include ClosureTree::DeterministicNumericOrdering if order_is_numeric
       end
 
@@ -84,46 +127,76 @@ module ClosureTree
         :source => :descendant,
         :order => append_order("#{quoted_hierarchy_table_name}.generations asc")
 
+      # Model joined with HierarchyModel.depths. Depth is steps away from root.
+      #  :limit => N to limit the depth (including N)
+      #  :only => N to match a specific depth
+      def self.with_depths(options = {})
+        # options are passed straight through to `generation_depths`
+        depths = hierarchy_class.depths(options)
+
+        scope = select("#{quoted_table_name}.*, depths.*")
+        scope = scope.joins(<<-SQL)
+          INNER JOIN (#{depths.to_sql}) AS depths
+          ON #{quoted_table_name}.#{primary_key} = depths.node_id
+        SQL
+        scope = scope.order("depths.depth")
+        scope
+      end
+
+      # Model joined with HierarchyModel.heights. Height is steps to a leaf.
+      #  :limit => N to limit the height (including N)
+      #  :only => N to match a specific height
+      def self.with_heights(options = {})
+        # options are passed straight through to `depths`
+        heights = hierarchy_class.heights(options)
+
+        scope = select("#{quoted_table_name}.*, heights.*")
+        scope = scope.joins(<<-SQL)
+          INNER JOIN (#{heights.to_sql}) AS heights
+          ON #{quoted_table_name}.#{primary_key} = heights.node_id
+        SQL
+        scope = scope.order("heights.height DESC")
+        scope
+      end
+
       def self.roots
         where(parent_column_name => nil)
+      end
+
+      # Options:
+      #  => :limit_depth => Limit of node depth for return.
+      #  => :generation_level => Specific generation of node to return.
+      def self.tree(options = {})
+        limit_depth      = options.delete(:limit_depth)
+        generation_level = options.delete(:generation_level)
+
+        # Convert into limit / only internal options
+        options[:limit] = limit_depth ? (limit_depth - 1) : nil
+        options[:only]  = generation_level
+
+        with_depths(options).order(order_option)
       end
 
       # There is no default depth limit. This might be crazy-big, depending
       # on your tree shape. Hash huge trees at your own peril!
       def self.hash_tree(options = {})
-        build_hash_tree(hash_tree_scope(options[:limit_depth]))
+        build_hash_tree tree(options)
       end
 
-      def find_all_by_generation(generation_level)
-        s = joins(<<-SQL)
-          INNER JOIN (
-            SELECT #{primary_key} as root_id
-            FROM #{quoted_table_name}
-            WHERE #{quoted_parent_column_name} IS NULL
-          ) AS roots ON (1 = 1)
-          INNER JOIN (
-            SELECT ancestor_id, descendant_id
-            FROM #{quoted_hierarchy_table_name}
-            GROUP BY 1, 2
-            HAVING MAX(generations) = #{generation_level.to_i}
-          ) AS descendants ON (
-            #{quoted_table_name}.#{primary_key} = descendants.descendant_id
-            AND roots.root_id = descendants.ancestor_id
-          )
-        SQL
-        order_option ? s.order(order_option) : s
+      def self.at_depth(depth)
+        with_depths(:only => depth).order(order_option)
       end
 
       def self.leaves
-        s = joins(<<-SQL)
-          INNER JOIN (
-            SELECT ancestor_id
-            FROM #{quoted_hierarchy_table_name}
-            GROUP BY 1
-            HAVING MAX(#{quoted_hierarchy_table_name}.generations) = 0
-          ) AS leaves ON (#{quoted_table_name}.#{primary_key} = leaves.ancestor_id)
-        SQL
-        order_option ? s.order(order_option) : s
+        with_heights(:only => 0).order(order_option)
+      end
+
+      def self.at_height(height)
+        with_heights(:only => height).order(order_option)
+      end
+
+      class << self
+        alias :find_all_by_generation :at_depth
       end
     end
   end
@@ -151,15 +224,26 @@ module ClosureTree
       self_and_ancestors.where(parent_column_name.to_sym => nil).first
     end
 
+    def tree(options = {})
+      self_and_descendants.tree(options)
+    end
+
     def leaves
       self_and_descendants.leaves
     end
 
+    # We may have a calculated field available, if so, use it
+    # Calculated field available after joining with ModelHierarchy.depths
     def depth
-      ancestors.size
+      (read_attribute(:depth) || ancestors.size).to_i
     end
 
     alias :level :depth
+
+    # Calculated field available after joining with ModelHierarchy.heights
+    def height
+      read_attribute(:height).to_i
+    end
 
     def ancestors
       without_self(self_and_ancestors)
@@ -233,29 +317,15 @@ module ClosureTree
     end
 
     def find_all_by_generation(generation_level)
-      s = ct_base_class.joins(<<-SQL)
-          INNER JOIN (
-            SELECT descendant_id
-            FROM #{quoted_hierarchy_table_name}
-            WHERE ancestor_id = #{self.id}
-            GROUP BY 1
-            HAVING MAX(#{quoted_hierarchy_table_name}.generations) = #{generation_level.to_i}
-          ) AS descendants ON (#{quoted_table_name}.#{ct_base_class.primary_key} = descendants.descendant_id)
-      SQL
-      order_option ? s.order(order_option) : s
-    end
-
-    def hash_tree_scope(limit_depth = nil)
-      scope = self_and_descendants
-      if limit_depth
-        scope.where("#{quoted_hierarchy_table_name}.generations <= #{limit_depth - 1}")
-      else
-        scope
-      end
+      self_and_descendants.
+        with_depths(:node => self.id, :only => generation_level).
+        order(order_option)
     end
 
     def hash_tree(options = {})
-      self.class.build_hash_tree(hash_tree_scope(options[:limit_depth]))
+      # TODO: Verify that limit_depth is what we expect for this.
+      options[:limit_depth] += 1 if options[:limit_depth]
+      self.class.build_hash_tree tree(options)
     end
 
     def ct_parent_id
@@ -370,21 +440,6 @@ module ClosureTree
         root.find_or_create_by_path(path, attributes)
       end
 
-      def hash_tree_scope(limit_depth = nil)
-        # Deepest generation, within limit, for each descendant
-        # NOTE: Postgres requires HAVING clauses to always contains aggregate functions (!!)
-        generation_depth = <<-SQL
-          INNER JOIN (
-            SELECT descendant_id, MAX(generations) as depth
-            FROM #{quoted_hierarchy_table_name}
-            GROUP BY descendant_id
-            #{"HAVING MAX(generations) <= #{limit_depth - 1}" if limit_depth}
-          ) AS generation_depth
-            ON #{quoted_table_name}.#{primary_key} = generation_depth.descendant_id
-        SQL
-        scoped.joins(generation_depth).order(append_order("generation_depth.depth"))
-      end
-
       # Builds nested hash structure using the scope returned from the passed in scope
       def build_hash_tree(tree_scope)
         tree = ActiveSupport::OrderedHash.new
@@ -458,7 +513,7 @@ module ClosureTree
     end
 
     def append_order(order_by)
-      order_option ? "#{order_by}, #{order_option}" : order_by
+      order_option ? "#{order_by}, #{quoted_order_column}" : order_by
     end
 
     def order_is_numeric
