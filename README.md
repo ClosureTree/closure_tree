@@ -362,6 +362,22 @@ No. This gem's API is based on the assumption that each node has either 0 or 1 p
 The underlying closure tree structure will support multiple parents, but there would be many
 breaking-API changes to support it. I'm open to suggestions and pull requests.
 
+### How do I use this with test fixtures?
+
+Test fixtures aren't going to be running your ```after_save``` hooks after inserting all your
+fixture data, so you need to call ```.rebuild!``` before your test runs. There's an example in
+the spec ```tag_spec.rb```:
+
+```ruby
+  describe "Tag with fixtures" do
+    fixtures :tags
+    before :each do
+      Tag.rebuild!
+    end
+    …
+```
+
+
 ## Testing
 
 Closure tree is [tested under every combination](http://travis-ci.org/#!/mceachen/closure_tree) of
