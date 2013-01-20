@@ -2,6 +2,7 @@ sqlite3:
   adapter: <%= "jdbc" if defined? JRUBY_VERSION %>sqlite3
   database: closure_tree.sqlite3.db
   pool: 50
+  timeout: 1000
 
 sqlite3mem:
   adapter: <%= "jdbc" if defined? JRUBY_VERSION %>sqlite3

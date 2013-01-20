@@ -268,11 +268,11 @@ module ClosureTree
     protected
 
     def ct_with_lock(lock = true, &block)
-      # sqlite doesn't support pessimistic locking:
+      # with_lock is only >= Rails 3.2
       if respond_to? :with_lock
         with_lock(lock, &block)
       else
-        block.call
+        with_advisory_lock("closure_tree #{ct_class.to_s}.#{id}", &block)
       end
     end
 
