@@ -1,3 +1,6 @@
+require 'active_support'
 require 'closure_tree/acts_as_tree'
 
-ActiveRecord::Base.send :extend, ClosureTree::ActsAsTree
+ActiveSupport.on_load :active_record do
+  ActiveRecord::Base.send :extend, ClosureTree::ActsAsTree
+end

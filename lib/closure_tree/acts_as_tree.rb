@@ -221,13 +221,15 @@ module ClosureTree
       attrs = {}
       attrs[:type] = self.type if ct_subclass? && ct_has_type?
       path.each do |name|
-        attrs[name_sym] = name
-        child = node.children.where(attrs).first
-        unless child
-          child = self.class.new(attributes.merge(attrs))
-          node.children << child
+        node.with_lock do # <- pessimistic locking on parent
+          attrs[name_sym] = name
+          child = node.children.where(attrs).first
+          unless child
+            child = self.class.new(attributes.merge(attrs))
+            node.children << child
+          end
+          node = child
         end
-        node = child
       end
       node
     end
@@ -284,18 +286,20 @@ module ClosureTree
     end
 
     def rebuild!
-      delete_hierarchy_references unless @was_new_record
-      hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
-      unless root?
-        connection.execute <<-SQL
+      with_advisory_lock("closure_tree #{name}.rebuild(#{id})") do
+        delete_hierarchy_references unless @was_new_record
+        hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
+        unless root?
+          connection.execute <<-SQL
           INSERT INTO #{quoted_hierarchy_table_name}
             (ancestor_id, descendant_id, generations)
           SELECT x.ancestor_id, #{id}, x.generations + 1
           FROM #{quoted_hierarchy_table_name} x
           WHERE x.descendant_id = #{self.ct_parent_id}
-        SQL
+          SQL
+        end
+        children.each { |c| c.rebuild! }
       end
-      children.each { |c| c.rebuild! }
     end
 
     def ct_before_destroy
@@ -347,8 +351,10 @@ module ClosureTree
       # Rebuilds the hierarchy table based on the parent_id column in the database.
       # Note that the hierarchy table will be truncated.
       def rebuild!
-        hierarchy_class.delete_all # not destroy_all -- we just want a simple truncate.
-        roots.each { |n| n.send(:rebuild!) } # roots just uses the parent_id column, so this is safe.
+        with_advisory_lock("closure_tree #{name}.rebuild") do
+          hierarchy_class.delete_all # not destroy_all -- we just want a simple truncate.
+          roots.each { |n| n.send(:rebuild!) } # roots just uses the parent_id column, so this is safe.
+        end
         nil
       end
 
@@ -360,14 +366,15 @@ module ClosureTree
 
       # Find or create nodes such that the +ancestry_path+ is +path+
       def find_or_create_by_path(path, attributes = {})
-        name = path.shift
-        # shenanigans because find_or_create can't infer we want the same class as this:
-        # Note that roots will already be constrained to this subclass (in the case of polymorphism):
-        root = roots.send("find_by_#{name_column}", name)
-        if root.nil?
-          root = create!(attributes.merge(name_sym => name))
+        subpath = path.dup
+        root_name = subpath.shift
+        root = with_advisory_lock("closure_tree #{name} find_or_create(#{root_name})") do
+          # shenanigans because find_or_create can't infer we want the same class as this:
+          # Note that roots will already be constrained to this subclass (in the case of polymorphism):
+          root = roots.send("find_by_#{name_column}", name)
+          root || create!(attributes.merge(name_sym => name))
         end
-        root.find_or_create_by_path(path, attributes)
+        root.find_or_create_by_path(subpath, attributes)
       end
 
       def hash_tree_scope(limit_depth = nil)
@@ -404,7 +411,7 @@ module ClosureTree
     end
   end
 
-  # Mixed into both classes and instances to provide easy access to the column names
+# Mixed into both classes and instances to provide easy access to the column names
   module Columns
 
     def parent_column_name
@@ -542,7 +549,7 @@ module ClosureTree
     end
   end
 
-  # This module is only included if the order column is an integer.
+# This module is only included if the order column is an integer.
   module DeterministicNumericOrdering
     def append_sibling(sibling_node, use_update_all = true)
       add_sibling(sibling_node, use_update_all, true)

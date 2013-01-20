@@ -11,7 +11,7 @@ require 'active_support'
 require 'active_model'
 require 'active_record'
 require 'action_controller' # rspec-rails needs this :(
-
+require 'with_advisory_lock'
 require 'closure_tree'
 
 #log = Logger.new(STDOUT)
