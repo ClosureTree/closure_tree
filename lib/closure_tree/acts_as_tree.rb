@@ -218,6 +218,7 @@ module ClosureTree
     def find_or_create_by_path(path, attributes = {})
       path = path.is_a?(Enumerable) ? path.dup : [path]
       node = self
+      child = nil
       attrs = {}
       attrs[:type] = self.type if ct_subclass? && ct_has_type?
       path.each do |name|
@@ -228,8 +229,8 @@ module ClosureTree
             child = self.class.new(attributes.merge(attrs))
             node.children << child
           end
-          node = child
         end
+        node = child
       end
       node
     end
@@ -286,7 +287,7 @@ module ClosureTree
     end
 
     def rebuild!
-      with_advisory_lock("closure_tree #{name}.rebuild(#{id})") do
+      with_advisory_lock("closure_tree #{ct_class.to_s}.rebuild(#{id})") do
         delete_hierarchy_references unless @was_new_record
         hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
         unless root?
@@ -368,11 +369,10 @@ module ClosureTree
       def find_or_create_by_path(path, attributes = {})
         subpath = path.dup
         root_name = subpath.shift
-        root = with_advisory_lock("closure_tree #{name} find_or_create(#{root_name})") do
+        root = with_advisory_lock("closure_tree #{ct_class.to_s} find_or_create(#{root_name})") do
           # shenanigans because find_or_create can't infer we want the same class as this:
           # Note that roots will already be constrained to this subclass (in the case of polymorphism):
-          root = roots.send("find_by_#{name_column}", name)
-          root || create!(attributes.merge(name_sym => name))
+          roots.send("find_by_#{name_column}", root_name) || create!(attributes.merge(name_sym => root_name))
         end
         root.find_or_create_by_path(subpath, attributes)
       end
@@ -411,7 +411,7 @@ module ClosureTree
     end
   end
 
-# Mixed into both classes and instances to provide easy access to the column names
+  # Mixed into both classes and instances to provide easy access to the column names
   module Columns
 
     def parent_column_name
@@ -549,7 +549,7 @@ module ClosureTree
     end
   end
 
-# This module is only included if the order column is an integer.
+  # This module is only included if the order column is an integer.
   module DeterministicNumericOrdering
     def append_sibling(sibling_node, use_update_all = true)
       add_sibling(sibling_node, use_update_all, true)

@@ -11,9 +11,9 @@ gemfile:
   - ci/Gemfile.rails-3.1.x
   - ci/Gemfile.rails-3.2.x
 env:
-#  - DB=sqlite3
+  - DB=sqlite3
   - DB=mysql
-  - DB=postgresql
+  - DB=pg
 script: bundle exec rake specs_with_db_ixes
 
 before_script:

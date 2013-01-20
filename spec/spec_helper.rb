@@ -13,6 +13,7 @@ require 'active_record'
 require 'action_controller' # rspec-rails needs this :(
 require 'with_advisory_lock'
 require 'closure_tree'
+require 'tmpdir'
 
 #log = Logger.new(STDOUT)
 #log.sev_threshold = Logger::DEBUG
@@ -48,5 +49,11 @@ RSpec.configure do |config|
   config.use_transactional_fixtures = false
   config.after(:each) do
     DB_QUERIES.clear
+  end
+  config.before(:all) do
+    ENV['FLOCK_DIR'] = Dir.mktmpdir
+  end
+  config.after(:all) do
+    FileUtils.remove_entry_secure ENV['FLOCK_DIR']
   end
 end
