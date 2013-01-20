@@ -13,11 +13,7 @@ describe "threadhot" do
     @roots = @times.collect { |ea| ea.to_s }
     @threads = @workers.times.collect do
       Thread.new do
-        begin
-          @times.each { |ea| find_or_create_at_even_second(ea) }
-        ensure
-          ActiveRecord::Base.connection.close
-        end
+        @times.each { |ea| find_or_create_at_even_second(ea) }
       end
     end
     @threads.each { |ea| ea.join }
