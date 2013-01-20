@@ -390,6 +390,12 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 
 ## Change log
 
+### 3.7.0
+
+* **Thread safety!** [Advisory locks](https://github.com/mceachen/with_advisory_lock) were
+  integrated with the class-level ```find_or_create_by_path``` and ```rebuild!```. Pessimistic
+  locking is used by the instance-level ```find_or_create_by_path```.
+
 ### 3.6.9
 
 * [Don Morrison](https://github.com/elskwid) massaged the [#hash_tree](#nested-hashes) query to

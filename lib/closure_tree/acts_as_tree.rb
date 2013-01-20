@@ -222,7 +222,7 @@ module ClosureTree
       attrs = {}
       attrs[:type] = self.type if ct_subclass? && ct_has_type?
       path.each do |name|
-        node.with_lock do # <- pessimistic locking on parent
+        node.ct_with_lock do # <- pessimistic locking on parent
           attrs[name_sym] = name
           child = node.children.where(attrs).first
           unless child
@@ -266,6 +266,15 @@ module ClosureTree
     end
 
     protected
+
+    def ct_with_lock(lock = true, &block)
+      # sqlite doesn't support pessimistic locking:
+      if respond_to? :with_lock
+        with_lock(lock, &block)
+      else
+        block.call
+      end
+    end
 
     def ct_validate
       if changes[parent_column_name] &&
