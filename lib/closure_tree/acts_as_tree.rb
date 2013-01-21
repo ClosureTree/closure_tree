@@ -379,13 +379,16 @@ module ClosureTree
       def find_or_create_by_path(path, attributes = {})
         subpath = path.dup
         root_name = subpath.shift
-        root = with_advisory_lock("closure_tree.#{ct_class}.find_or_create(#{root_name})") do
-          # shenanigans because find_or_create can't infer we want the same class as this:
-          # Note that roots will already be constrained to this subclass (in the case of polymorphism):
-          roots.send("find_by_#{name_column}".to_sym, root_name) ||
-            create!(attributes.merge(name_sym => root_name))
+        with_advisory_lock("closure_tree.#{ct_class}.find_or_create(#{root_name})") do
+          # Don't release the advisory lock until we have committed the whole write:
+          transaction do
+            # shenanigans because find_or_create can't infer we want the same class as this:
+            # Note that roots will already be constrained to this subclass (in the case of polymorphism):
+            root = roots.send("find_by_#{name_column}".to_sym, root_name) ||
+              create!(attributes.merge(name_sym => root_name))
+            root.find_or_create_by_path(subpath, attributes)
+          end
         end
-        root.find_or_create_by_path(subpath, attributes)
       end
 
       def hash_tree_scope(limit_depth = nil)
