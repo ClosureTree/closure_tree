@@ -217,33 +217,29 @@ module ClosureTree
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
     def find_or_create_by_path(path, attributes = {})
       path = path.is_a?(Enumerable) ? path.dup : [path]
-      node = self
-      child = nil
-      attrs = {}
+      child_name = path.shift
+      return self unless child_name
+      attrs = {name_sym => child_name}
       attrs[:type] = self.type if ct_subclass? && ct_has_type?
-      path.each do |name|
-        node.ct_with_lock do # <- pessimistic locking on parent
-          attrs[name_sym] = name
-          child = node.children.where(attrs).first
-          unless child
-            child = self.class.new(attributes.merge(attrs))
-            node.children << child
-          end
+      child = ct_with_lock do
+        self.children.where(attrs) || begin
+          child = self.class.new(attributes.merge(attrs))
+          self.children << child
+          child
         end
-        node = child
       end
-      node
+      child.find_or_create_by_path(path, attributes)
     end
 
     def find_all_by_generation(generation_level)
       s = ct_base_class.joins(<<-SQL)
-          INNER JOIN (
-            SELECT descendant_id
-            FROM #{quoted_hierarchy_table_name}
-            WHERE ancestor_id = #{self.id}
-            GROUP BY 1
-            HAVING MAX(#{quoted_hierarchy_table_name}.generations) = #{generation_level.to_i}
-          ) AS descendants ON (#{quoted_table_name}.#{ct_base_class.primary_key} = descendants.descendant_id)
+        INNER JOIN (
+          SELECT descendant_id
+          FROM #{quoted_hierarchy_table_name}
+          WHERE ancestor_id = #{self.id}
+          GROUP BY 1
+          HAVING MAX(#{quoted_hierarchy_table_name}.generations) = #{generation_level.to_i}
+        ) AS descendants ON (#{quoted_table_name}.#{ct_base_class.primary_key} = descendants.descendant_id)
       SQL
       order_option ? s.order(order_option) : s
     end
@@ -301,20 +297,18 @@ module ClosureTree
     end
 
     def rebuild!
-      ct_with_lock do
-        delete_hierarchy_references unless @was_new_record
-        hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
-        unless root?
-          connection.execute <<-SQL
+      delete_hierarchy_references unless @was_new_record
+      hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
+      unless root?
+        connection.execute <<-SQL
           INSERT INTO #{quoted_hierarchy_table_name}
             (ancestor_id, descendant_id, generations)
           SELECT x.ancestor_id, #{id}, x.generations + 1
           FROM #{quoted_hierarchy_table_name} x
           WHERE x.descendant_id = #{self.ct_parent_id}
-          SQL
-        end
-        children.each { |c| c.rebuild! }
+        SQL
       end
+      children.each { |c| c.rebuild! }
     end
 
     def ct_before_destroy
