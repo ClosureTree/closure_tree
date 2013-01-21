@@ -272,7 +272,12 @@ module ClosureTree
       if respond_to? :with_lock
         with_lock(lock, &block)
       else
-        with_advisory_lock("closure_tree #{ct_class.to_s}.#{id}", &block)
+        # Backport from Rails 3.2:
+        save! if changed?
+        transaction do
+          lock!
+          block.call
+        end
       end
     end
 
@@ -296,7 +301,7 @@ module ClosureTree
     end
 
     def rebuild!
-      with_advisory_lock("closure_tree #{ct_class.to_s}.rebuild(#{id})") do
+      ct_with_lock do
         delete_hierarchy_references unless @was_new_record
         hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
         unless root?
@@ -361,9 +366,11 @@ module ClosureTree
       # Rebuilds the hierarchy table based on the parent_id column in the database.
       # Note that the hierarchy table will be truncated.
       def rebuild!
-        with_advisory_lock("closure_tree.#{ct_class.to_s}.rebuild") do
-          hierarchy_class.delete_all # not destroy_all -- we just want a simple truncate.
-          roots.each { |n| n.send(:rebuild!) } # roots just uses the parent_id column, so this is safe.
+        transaction do
+          with_advisory_lock("closure_tree.#{ct_class}.rebuild") do
+            hierarchy_class.delete_all # not destroy_all -- we just want a simple truncate.
+            roots.each { |n| n.send(:rebuild!) } # roots just uses the parent_id column, so this is safe.
+          end
         end
         nil
       end
@@ -378,10 +385,11 @@ module ClosureTree
       def find_or_create_by_path(path, attributes = {})
         subpath = path.dup
         root_name = subpath.shift
-        root = with_advisory_lock("closure_tree.#{ct_class.to_s}.find_or_create(#{root_name})") do
+        root = with_advisory_lock("closure_tree.#{ct_class}.find_or_create(#{root_name})") do
           # shenanigans because find_or_create can't infer we want the same class as this:
           # Note that roots will already be constrained to this subclass (in the case of polymorphism):
-          roots.send("find_by_#{name_column}", root_name) || create!(attributes.merge(name_sym => root_name))
+          roots.send("find_by_#{name_column}".to_sym, root_name) ||
+            create!(attributes.merge(name_sym => root_name))
         end
         root.find_or_create_by_path(subpath, attributes)
       end
