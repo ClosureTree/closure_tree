@@ -361,7 +361,7 @@ module ClosureTree
       # Rebuilds the hierarchy table based on the parent_id column in the database.
       # Note that the hierarchy table will be truncated.
       def rebuild!
-        with_advisory_lock("closure_tree #{name}.rebuild") do
+        with_advisory_lock("closure_tree.#{ct_class.to_s}.rebuild") do
           hierarchy_class.delete_all # not destroy_all -- we just want a simple truncate.
           roots.each { |n| n.send(:rebuild!) } # roots just uses the parent_id column, so this is safe.
         end
@@ -378,10 +378,12 @@ module ClosureTree
       def find_or_create_by_path(path, attributes = {})
         subpath = path.dup
         root_name = subpath.shift
-        root = with_advisory_lock("closure_tree #{ct_class.to_s} find_or_create(#{root_name})") do
-          # shenanigans because find_or_create can't infer we want the same class as this:
-          # Note that roots will already be constrained to this subclass (in the case of polymorphism):
-          roots.send("find_by_#{name_column}", root_name) || create!(attributes.merge(name_sym => root_name))
+        root = with_advisory_lock("closure_tree.#{ct_class.to_s}.find_or_create(#{root_name})") do
+          transaction do
+            # shenanigans because find_or_create can't infer we want the same class as this:
+            # Note that roots will already be constrained to this subclass (in the case of polymorphism):
+            roots.send("find_by_#{name_column}", root_name) || create!(attributes.merge(name_sym => root_name))
+          end
         end
         root.find_or_create_by_path(subpath, attributes)
       end
