@@ -222,7 +222,7 @@ module ClosureTree
       attrs = {name_sym => child_name}
       attrs[:type] = self.type if ct_subclass? && ct_has_type?
       child = ct_with_lock do
-        self.children.where(attrs) || begin
+        self.children.where(attrs).first || begin
           child = self.class.new(attributes.merge(attrs))
           self.children << child
           child
