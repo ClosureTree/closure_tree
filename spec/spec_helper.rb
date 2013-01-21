@@ -21,7 +21,7 @@ require 'tmpdir'
 
 require 'yaml'
 require 'erb'
-ENV["DB"] ||= "sqlite3mem"
+ENV["DB"] ||= "mysql"
 ActiveRecord::Base.table_name_prefix = ENV['DB_PREFIX'].to_s
 ActiveRecord::Base.table_name_suffix = ENV['DB_SUFFIX'].to_s
 ActiveRecord::Base.configurations = YAML::load(ERB.new(IO.read(plugin_test_dir + "/db/database.yml")).result)
@@ -41,6 +41,8 @@ ActiveRecord::ConnectionAdapters::AbstractAdapter.class_eval do
 
   alias_method_chain :log, :query_append
 end
+
+Thread.abort_on_exception = true
 
 RSpec.configure do |config|
   config.fixture_path = "#{plugin_test_dir}/fixtures"
