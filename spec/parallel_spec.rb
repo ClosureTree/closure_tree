@@ -4,7 +4,9 @@ describe "threadhot" do
   def find_or_create_at_even_second(run_at)
     sleep(run_at - Time.now.to_f)
     ActiveRecord::Base.connection.reconnect!
-    Tag.find_or_create_by_path([run_at.to_s, :a, :b, :c])
+    Tag.transaction do
+      Tag.find_or_create_by_path([run_at.to_s, :a, :b, :c])
+    end
   end
 
   def run_workers
