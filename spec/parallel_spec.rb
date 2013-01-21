@@ -22,8 +22,8 @@ describe "threadhot" do
   before :each do
     TagHierarchy.delete_all
     Tag.delete_all
-    @iterations = 3
-    @workers = 4
+    @iterations = 5
+    @workers = 7
   end
 
   it "will not create dupe roots" do
