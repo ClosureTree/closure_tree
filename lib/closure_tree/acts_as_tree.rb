@@ -379,9 +379,9 @@ module ClosureTree
       def find_or_create_by_path(path, attributes = {})
         subpath = path.dup
         root_name = subpath.shift
-        with_advisory_lock("closure_tree.#{ct_class}.find_or_create(#{root_name})") do
+        transaction do
           # Don't release the advisory lock until we have committed the whole write:
-          transaction do
+          with_advisory_lock("closure_tree.#{ct_class}.find_or_create(#{root_name})") do
             # shenanigans because find_or_create can't infer we want the same class as this:
             # Note that roots will already be constrained to this subclass (in the case of polymorphism):
             root = roots.send("find_by_#{name_column}".to_sym, root_name) ||

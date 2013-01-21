@@ -388,6 +388,9 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 * The latest Rails 3.0, 3.1, and 3.2 branches, and
 * MySQL and PostgreSQL. SQLite works in a single-threaded environment.
 
+Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
+run the test matrix locally.
+
 ## Change log
 
 ### 3.7.0
