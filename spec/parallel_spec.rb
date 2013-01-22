@@ -55,5 +55,5 @@ describe "threadhot" do
     Tag.find_all_by_name(@names).size.should > @iterations
   end
 
-# SQLite doesn't like parallelism, and I'm not going to fight it. Skip this whole spec:
-end if ENV["DB"] != "sqlite3"
+# SQLite doesn't like parallelism, and Rails 3.0 and 3.1 have known threading issues. SKIP.
+end if ((ENV["DB"] != "sqlite3") && (ActiveRecord::VERSION::STRING =~ /^3.2/))
