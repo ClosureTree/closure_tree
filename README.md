@@ -391,6 +391,9 @@ Closure tree is [tested under every combination](http://travis-ci.org/#!/mceache
 Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
 run the test matrix locally.
 
+Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
+[known issue](https://github.com/rails/rails/issues/7538).
+
 ## Change log
 
 ### 3.7.0
