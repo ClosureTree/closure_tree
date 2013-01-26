@@ -398,9 +398,10 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 
 ### 3.7.0
 
-* **Thread safety!** [Advisory locks](https://github.com/mceachen/with_advisory_lock) were
-  integrated with the class-level ```find_or_create_by_path``` and ```rebuild!```. Pessimistic
-  locking is used by the instance-level ```find_or_create_by_path```.
+**Thread safety!**
+* [Advisory locks](https://github.com/mceachen/with_advisory_lock) were
+  integrated with the class-level ```find_or_create_by_path``` and ```rebuild!```.
+* Pessimistic locking is used by the instance-level ```find_or_create_by_path```.
 
 ### 3.6.9
 
