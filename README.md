@@ -396,6 +396,11 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 
 ## Change log
 
+### 3.7.1
+
+* Moved requires into ActiveSupport.on_load
+* Added ```require 'with_advisory_lock'```
+
 ### 3.7.0
 
 **Thread safety!**
