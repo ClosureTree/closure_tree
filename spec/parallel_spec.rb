@@ -5,8 +5,8 @@ describe "threadhot" do
   before :each do
     TagHierarchy.delete_all
     Tag.delete_all
-    @iterations = 3
-    @workers = 5
+    @iterations = 5
+    @workers = 8
     @parent = nil
   end
 

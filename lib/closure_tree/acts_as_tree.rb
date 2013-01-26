@@ -209,7 +209,7 @@ module ClosureTree
       path = path.is_a?(Enumerable) ? path.dup : [path]
       node = self
       while !path.empty? && node
-        node = node.children.send("find_by_#{name_column}", path.shift)
+        node = node.children.where(name_sym => path.shift).first
       end
       node
     end
@@ -217,18 +217,23 @@ module ClosureTree
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
     def find_or_create_by_path(path, attributes = {})
       path = path.is_a?(Enumerable) ? path.dup : [path]
-      child_name = path.shift
-      return self unless child_name
-      attrs = {name_sym => child_name}
-      attrs[:type] = self.type if ct_subclass? && ct_has_type?
-      child = ct_with_lock do
-        self.children.where(attrs).first || begin
-          child = self.class.new(attributes.merge(attrs))
-          self.children << child
-          child
+      transaction do
+        lock!
+        node = self
+        attrs = {}
+        attrs[:type] = self.type if ct_subclass? && ct_has_type?
+        path.each do |name|
+          attrs[name_sym] = name
+          child = node.children.where(attrs).first(:lock => true)
+          unless child
+            child = self.class.new(attributes.merge(attrs))
+            node.children << child
+            child.lock!
+          end
+          node = child
         end
+        node
       end
-      child.find_or_create_by_path(path, attributes)
     end
 
     def find_all_by_generation(generation_level)
@@ -262,20 +267,6 @@ module ClosureTree
     end
 
     protected
-
-    def ct_with_lock(lock = true, &block)
-      # with_lock is only >= Rails 3.2
-      if respond_to? :with_lock
-        with_lock(lock, &block)
-      else
-        # Backport from Rails 3.2:
-        save! if changed?
-        transaction do
-          lock!
-          block.call
-        end
-      end
-    end
 
     def ct_validate
       if changes[parent_column_name] &&
@@ -371,20 +362,20 @@ module ClosureTree
 
       # Find the node whose +ancestry_path+ is +path+
       def find_by_path(path)
-        root = roots.send("find_by_#{name_column}", path.shift)
-        root.try(:find_by_path, path)
+        subpath = path.dup
+        root = roots.where(name_sym => subpath.shift)
+        root.try(:find_by_path, subpath)
       end
 
       # Find or create nodes such that the +ancestry_path+ is +path+
       def find_or_create_by_path(path, attributes = {})
         subpath = path.dup
         root_name = subpath.shift
-        transaction do
-          # Don't release the advisory lock until we have committed the whole write:
-          with_advisory_lock("closure_tree.#{ct_class}.find_or_create(#{root_name})") do
+        with_advisory_lock("closure_tree.#{ct_class}.find_or_create(#{root_name})") do
+          transaction do
             # shenanigans because find_or_create can't infer we want the same class as this:
             # Note that roots will already be constrained to this subclass (in the case of polymorphism):
-            root = roots.send("find_by_#{name_column}".to_sym, root_name) ||
+            root = roots.where(name_sym => root_name).first ||
               create!(attributes.merge(name_sym => root_name))
             root.find_or_create_by_path(subpath, attributes)
           end
