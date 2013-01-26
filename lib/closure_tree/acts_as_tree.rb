@@ -216,24 +216,20 @@ module ClosureTree
 
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
     def find_or_create_by_path(path, attributes = {})
-      path = path.is_a?(Enumerable) ? path.dup : [path]
-      transaction do
+      subpath = path.is_a?(Enumerable) ? path.dup : [path]
+      child_name = subpath.shift
+      return self unless child_name
+      child = transaction do
         lock!
-        node = self
-        attrs = {}
+        attrs = {name_sym => child_name}
         attrs[:type] = self.type if ct_subclass? && ct_has_type?
-        path.each do |name|
-          attrs[name_sym] = name
-          child = node.children.where(attrs).first(:lock => true)
-          unless child
-            child = self.class.new(attributes.merge(attrs))
-            node.children << child
-            child.lock!
-          end
-          node = child
+        self.children.where(attrs).first || begin
+          child = self.class.new(attributes.merge(attrs))
+          self.children << child
+          child
         end
-        node
       end
+      child.find_or_create_by_path(subpath, attributes)
     end
 
     def find_all_by_generation(generation_level)
@@ -351,8 +347,8 @@ module ClosureTree
       # Rebuilds the hierarchy table based on the parent_id column in the database.
       # Note that the hierarchy table will be truncated.
       def rebuild!
-        transaction do
-          with_advisory_lock("closure_tree.#{ct_class}.rebuild") do
+        with_advisory_lock("closure_tree.#{ct_class}.rebuild") do
+          transaction do
             hierarchy_class.delete_all # not destroy_all -- we just want a simple truncate.
             roots.each { |n| n.send(:rebuild!) } # roots just uses the parent_id column, so this is safe.
           end
@@ -371,15 +367,15 @@ module ClosureTree
       def find_or_create_by_path(path, attributes = {})
         subpath = path.dup
         root_name = subpath.shift
-        with_advisory_lock("closure_tree.#{ct_class}.find_or_create(#{root_name})") do
+        root = with_advisory_lock("closure_tree.#{ct_class}.find_or_create(#{root_name})") do
           transaction do
             # shenanigans because find_or_create can't infer we want the same class as this:
             # Note that roots will already be constrained to this subclass (in the case of polymorphism):
-            root = roots.where(name_sym => root_name).first ||
+            roots.where(name_sym => root_name).first ||
               create!(attributes.merge(name_sym => root_name))
-            root.find_or_create_by_path(subpath, attributes)
           end
         end
+        root.find_or_create_by_path(subpath, attributes)
       end
 
       def hash_tree_scope(limit_depth = nil)
