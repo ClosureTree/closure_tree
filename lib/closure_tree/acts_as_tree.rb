@@ -363,8 +363,8 @@ module ClosureTree
       # Find the node whose +ancestry_path+ is +path+
       def find_by_path(path)
         subpath = path.dup
-        root = roots.where(name_sym => subpath.shift)
-        root.try(:find_by_path, subpath)
+        root = roots.where(name_sym => subpath.shift).first
+        root.find_by_path(subpath) if root
       end
 
       # Find or create nodes such that the +ancestry_path+ is +path+
