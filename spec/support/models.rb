@@ -4,7 +4,6 @@ class Node < ActiveRecord::Base
   acts_as_tree :dependent => :destroy
   before_create :generate_uuid
   attr_accessible :name
-  self.primary_key = 'id'
 
   def generate_uuid
     self.id = UUIDTools::UUID.random_create.to_s
