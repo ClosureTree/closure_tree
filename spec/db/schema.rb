@@ -12,12 +12,14 @@ end
 ActiveRecord::Schema.define(:version => 0) do
 
   create_table "nodes", :id => false do |t|
-    t.string "id", :primary_key => true
+    t.string "id"
     t.string "name"
     t.string "parent_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  force_add_index "nodes", [:id], :name => "node_id", :unique => true
 
   create_table "node_hierarchies", :id => false, :force => true do |t|
     t.string "ancestor_id", :null => false
