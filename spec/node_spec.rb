@@ -146,37 +146,3 @@ shared_examples_for Node do
   end
 
 end
-
-describe Node do
-  it "should not include ActiveModel::ForbiddenAttributesProtection" do
-    if defined?(ActiveModel::ForbiddenAttributesProtection)
-      Node.ancestors.should_not include(ActiveModel::ForbiddenAttributesProtection)
-    end
-  end
-  it_behaves_like Node
-end
-
-describe "Node with AR whitelisted attributes enabled" do
-  before(:all) do
-    ActiveRecord::Base.attr_accessible(nil) # turn on whitelisted attributes
-    ActiveRecord::Base.descendants.each { |ea| ea.reset_column_information }
-  end
-  it "should not include ActiveModel::ForbiddenAttributesProtection" do
-    if defined?(ActiveModel::ForbiddenAttributesProtection)
-      Node.ancestors.should_not include(ActiveModel::ForbiddenAttributesProtection)
-    end
-  end
-  it_behaves_like Node
-end
-
-# This has to be the last one, because we include strong parameters into Node
-describe "Node with strong parameters" do
-  before(:all) do
-    require 'strong_parameters'
-    class Node
-      include ActiveModel::ForbiddenAttributesProtection
-    end
-  end
-  it_behaves_like Node
-end
-
