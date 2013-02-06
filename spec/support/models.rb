@@ -1,3 +1,16 @@
+require 'securerandom'
+
+class Node < ActiveRecord::Base
+  acts_as_tree :dependent => :destroy
+  before_create :generate_uuid
+  attr_accessible :name
+  self.primary_key = :id
+
+  def generate_uuid
+    self.id = SecureRandom.uuid
+  end
+end
+
 class Tag < ActiveRecord::Base
   acts_as_tree :dependent => :destroy, :order => "name"
   before_destroy :add_destroyed_tag

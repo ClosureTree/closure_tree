@@ -237,7 +237,7 @@ module ClosureTree
         INNER JOIN (
           SELECT descendant_id
           FROM #{quoted_hierarchy_table_name}
-          WHERE ancestor_id = #{self.id}
+          WHERE ancestor_id = #{ct_quote(self.id)}
           GROUP BY 1
           HAVING MAX(#{quoted_hierarchy_table_name}.generations) = #{generation_level.to_i}
         ) AS descendants ON (#{quoted_table_name}.#{ct_base_class.primary_key} = descendants.descendant_id)
@@ -290,9 +290,9 @@ module ClosureTree
         connection.execute <<-SQL
           INSERT INTO #{quoted_hierarchy_table_name}
             (ancestor_id, descendant_id, generations)
-          SELECT x.ancestor_id, #{id}, x.generations + 1
+          SELECT x.ancestor_id, #{ct_quote(id)}, x.generations + 1
           FROM #{quoted_hierarchy_table_name} x
-          WHERE x.descendant_id = #{self.ct_parent_id}
+          WHERE x.descendant_id = #{ct_quote(self.ct_parent_id)}
         SQL
       end
       children.each { |c| c.rebuild! }
@@ -316,9 +316,9 @@ module ClosureTree
           SELECT DISTINCT descendant_id
           FROM ( SELECT descendant_id
             FROM #{quoted_hierarchy_table_name}
-            WHERE ancestor_id = #{id}
+            WHERE ancestor_id = #{ct_quote(id)}
           ) AS x )
-          OR descendant_id = #{id}
+          OR descendant_id = #{ct_quote(id)}
       SQL
     end
 
@@ -332,6 +332,10 @@ module ClosureTree
       else
         scope.select(:id).collect(&:id)
       end
+    end
+
+    def ct_quote(id)
+      self.class.connection.quote(id)
     end
 
     # TODO: _parent_id will be removed in the next major version

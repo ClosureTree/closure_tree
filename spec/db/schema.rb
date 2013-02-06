@@ -11,6 +11,20 @@ end
 
 ActiveRecord::Schema.define(:version => 0) do
 
+  create_table "nodes", :id => false do |t|
+    t.string "id", :primary_key => true
+    t.string "name"
+    t.string "parent_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "node_hierarchies", :id => false, :force => true do |t|
+    t.string "ancestor_id", :null => false
+    t.string "descendant_id", :null => false
+    t.integer "generations", :null => false
+  end
+
   create_table "tags", :force => true do |t|
     t.string "name"
     t.string "title"
