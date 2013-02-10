@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-shared_examples_for Node do
+describe Node do
 
   it "has correct accessible_attributes" do
     Node.accessible_attributes.to_a.should =~ %w(parent name)

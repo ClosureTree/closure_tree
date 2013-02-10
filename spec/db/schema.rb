@@ -11,7 +11,7 @@ end
 
 ActiveRecord::Schema.define(:version => 0) do
 
-  create_table "nodes", :id => false do |t|
+  create_table "nodes", :id => false, :force => true do |t|
     t.string "id"
     t.string "name"
     t.string "parent_id"
