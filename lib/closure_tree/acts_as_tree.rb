@@ -334,8 +334,8 @@ module ClosureTree
       end
     end
 
-    def ct_quote(id)
-      self.class.connection.quote(id)
+    def ct_quote(field)
+      self.class.connection.quote(field)
     end
 
     # TODO: _parent_id will be removed in the next major version
