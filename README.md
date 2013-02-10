@@ -396,6 +396,12 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 
 ## Change log
 
+### 3.7.2
+
+* Support for UUID primary keys. Addresses
+  [issue 40](https://github.com/mceachen/closure_tree/issues/40). Thanks for the pull request,
+  [Julien](https://github.com/calexicoz)!
+
 ### 3.7.1
 
 * Moved requires into ActiveSupport.on_load
