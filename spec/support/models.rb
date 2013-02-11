@@ -2,11 +2,12 @@ require 'uuidtools'
 
 class Node < ActiveRecord::Base
   acts_as_tree :dependent => :destroy
+  self.primary_key = 'uuid'
   before_create :generate_uuid
   attr_accessible :name
 
   def generate_uuid
-    self.id = UUIDTools::UUID.random_create.to_s
+    self.uuid = UUIDTools::UUID.random_create.to_s
   end
 end
 

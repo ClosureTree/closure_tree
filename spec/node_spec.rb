@@ -130,8 +130,11 @@ describe Node do
       parent.children << child2
       child3 = Node.new(:name => 'Third Child')
       parent.add_child child3
-      grandparent.self_and_descendants.collect(&:name).should ==
-        ["Grandparent", "Parent", "First Child", "Second Child", "Third Child"]
+      grandparent_and_descendants_names = grandparent.self_and_descendants.collect(&:name)
+      grandparent_and_descendants_names.first(2).should ==
+        ["Grandparent", "Parent"]
+      grandparent_and_descendants_names.last(3).should =~
+        ["First Child", "Second Child", "Third Child"]
       child1.ancestry_path.should ==
         ["Grandparent", "Parent", "First Child"]
       child3.ancestry_path.should ==
@@ -142,7 +145,5 @@ describe Node do
       d.add_child(e) # "d.children << e" would work too, of course
       h.ancestry_path.should == %w(a b c d e f g h)
     end
-
   end
-
 end

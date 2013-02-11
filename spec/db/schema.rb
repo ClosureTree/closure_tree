@@ -12,7 +12,7 @@ end
 ActiveRecord::Schema.define(:version => 0) do
 
   create_table "nodes", :id => false, :force => true do |t|
-    t.string "id"
+    t.string "uuid", :unique => true
     t.string "name"
     t.string "parent_id"
     t.datetime "created_at"
