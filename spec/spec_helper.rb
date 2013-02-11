@@ -15,9 +15,9 @@ require 'with_advisory_lock'
 require 'closure_tree'
 require 'tmpdir'
 
-#log = Logger.new(STDOUT)
-#log.sev_threshold = Logger::DEBUG
-#ActiveRecord::Base.logger = log
+log = Logger.new(STDOUT)
+log.sev_threshold = Logger::DEBUG
+ActiveRecord::Base.logger = log
 
 require 'yaml'
 require 'erb'

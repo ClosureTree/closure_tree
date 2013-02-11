@@ -566,6 +566,21 @@ module ClosureTree
 
     def add_sibling(sibling_node, use_update_all = true, add_after = true)
       fail "can't add self as sibling" if self == sibling_node
+      transaction do
+        # issue 40: we need to lock the parent to prevent deadlocks on parallel sibling additions
+        if root?
+          # Only need an advisory lock if we're on a root node (there's no parent to lock):
+          with_advisory_lock("closure_tree.#{ct_class}.add_sibling") do
+            _add_sibling(add_after, sibling_node, use_update_all)
+          end
+        else
+          parent.lock!
+          _add_sibling(add_after, sibling_node, use_update_all)
+        end
+      end
+    end
+
+    def _add_sibling(add_after, sibling_node, use_update_all)
       # issue 18: we need to set the order_value explicitly so subsequent orders will work.
       update_attribute(:order_value, 0) if self.order_value.nil?
       sibling_node.order_value = self.order_value.to_i + (add_after ? 1 : -1)
@@ -588,7 +603,9 @@ module ClosureTree
       end
       sibling_node.parent = self.parent
       sibling_node.save!
-      sibling_node.reload # <- because siblings_before and siblings_after will have changed.
+      sibling_node.reload
     end
+
+    private :_add_sibling
   end
 end
