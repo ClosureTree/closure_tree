@@ -11,22 +11,6 @@ end
 
 ActiveRecord::Schema.define(:version => 0) do
 
-  create_table "nodes", :id => false, :force => true do |t|
-    t.string "uuid", :unique => true
-    t.string "name"
-    t.string "parent_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  force_add_index "nodes", [:uuid], :name => "node_id", :unique => true
-
-  create_table "node_hierarchies", :id => false, :force => true do |t|
-    t.string "ancestor_id", :null => false
-    t.string "descendant_id", :null => false
-    t.integer "generations", :null => false
-  end
-
   create_table "tags", :force => true do |t|
     t.string "name"
     t.string "title"
@@ -39,6 +23,22 @@ ActiveRecord::Schema.define(:version => 0) do
   create_table "tag_hierarchies", :id => false, :force => true do |t|
     t.integer "ancestor_id", :null => false
     t.integer "descendant_id", :null => false
+    t.integer "generations", :null => false
+  end
+
+  create_table "tags_uuid", :id => false, :force => true do |t|
+    t.string "id", :unique => true
+    t.string "name"
+    t.string "title"
+    t.string "parent_id"
+    t.integer "sort_order"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "tag_hierarchies_uuid", :id => false, :force => true do |t|
+    t.string "ancestor_id", :null => false
+    t.string "descendant_id", :null => false
     t.integer "generations", :null => false
   end
 
