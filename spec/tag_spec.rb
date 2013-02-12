@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-shared_examples_for Tag do
+shared_examples_for "Tag (1)" do
 
   it "has correct accessible_attributes" do
     Tag.accessible_attributes.to_a.should =~ %w(parent name)
@@ -146,8 +146,10 @@ shared_examples_for Tag do
     end
 
   end
+end
 
-  describe "Tag with fixtures" do
+shared_examples_for "Tag (2)" do
+  describe "Tag (2)" do
 
     fixtures :tags
 
@@ -367,7 +369,8 @@ describe Tag do
       Tag.ancestors.should_not include(ActiveModel::ForbiddenAttributesProtection)
     end
   end
-  it_behaves_like Tag
+  it_behaves_like "Tag (1)"
+  it_behaves_like "Tag (2)"
 end
 
 describe "Tag with AR whitelisted attributes enabled" do
@@ -380,7 +383,8 @@ describe "Tag with AR whitelisted attributes enabled" do
       Tag.ancestors.should_not include(ActiveModel::ForbiddenAttributesProtection)
     end
   end
-  it_behaves_like Tag
+  it_behaves_like "Tag (1)"
+  it_behaves_like "Tag (2)"
 end
 
 # This has to be the last one, because we include strong parameters into Tag
@@ -391,6 +395,29 @@ describe "Tag with strong parameters" do
       include ActiveModel::ForbiddenAttributesProtection
     end
   end
-  it_behaves_like Tag
+  it_behaves_like "Tag (1)"
+  it_behaves_like "Tag (2)"
 end
 
+describe "Tag with UUID" do
+  before(:all) do
+    # Change tables
+    Tag.table_name = Tag.table_name.gsub('tags', 'tags_uuid')
+    Tag.reset_column_information
+    TagHierarchy.table_name = TagHierarchy.table_name.gsub('tag_hierarchies', 'tag_hierarchies_uuid')
+    TagHierarchy.reset_column_information
+
+    # We have to reset a few other caches
+    Tag.closure_tree_options[:hierarchy_table_name] = 'tag_hierarchies_uuid'
+    Tag.reflections.each do |key, ref|
+      ref.instance_variable_set('@table_name', nil)
+      ref.instance_variable_set('@quoted_table_name', nil)
+      ref.options[:order].sub! 'tag_hierarchies', 'tag_hierarchies_uuid' if ref.options[:order]
+    end
+
+    # Add ID
+    Tag.before_create { self.id = UUIDTools::UUID.random_create.to_s }
+  end
+
+  it_behaves_like "Tag (1)"
+end
