@@ -7,17 +7,13 @@ require 'bundler/setup'
 require 'rspec'
 require 'logger'
 
-require 'active_support'
-require 'active_model'
-require 'active_record'
 require 'action_controller' # rspec-rails needs this :(
-require 'with_advisory_lock'
 require 'closure_tree'
 require 'tmpdir'
 
-log = Logger.new(STDOUT)
-log.sev_threshold = Logger::DEBUG
-ActiveRecord::Base.logger = log
+#log = Logger.new(STDOUT)
+#log.sev_threshold = Logger::DEBUG
+#ActiveRecord::Base.logger = log
 
 require 'yaml'
 require 'erb'

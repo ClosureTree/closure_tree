@@ -216,20 +216,23 @@ module ClosureTree
 
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
     def find_or_create_by_path(path, attributes = {})
-      subpath = path.is_a?(Enumerable) ? path.dup : [path]
-      child_name = subpath.shift
-      return self unless child_name
-      child = transaction do
-        lock!
-        attrs = {name_sym => child_name}
-        attrs[:type] = self.type if ct_subclass? && ct_has_type?
-        self.children.where(attrs).first || begin
-          child = self.class.new(attributes.merge(attrs))
-          self.children << child
-          child
+      with_advisory_lock("closure_tree") do
+        transaction do
+          subpath = path.is_a?(Enumerable) ? path.dup : [path]
+          child_name = subpath.shift
+          return self unless child_name
+          child = transaction do
+            attrs = {name_sym => child_name}
+            attrs[:type] = self.type if ct_subclass? && ct_has_type?
+            self.children.where(attrs).first || begin
+              child = self.class.new(attributes.merge(attrs))
+              self.children << child
+              child
+            end
+          end
+          child.find_or_create_by_path(subpath, attributes)
         end
       end
-      child.find_or_create_by_path(subpath, attributes)
     end
 
     def find_all_by_generation(generation_level)
@@ -284,18 +287,22 @@ module ClosureTree
     end
 
     def rebuild!
-      delete_hierarchy_references unless @was_new_record
-      hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
-      unless root?
-        connection.execute <<-SQL
+      with_advisory_lock("closure_tree") do
+        transaction do
+          delete_hierarchy_references unless @was_new_record
+          hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
+          unless root?
+            connection.execute <<-SQL
           INSERT INTO #{quoted_hierarchy_table_name}
             (ancestor_id, descendant_id, generations)
           SELECT x.ancestor_id, #{ct_quote(id)}, x.generations + 1
           FROM #{quoted_hierarchy_table_name} x
           WHERE x.descendant_id = #{ct_quote(self.ct_parent_id)}
-        SQL
+            SQL
+          end
+          children.each { |c| c.rebuild! }
+        end
       end
-      children.each { |c| c.rebuild! }
     end
 
     def ct_before_destroy
@@ -351,7 +358,7 @@ module ClosureTree
       # Rebuilds the hierarchy table based on the parent_id column in the database.
       # Note that the hierarchy table will be truncated.
       def rebuild!
-        with_advisory_lock("closure_tree.#{ct_class}.rebuild") do
+        with_advisory_lock("closure_tree") do
           transaction do
             hierarchy_class.delete_all # not destroy_all -- we just want a simple truncate.
             roots.each { |n| n.send(:rebuild!) } # roots just uses the parent_id column, so this is safe.
@@ -371,15 +378,15 @@ module ClosureTree
       def find_or_create_by_path(path, attributes = {})
         subpath = path.dup
         root_name = subpath.shift
-        root = with_advisory_lock("closure_tree.#{ct_class}.find_or_create(#{root_name})") do
+        with_advisory_lock("closure_tree") do
           transaction do
             # shenanigans because find_or_create can't infer we want the same class as this:
             # Note that roots will already be constrained to this subclass (in the case of polymorphism):
-            roots.where(name_sym => root_name).first ||
-              create!(attributes.merge(name_sym => root_name))
+            root = roots.where(name_sym => root_name).first
+            root ||= create!(attributes.merge(name_sym => root_name))
+            root.find_or_create_by_path(subpath, attributes)
           end
         end
-        root.find_or_create_by_path(subpath, attributes)
       end
 
       def hash_tree_scope(limit_depth = nil)
@@ -566,46 +573,34 @@ module ClosureTree
 
     def add_sibling(sibling_node, use_update_all = true, add_after = true)
       fail "can't add self as sibling" if self == sibling_node
-      transaction do
-        # issue 40: we need to lock the parent to prevent deadlocks on parallel sibling additions
-        if root?
-          # Only need an advisory lock if we're on a root node (there's no parent to lock):
-          with_advisory_lock("closure_tree.#{ct_class}.add_sibling") do
-            _add_sibling(add_after, sibling_node, use_update_all)
+      # issue 40: we need to lock the parent to prevent deadlocks on parallel sibling additions
+      with_advisory_lock("closure_tree") do
+        transaction do
+          # issue 18: we need to set the order_value explicitly so subsequent orders will work.
+          update_attribute(:order_value, 0) if self.order_value.nil?
+          sibling_node.order_value = self.order_value.to_i + (add_after ? 1 : -1)
+          # We need to incr the before_siblings to make room for sibling_node:
+          if use_update_all
+            col = quoted_order_column(false)
+            # issue 21: we have to use the base class, so STI doesn't get in the way of only updating the child class instances:
+            ct_base_class.update_all(
+              ["#{col} = #{col} #{add_after ? '+' : '-'} 1", "updated_at = now()"],
+              ["#{quoted_parent_column_name} = ? AND #{col} #{add_after ? '>=' : '<='} ?",
+                ct_parent_id,
+                sibling_node.order_value])
+          else
+            last_value = sibling_node.order_value.to_i
+            (add_after ? siblings_after : siblings_before.reverse).each do |ea|
+              last_value += (add_after ? 1 : -1)
+              ea.order_value = last_value
+              ea.save!
+            end
           end
-        else
-          parent.lock!
-          _add_sibling(add_after, sibling_node, use_update_all)
+          sibling_node.parent = self.parent
+          sibling_node.save!
+          sibling_node.reload
         end
       end
     end
-
-    def _add_sibling(add_after, sibling_node, use_update_all)
-      # issue 18: we need to set the order_value explicitly so subsequent orders will work.
-      update_attribute(:order_value, 0) if self.order_value.nil?
-      sibling_node.order_value = self.order_value.to_i + (add_after ? 1 : -1)
-      # We need to incr the before_siblings to make room for sibling_node:
-      if use_update_all
-        col = quoted_order_column(false)
-        # issue 21: we have to use the base class, so STI doesn't get in the way of only updating the child class instances:
-        ct_base_class.update_all(
-          ["#{col} = #{col} #{add_after ? '+' : '-'} 1", "updated_at = now()"],
-          ["#{quoted_parent_column_name} = ? AND #{col} #{add_after ? '>=' : '<='} ?",
-            ct_parent_id,
-            sibling_node.order_value])
-      else
-        last_value = sibling_node.order_value.to_i
-        (add_after ? siblings_after : siblings_before.reverse).each do |ea|
-          last_value += (add_after ? 1 : -1)
-          ea.order_value = last_value
-          ea.save!
-        end
-      end
-      sibling_node.parent = self.parent
-      sibling_node.save!
-      sibling_node.reload
-    end
-
-    private :_add_sibling
   end
 end
