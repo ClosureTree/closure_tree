@@ -1,10 +1,10 @@
-sqlite3:
+sqlite:
   adapter: <%= "jdbc" if defined? JRUBY_VERSION %>sqlite3
   database: spec/sqlite3.db
   pool: 50
   timeout: 5000
 
-pg:
+postgresql:
   adapter: postgresql
   username: postgres
   database: closure_tree_test

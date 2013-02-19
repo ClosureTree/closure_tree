@@ -7,10 +7,10 @@ do
   gem install bundler rake # < just to make sure
   rbenv rehash || true
 
-  for BUNDLE_GEMFILE in ci/Gemfile.rails-3.0.x ci/Gemfile.rails-3.1.x ci/Gemfile.rails-3.2.x
+  for BUNDLE_GEMFILE in ci/Gemfile.rails-3.1.x ci/Gemfile.rails-3.2.x
   do
-    bundle --quiet
-    for DB in sqlite3 mysql pg
+    bundle update --quiet
+    for DB in sqlite mysql postgresql
     do
       echo $DB $BUNDLE_GEMFILE `ruby -v`
       bundle exec rake specs_with_db_ixes
