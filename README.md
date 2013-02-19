@@ -396,6 +396,12 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 
 ## Change log
 
+### 3.7.3
+
+Due to MySQL's inability to lock rows properly, I've switched to advisory_locks for
+all write paths. This will prevent deadlocks, addressing
+[issue 41](https://github.com/mceachen/closure_tree/issues/41).
+
 ### 3.7.2
 
 * Support for UUID primary keys. Addresses
