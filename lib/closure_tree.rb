@@ -1,3 +1,4 @@
+require 'active_support'
 require 'active_record'
 
 ActiveSupport.on_load :active_record do
