@@ -7,7 +7,7 @@ do
   gem install bundler rake # < just to make sure
   rbenv rehash || true
 
-  for BUNDLE_GEMFILE in ci/Gemfile.rails-3.1.x ci/Gemfile.rails-3.2.x
+  for BUNDLE_GEMFILE in ci/Gemfile.rails-3.0.x ci/Gemfile.rails-3.1.x ci/Gemfile.rails-3.2.x
   do
     bundle update --quiet
     for DB in sqlite mysql postgresql
