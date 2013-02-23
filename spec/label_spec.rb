@@ -5,7 +5,7 @@ def delete_all_labels
   Label.delete_all
 end
 
-def create_label_hierarchy
+def create_label_tree
   @d1 = Label.find_or_create_by_path %w(a1 b1 c1 d1)
   @c1 = @d1.parent
   @b1 = @c1.parent
@@ -17,6 +17,27 @@ def create_label_hierarchy
   @b2 = @c3.parent
   @a2 = @b2.parent
   Label.update_all("sort_order = id")
+end
+
+def create_preorder_tree
+  %w(
+    a/l/n/r
+    a/l/n/q
+    a/l/n/p
+    a/l/n/o
+    a/l/m
+    a/b/h/i/j/k
+    a/b/c/d/g
+    a/b/c/d/f
+    a/b/c/d/e
+  ).shuffle.each { |ea| Label.find_or_create_by_path(ea.split '/') }
+  a = Label.find_by_path(["a"])
+  a.self_and_descendants.each do |ea|
+    ea.children.to_a.sort_by(&:name).each_with_index do |ea, idx|
+      ea.order_value = idx
+      ea.save!
+    end
+  end
 end
 
 describe Label do
@@ -81,7 +102,7 @@ describe Label do
   context "find_all_by_generation" do
     before :all do
       delete_all_labels
-      create_label_hierarchy
+      create_label_tree
     end
 
     it "finds roots from the class method" do
@@ -122,7 +143,7 @@ describe Label do
   context "loading through self_and_ scopes" do
     before :all do
       delete_all_labels
-      create_label_hierarchy
+      create_label_tree
     end
 
     it "self_and_descendants should result in one select" do
@@ -279,6 +300,16 @@ describe Label do
       labels(:e2).self_and_siblings.to_a.should == [labels(:b1), labels(:b2), labels(:c2), labels(:e2)]
       labels(:a1).self_and_descendants.collect(&:name).should == %w(a1 b1 b2 c2 e2 d2 c1-six c1-seven c1-eight c1-nine)
       labels(:a1).leaves.collect(&:name).should == %w(b2 e2 d2 c1-six c1-seven c1-eight c1-nine)
+    end
+  end
+
+  context ".self_and_descendants_preordered" do
+    it "returns descendants in proper order" do
+      delete_all_labels
+      create_preorder_tree
+      a = Label.root
+      a.name.should == "a"
+      a.self_and_descendants_preordered.collect { |ea| ea.name }.should == ('a'..'r').to_a
     end
   end
 end

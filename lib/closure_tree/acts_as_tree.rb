@@ -563,6 +563,29 @@ module ClosureTree
 
   # This module is only included if the order column is an integer.
   module DeterministicNumericOrdering
+    def self_and_descendants_preordered
+      # TODO: raise NotImplementedError if sort_order is not numeric and not null?
+      h = connection.select_one(<<-SQL)
+        SELECT
+          count(*) as total_descendants,
+          max(generations) as max_depth
+        FROM #{quoted_hierarchy_table_name}
+        WHERE ancestor_id = #{ct_quote(self.id)}
+      SQL
+      join_sql = <<-SQL
+        JOIN #{quoted_hierarchy_table_name} anc_hier
+          ON anc_hier.descendant_id = #{quoted_hierarchy_table_name}.descendant_id
+        JOIN #{quoted_table_name} anc
+          ON anc.id = anc_hier.ancestor_id
+        JOIN #{quoted_hierarchy_table_name} depths
+          ON depths.ancestor_id = #{ct_quote(self.id)} AND depths.descendant_id = anc.id
+      SQL
+      node_score = "(1 + anc.#{quoted_order_column(false)}) * " +
+         "power(#{h['total_descendants']}, #{h['max_depth'].to_i + 1} - depths.generations)"
+      order_by = "sum(#{node_score})"
+      self_and_descendants.joins(join_sql).group("#{quoted_table_name}.id").reorder(order_by)
+    end
+
     def append_sibling(sibling_node, use_update_all = true)
       add_sibling(sibling_node, use_update_all, true)
     end
