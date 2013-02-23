@@ -20,9 +20,11 @@ closure_tree has some great features:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
 * Support for reparenting children (and all their progeny)
+* Support for concurrency (using [with_advisory_lock](https://github/mceachen/with_advisory_lock))
 * Support for polymorphism [STI](#sti) within the hierarchy
 * ```find_or_create_by_path``` for [building out hierarchies quickly and conveniently](#find_or_create_by_path)
 * Support for [deterministic ordering](#deterministic-ordering) of children
+* Support for [preordered](http://en.wikipedia.org/wiki/Tree_traversal#Pre-order) traversal of descendants
 * Support for single-select depth-limited [nested hashes](#nested-hashes)
 * Excellent [test coverage](#testing) in a variety of environments
 
@@ -317,6 +319,9 @@ When you enable ```order```, you'll also have the following new methods injected
 
 If your ```order``` column is an integer attribute, you'll also have these:
 
+* ```node1.self_and_descendants_preordered``` which will return descendants,
+  [pre-ordered](http://en.wikipedia.org/wiki/Tree_traversal#Pre-order).
+
 * ```node1.prepend_sibling(node2)``` which will
   1. set ```node2``` to the same parent as ```node1```,
   2. set ```node2```'s order column to 1 less than ```node1```'s value, and
@@ -395,6 +400,12 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 [known issue](https://github.com/rails/rails/issues/7538).
 
 ## Change log
+
+### 3.8.0
+
+* Support for preordered descendants. This requires a numeric sort order column.
+  Resolves [feature request 38](https://github.com/mceachen/closure_tree/issues/38).
+* Moved modules from ```acts_as_tree``` into separate files
 
 ### 3.7.3
 
