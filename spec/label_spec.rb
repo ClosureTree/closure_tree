@@ -311,5 +311,5 @@ describe Label do
       a.name.should == "a"
       a.self_and_descendants_preordered.collect { |ea| ea.name }.should == ('a'..'r').to_a
     end
-  end
+  end unless ENV["DB"] == "sqlite"
 end
