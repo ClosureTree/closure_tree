@@ -32,6 +32,8 @@ def create_preorder_tree
     a/b/c/d/e
   ).shuffle.each { |ea| Label.find_or_create_by_path(ea.split '/') }
   a = Label.find_by_path(["a"])
+  a.order_value = 0
+  a.save!
   a.self_and_descendants.each do |ea|
     ea.children.to_a.sort_by(&:name).each_with_index do |ea, idx|
       ea.order_value = idx
