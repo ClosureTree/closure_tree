@@ -20,7 +20,7 @@ closure_tree has some great features:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
 * Support for reparenting children (and all their progeny)
-* Support for concurrency (using [with_advisory_lock](https://github/mceachen/with_advisory_lock))
+* Support for [concurrency](#concurrency) (using [with_advisory_lock](https://github/mceachen/with_advisory_lock))
 * Support for polymorphism [STI](#sti) within the hierarchy
 * ```find_or_create_by_path``` for [building out hierarchies quickly and conveniently](#find_or_create_by_path)
 * Support for [deterministic ordering](#deterministic-ordering) of children
@@ -39,6 +39,7 @@ for a description of different tree storage algorithms.
 - [Accessing Data](#accessing-data)
 - [Polymorphic hierarchies with STI](#polymorphic-hierarchies-with-sti)
 - [Deterministic ordering](#deterministic-ordering)
+- [Concurrency](#concurrency)
 - [FAQ](#faq)
 - [Testing](#testing)
 - [Change log](#change-log)
@@ -357,6 +358,29 @@ b.append_sibling(c)
 root.reload.children.collect(&:name)
 => ["b", "c", "a"]
 ```
+
+## Concurrency
+
+Several methods, especially ```#rebuild``` and ```#find_or_create_by_path```, cannot run concurrently correctly.
+```#find_or_create_by_path```, for example, may create duplicate nodes.
+
+Database row-level locks work correctly with PostgreSQL, but MySQL's row-level locking is broken, and
+erroneously reports deadlocks where there are none. To work around this, and have a consistent implementation
+for both MySQL and PostgreSQL, [with_advisory_lock](https://github.com/mceachen/with_advisory_lock)
+is used automatically to ensure correctness.
+
+If you are already managing concurrency elsewhere in your application, and want to disable the use
+of with_advisory_lock, pass ```:with_advisory_lock => false``` in the options hash:
+
+```ruby
+class Tag
+  acts_as_tree :with_advisory_lock => false
+end
+```
+
+Note that you *will eventually have data corruption* if you disable advisory locks, write to your
+database with multiple threads, and don't provide an alternative mutex.
+
 
 ## FAQ
 
