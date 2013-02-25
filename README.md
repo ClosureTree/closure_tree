@@ -425,6 +425,10 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 
 ## Change log
 
+### 3.8.1
+
+* Double-check locking for find_or_create_by_path
+
 ### 3.8.0
 
 * Support for preordered descendants. This requires a numeric sort order column.

@@ -133,7 +133,11 @@ module ClosureTree
     end
 
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
-    def find_or_create_by_path(path, attributes = {})
+    def find_or_create_by_path(path, attributes = {}, find_before_lock = true)
+      if find_before_lock
+        target = find_by_path(path)
+        return target unless target.nil?
+      end
       ct_with_advisory_lock do
         subpath = path.is_a?(Enumerable) ? path.dup : [path]
         child_name = subpath.shift
@@ -147,7 +151,7 @@ module ClosureTree
             child
           end
         end
-        child.find_or_create_by_path(subpath, attributes)
+        child.find_or_create_by_path(subpath, attributes, false)
       end
     end
 
@@ -327,14 +331,16 @@ module ClosureTree
 
       # Find or create nodes such that the +ancestry_path+ is +path+
       def find_or_create_by_path(path, attributes = {})
-        subpath = path.dup
-        root_name = subpath.shift
-        ct_with_advisory_lock do
-          # shenanigans because find_or_create can't infer we want the same class as this:
-          # Note that roots will already be constrained to this subclass (in the case of polymorphism):
-          root = roots.where(name_sym => root_name).first
-          root ||= create!(attributes.merge(name_sym => root_name))
-          root.find_or_create_by_path(subpath, attributes)
+        find_by_path(path) || begin
+          subpath = path.dup
+          root_name = subpath.shift
+          ct_with_advisory_lock do
+            # shenanigans because find_or_create can't infer we want the same class as this:
+            # Note that roots will already be constrained to this subclass (in the case of polymorphism):
+            root = roots.where(name_sym => root_name).first
+            root ||= create!(attributes.merge(name_sym => root_name))
+            root.find_or_create_by_path(subpath, attributes)
+          end
         end
       end
 
