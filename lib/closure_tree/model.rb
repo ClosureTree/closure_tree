@@ -134,24 +134,22 @@ module ClosureTree
 
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
     def find_or_create_by_path(path, attributes = {}, find_before_lock = true)
-      if find_before_lock
-        target = find_by_path(path)
-        return target unless target.nil?
-      end
-      ct_with_advisory_lock do
-        subpath = path.is_a?(Enumerable) ? path.dup : [path]
-        child_name = subpath.shift
-        return self unless child_name
-        child = transaction do
-          attrs = {name_sym => child_name}
-          attrs[:type] = self.type if ct_subclass? && ct_has_type?
-          self.children.where(attrs).first || begin
-            child = self.class.new(attributes.merge(attrs))
-            self.children << child
-            child
+      (find_before_lock && find_by_path(path)) || begin
+        ct_with_advisory_lock do
+          subpath = path.is_a?(Enumerable) ? path.dup : [path]
+          child_name = subpath.shift
+          return self unless child_name
+          child = transaction do
+            attrs = {name_sym => child_name}
+            attrs[:type] = self.type if ct_subclass? && ct_has_type?
+            self.children.where(attrs).first || begin
+              child = self.class.new(attributes.merge(attrs))
+              self.children << child
+              child
+            end
           end
+          child.find_or_create_by_path(subpath, attributes, false)
         end
-        child.find_or_create_by_path(subpath, attributes, false)
       end
     end
 
