@@ -145,7 +145,7 @@ child1.ancestry_path
 => ["Grandparent", "Parent", "First Child"]
 ```
 
-### <a id="find_or_create_by_path"></a> find_or_create_by_path
+### find_or_create_by_path
 
 We can do all the node creation and add_child calls with one method call:
 
