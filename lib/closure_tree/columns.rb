@@ -45,6 +45,14 @@ module ClosureTree
       connection.quote_column_name parent_column_name
     end
 
+    def quoted_name_column
+      connection.quote_column_name name_column
+    end
+
+    def ct_quote(field)
+      connection.quote(field)
+    end
+
     def order_option
       closure_tree_options[:order]
     end

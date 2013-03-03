@@ -13,9 +13,10 @@ closure_tree has some great features:
 
 * __Best-in-class select performance__:
   * Fetch your whole ancestor lineage in 1 SELECT.
-  * Grab all your descendants: 1 SELECT.
-  * Get all your siblings: 1 SELECT.
-  * Fetch all [7-degrees-of-bacon in a nested hash](#nested-hashes): 1 SELECT.
+  * Grab all your descendants in 1 SELECT.
+  * Get all your siblings in 1 SELECT.
+  * Fetch all [7-degrees-of-bacon in a nested hash](#nested-hashes) in 1 SELECT.
+  * [Find a node by path](#find_or_create_by_path) in 1 SELECT.
 * __Best-in-class mutation performance__:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
@@ -144,7 +145,7 @@ child1.ancestry_path
 => ["Grandparent", "Parent", "First Child"]
 ```
 
-### find_or_create_by_path
+### <a id="find_or_create_by_path"></a> find_or_create_by_path
 
 We can do all the node creation and add_child calls with one method call:
 
@@ -424,6 +425,10 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 [known issue](https://github.com/rails/rails/issues/7538).
 
 ## Change log
+
+### 3.8.2
+
+* find_by_path uses 1 SELECT now. BOOM.
 
 ### 3.8.1
 

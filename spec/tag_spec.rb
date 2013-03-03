@@ -146,6 +146,81 @@ shared_examples_for "Tag (1)" do
     end
 
   end
+
+  context "paths" do
+    before :each do
+      @child = Tag.find_or_create_by_path(%w(grandparent parent child))
+      @child.title = "Kid"
+      @parent = @child.parent
+      @parent.title = "Mom"
+      @grandparent = @parent.parent
+      @grandparent.title = "Nonnie"
+      [@child, @parent, @grandparent].each { |ea| ea.save! }
+    end
+
+    it "should build ancestry path" do
+      @child.ancestry_path.should == %w{grandparent parent child}
+      @child.ancestry_path(:name).should == %w{grandparent parent child}
+      @child.ancestry_path(:title).should == %w{Nonnie Mom Kid}
+    end
+
+    it "should find by path" do
+      # class method:
+      Tag.find_by_path(%w{grandparent parent child}).should == @child
+      # instance method:
+      @parent.find_by_path(%w{child}).should == @child
+      @grandparent.find_by_path(%w{parent child}).should == @child
+      @parent.find_by_path(%w{child larvae}).should be_nil
+    end
+
+    it "finds correctly rooted paths" do
+      decoy = Tag.find_or_create_by_path %w(a b c d)
+      b_d = Tag.find_or_create_by_path %w(b c d)
+      Tag.find_by_path(%w(b c d)).should == b_d
+      Tag.find_by_path(%w(c d)).should be_nil
+    end
+
+    it "find_by_path for 1 node" do
+      b = Tag.find_or_create_by_path %w(a b)
+      b2 = b.root.find_by_path(%w(b))
+      b2.should == b
+    end
+
+    it "find_by_path for 2 nodes" do
+      c = Tag.find_or_create_by_path %w(a b c)
+      c.root.find_by_path(%w(b c)).should == c
+      c.root.find_by_path(%w(a c)).should be_nil
+      c.root.find_by_path(%w(c)).should be_nil
+    end
+
+    it "find_by_path for 3 nodes" do
+      d = Tag.find_or_create_by_path %w(a b c d)
+      d.root.find_by_path(%w(b c d)).should == d
+      Tag.find_by_path(%w(a b c d)).should == d
+      Tag.find_by_path(%w(d)).should be_nil
+    end
+
+    it "should return nil for missing nodes" do
+      Tag.find_by_path(%w{missing}).should be_nil
+      Tag.find_by_path(%w{grandparent missing}).should be_nil
+      Tag.find_by_path(%w{grandparent parent missing}).should be_nil
+      Tag.find_by_path(%w{grandparent parent missing child}).should be_nil
+    end
+
+    it "should find or create by path" do
+      # class method:
+      grandparent = Tag.find_or_create_by_path(%w{grandparent})
+      grandparent.should == @grandparent
+      child = Tag.find_or_create_by_path(%w{grandparent parent child})
+      child.should == @child
+      Tag.find_or_create_by_path(%w{events anniversary}).ancestry_path.should == %w{events anniversary}
+      a = Tag.find_or_create_by_path(%w{a})
+      a.ancestry_path.should == %w{a}
+      # instance method:
+      a.find_or_create_by_path(%w{b c}).ancestry_path.should == %w{a b c}
+    end
+  end
+
 end
 
 shared_examples_for "Tag (2)" do
@@ -316,43 +391,6 @@ shared_examples_for "Tag (2)" do
       end
     end
 
-    context "paths" do
-
-      it "should build ancestry path" do
-        tags(:child).ancestry_path.should == %w{grandparent parent child}
-        tags(:child).ancestry_path(:name).should == %w{grandparent parent child}
-        tags(:child).ancestry_path(:title).should == %w{Nonnie Mom Kid}
-      end
-
-      it "should find by path" do
-        # class method:
-        Tag.find_by_path(%w{grandparent parent child}).should == tags(:child)
-        # instance method:
-        tags(:parent).find_by_path(%w{child}).should == tags(:child)
-        tags(:grandparent).find_by_path(%w{parent child}).should == tags(:child)
-        tags(:parent).find_by_path(%w{child larvae}).should be_nil
-      end
-
-      it "should return nil for missing nodes" do
-        Tag.find_by_path(%w{missing}).should be_nil
-        Tag.find_by_path(%w{grandparent missing}).should be_nil
-        Tag.find_by_path(%w{grandparent parent missing}).should be_nil
-        Tag.find_by_path(%w{grandparent parent missing child}).should be_nil
-      end
-
-      it "should find or create by path" do
-        # class method:
-        grandparent = Tag.find_or_create_by_path(%w{grandparent})
-        grandparent.should == tags(:grandparent)
-        child = Tag.find_or_create_by_path(%w{grandparent parent child})
-        child.should == tags(:child)
-        Tag.find_or_create_by_path(%w{events anniversary}).ancestry_path.should == %w{events anniversary}
-        a = Tag.find_or_create_by_path(%w{a})
-        a.ancestry_path.should == %w{a}
-        # instance method:
-        a.find_or_create_by_path(%w{b c}).ancestry_path.should == %w{a b c}
-      end
-    end
 
     def validate_city_tag city
       tags(:california).children.include?(city).should_not be_nil

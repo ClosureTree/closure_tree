@@ -124,12 +124,9 @@ module ClosureTree
 
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.
     def find_by_path(path)
-      path = path.is_a?(Enumerable) ? path.dup : [path]
-      node = self
-      while !path.empty? && node
-        node = node.children.where(name_sym => path.shift).first
-      end
-      node
+      return self if path.empty?
+      parent_constraint = "#{quoted_parent_column_name} = #{ct_quote(id)}"
+      ct_class.ct_scoped_to_path(path, parent_constraint).first
     end
 
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
@@ -207,13 +204,14 @@ module ClosureTree
         delete_hierarchy_references unless @was_new_record
         hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
         unless root?
-          connection.execute <<-SQL
-          INSERT INTO #{quoted_hierarchy_table_name}
-            (ancestor_id, descendant_id, generations)
-          SELECT x.ancestor_id, #{ct_quote(id)}, x.generations + 1
-          FROM #{quoted_hierarchy_table_name} x
-          WHERE x.descendant_id = #{ct_quote(self.ct_parent_id)}
+          sql = <<-SQL
+            INSERT INTO #{quoted_hierarchy_table_name}
+              (ancestor_id, descendant_id, generations)
+            SELECT x.ancestor_id, #{ct_quote(id)}, x.generations + 1
+            FROM #{quoted_hierarchy_table_name} x
+            WHERE x.descendant_id = #{ct_quote(self.ct_parent_id)}
           SQL
+          connection.execute sql.strip
         end
         children.each { |c| c.rebuild! }
       end
@@ -253,10 +251,6 @@ module ClosureTree
       else
         scope.select(:id).collect(&:id)
       end
-    end
-
-    def ct_quote(field)
-      self.class.connection.quote(field)
     end
 
     # TODO: _parent_id will be removed in the next major version
@@ -322,9 +316,22 @@ module ClosureTree
 
       # Find the node whose +ancestry_path+ is +path+
       def find_by_path(path)
-        subpath = path.dup
-        root = roots.where(name_sym => subpath.shift).first
-        root.find_by_path(subpath) if root
+        parent_constraint = "#{quoted_parent_column_name} IS NULL"
+        ct_scoped_to_path(path, parent_constraint).first
+      end
+
+      def ct_scoped_to_path(path, parent_constraint)
+        path = path.is_a?(Enumerable) ? path.dup : [path]
+        scope = scoped.where(name_sym => path.last).readonly(false)
+        path[0..-2].reverse.each_with_index do |ea, idx|
+          subtable = idx == 0 ? quoted_table_name : "p#{idx - 1}"
+          scope = scope.joins(<<-SQL)
+            INNER JOIN #{quoted_table_name} AS p#{idx} ON p#{idx}.id = #{subtable}.#{parent_column_name}
+          SQL
+          scope = scope.where("p#{idx}.#{quoted_name_column} = #{ct_quote(ea)}")
+        end
+        root_table_name = path.size > 1 ? "p#{path.size - 2}" : quoted_table_name
+        scope.where("#{root_table_name}.#{parent_constraint}")
       end
 
       # Find or create nodes such that the +ancestry_path+ is +path+
