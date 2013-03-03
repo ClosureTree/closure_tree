@@ -16,14 +16,14 @@ closure_tree has some great features:
   * Grab all your descendants in 1 SELECT.
   * Get all your siblings in 1 SELECT.
   * Fetch all [7-degrees-of-bacon in a nested hash](#nested-hashes) in 1 SELECT.
-  * [Find a node by path](#-find_or_create_by_path) in 1 SELECT.
+  * [Find a node by path](#find_or_create_by_path) in 1 SELECT.
 * __Best-in-class mutation performance__:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
 * Support for reparenting children (and all their progeny)
 * Support for [concurrency](#concurrency) (using [with_advisory_lock](https://github/mceachen/with_advisory_lock))
 * Support for polymorphism [STI](#sti) within the hierarchy
-* ```find_or_create_by_path``` for [building out hierarchies quickly and conveniently](#-find_or_create_by_path)
+* ```find_or_create_by_path``` for [building out hierarchies quickly and conveniently](#find_or_create_by_path)
 * Support for [deterministic ordering](#deterministic-ordering) of children
 * Support for [preordered](http://en.wikipedia.org/wiki/Tree_traversal#Pre-order) traversal of descendants
 * Support for single-select depth-limited [nested hashes](#nested-hashes)
