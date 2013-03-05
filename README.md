@@ -114,12 +114,6 @@ Child nodes are created by appending to the children collection:
 parent = grandparent.children.create(:name => 'Parent')
 ```
 
-Or by giving the parent to the constructor:
-
-```ruby
-child1 = Tag.create(:name => 'First Child', :parent => parent)
-```
-
 Or by appending to the children collection:
 
 ```ruby
@@ -249,6 +243,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```tag.depth``` returns the depth, or "generation", for this node in the tree. A root node will have a value of 0.
 * ```tag.parent``` returns the node's immediate parent. Root nodes will return nil.
 * ```tag.children``` is a ```has_many``` of immediate children (just those nodes whose parent is the current node).
+* ```tag.child_ids``` is an array of the IDs of the children.
 * ```tag.ancestors``` is a ordered scope of [ parent, grandparent, great grandparent, … ]. Note that the size of this array will always equal ```tag.depth```.
 * ```tag.ancestor_ids``` is an array of the IDs of the ancestors.
 * ```tag.self_and_ancestors``` returns a scope containing self, parent, grandparent, great grandparent, etc.
@@ -424,6 +419,16 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 [known issue](https://github.com/rails/rails/issues/7538).
 
 ## Change log
+
+### 3.9.0
+
+* Added ```.child_ids```.
+* Removed ```dependent => destroy``` on the descendant_hierarchy and ancestor_hierarchy collections
+  (they were a mistake).
+* Clarified documentation for creation and child associations.
+  Because ```Tag.create!(:parent => ...)``` requires a ```.reload```, I removed it as an example.
+
+All three of these improvements were suggested by Andrew Bromwich. Thanks!
 
 ### 3.8.2
 
