@@ -96,7 +96,6 @@ module ClosureTree
       ids_from(children)
     end
 
-
     def descendants
       without_self(self_and_descendants)
     end
