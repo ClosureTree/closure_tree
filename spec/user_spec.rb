@@ -125,4 +125,12 @@ describe "empty db" do
     a.siblings.should be_empty
     b1.siblings.should =~ [b2, b3]
   end
+
+  it "properly nullifies descendents" do
+    c = User.find_or_create_by_path %w(a b c)
+    b = c.parent
+    c.root.destroy
+    b.reload.should be_root
+    b.child_ids.should == [c.id]
+  end
 end

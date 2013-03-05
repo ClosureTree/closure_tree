@@ -44,7 +44,9 @@ end
 
 class Label < ActiveRecord::Base
   attr_accessible :name # < - make sure order doesn't matter
-  acts_as_tree :order => "sort_order", :parent_column_name => "mother_id"
+  acts_as_tree :order => "sort_order",
+    :parent_column_name => "mother_id",
+    :dependent => :destroy
 
   def to_s
     "#{self.class}: #{name}"

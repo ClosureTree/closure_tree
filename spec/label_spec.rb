@@ -43,6 +43,19 @@ def create_preorder_tree
 end
 
 describe Label do
+
+  context "destruction" do
+    it "properly destroys descendents" do
+      c = Label.find_or_create_by_path %w(a b c)
+      b = c.parent
+      a = c.root
+      a.destroy
+      Label.exists?(a).should be_false
+      Label.exists?(b).should be_false
+      Label.exists?(c).should be_false
+    end
+  end
+
   context "Base Label class" do
     it "should find or create by path" do
       # class method:
