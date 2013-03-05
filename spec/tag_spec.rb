@@ -33,11 +33,19 @@ shared_examples_for "Tag (1)" do
     end
 
     context "2 tag db" do
+      before :each do
+        @root = Tag.create!(:name => "root")
+        @leaf = @root.add_child(Tag.create!(:name => "leaf"))
+      end
       it "should return a simple root and leaf" do
-        root = Tag.create!(:name => "root")
-        leaf = root.add_child(Tag.create!(:name => "leaf"))
-        Tag.roots.should == [root]
-        Tag.leaves.should == [leaf]
+        Tag.roots.should == [@root]
+        Tag.leaves.should == [@leaf]
+      end
+      it "should return child_ids for root" do
+        @root.child_ids.should == [@leaf.id]
+      end
+      it "should return an empty array for leaves" do
+        @leaf.child_ids.should be_empty
       end
     end
 
@@ -220,7 +228,6 @@ shared_examples_for "Tag (1)" do
       a.find_or_create_by_path(%w{b c}).ancestry_path.should == %w{a b c}
     end
   end
-
 end
 
 shared_examples_for "Tag (2)" do

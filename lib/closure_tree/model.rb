@@ -27,8 +27,7 @@ module ClosureTree
       has_many :ancestor_hierarchies,
         :class_name => hierarchy_class_name,
         :foreign_key => "descendant_id",
-        :order => "#{quoted_hierarchy_table_name}.generations asc",
-        :dependent => :destroy
+        :order => "#{quoted_hierarchy_table_name}.generations asc"
 
       has_many :self_and_ancestors,
         :through => :ancestor_hierarchies,
@@ -38,8 +37,7 @@ module ClosureTree
       has_many :descendant_hierarchies,
         :class_name => hierarchy_class_name,
         :foreign_key => "ancestor_id",
-        :order => "#{quoted_hierarchy_table_name}.generations asc",
-        :dependent => :destroy
+        :order => "#{quoted_hierarchy_table_name}.generations asc"
       # TODO: FIXME: this collection currently ignores sort_order
       # (because the quoted_table_named would need to be joined in to get to the order column)
 
@@ -93,6 +91,11 @@ module ClosureTree
     def ancestry_path(to_s_column = name_column)
       self_and_ancestors.reverse.collect { |n| n.send to_s_column.to_sym }
     end
+
+    def child_ids
+      ids_from(children)
+    end
+
 
     def descendants
       without_self(self_and_descendants)
