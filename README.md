@@ -278,6 +278,27 @@ class WhereTag < Tag ; end
 class WhatTag < Tag ; end
 ```
 
+Please note that Rails (<= 3.2) doesn't handle polymorphic associations correctly if
+you use the ```:type``` attribute, so **this doesn't work**:
+
+```ruby
+# BAD: ActiveRecord ignores the :type attribute:
+root.children.create(:name => "child", :type => "WhenTag")
+```
+
+Instead, use either ```.add_child``` or ```children <<```:
+
+```ruby
+# GOOD!
+a = Tag.create!(:name => "a")
+b = WhenTag.new(:name => "b")
+a.children << b
+c = WhatTag.new(:name => "c")
+b.add_child(c)
+```
+
+See [issue 43](https://github.com/mceachen/closure_tree/issues/43) for more information.
+
 ## Deterministic ordering
 
 By default, children will be ordered by your database engine, which may not be what you want.
