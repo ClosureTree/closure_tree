@@ -113,7 +113,24 @@ describe Label do
         end
       end
     end
+
+    it "supports children << and add_child" do
+      a = EventLabel.create!(:name => "a")
+      b = DateLabel.new(:name => "b")
+      a.children << b
+      c = Label.new(:name => "c")
+      b.add_child(c)
+
+      a.self_and_descendants.collect do |ea|
+        ea.class
+      end.should == [EventLabel, DateLabel, Label]
+
+      a.self_and_descendants.collect do |ea|
+        ea.name
+      end.should == %w(a b c)
+    end
   end
+
   context "find_all_by_generation" do
     before :all do
       delete_all_labels
