@@ -11,6 +11,7 @@ gemfile:
   - ci/Gemfile.rails-3.1.x
   - ci/Gemfile.rails-3.2.x
   - ci/Gemfile.rails-4.0.x
+
 env:
   - DB=sqlite
   - DB=mysql
@@ -21,3 +22,14 @@ before_script:
   - mysql -e 'create database closure_tree_test'
   - psql -c 'create database closure_tree_test' -U postgres
 
+matrix:
+  exclude:
+    - rvm: 1.8.7
+      gemfile: ci/Gemfile.rails-4.0.x
+      env: DB=sqlite
+    - rvm: 1.8.7
+      gemfile: ci/Gemfile.rails-4.0.x
+      env: DB=mysql
+    - rvm: 1.8.7
+      gemfile: ci/Gemfile.rails-4.0.x
+      env: DB=postgresql

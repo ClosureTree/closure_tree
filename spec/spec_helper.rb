@@ -6,7 +6,7 @@ ruby_major_version, ruby_minor_version = RUBY_VERSION.split('.')[0..1]
 if ENV['BUNDLE_GEMFILE'] =~ /rails-4/ &&
   ruby_major_version == "1" &&
   ruby_minor_version == "8"
-  puts "this is going to fail."
+  fail "Rails 4.0.x requires ruby >= 1.9.4"
 end
 
 require 'rubygems'

@@ -1,5 +1,7 @@
 source :rubygems
 gemspec :path => '..'
 
-gem 'activerecord', :git => 'git://github.com/rails/rails.git'
-gem 'activerecord-deprecated_finders', :git => 'git://github.com/rails/activerecord-deprecated_finders.git'
+gem 'activerecord', '~> 4.0.0'
+# gem 'activerecord', :github => 'rails/rails'
+# TODO: turn this gem off:
+gem 'activerecord-deprecated_finders', :github => 'rails/activerecord-deprecated_finders'
