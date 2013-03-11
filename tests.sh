@@ -17,3 +17,13 @@ do
     done
   done
 done
+
+rbenv local 1.9.3-p327
+BUNDLE_GEMFILE=ci/Gemfile.rails-4.0.x
+  bundle update --quiet
+  for DB in sqlite mysql postgresql
+  do
+    echo $DB $BUNDLE_GEMFILE `ruby -v`
+    bundle exec rake specs_with_db_ixes
+  done
+done
