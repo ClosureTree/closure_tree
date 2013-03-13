@@ -19,7 +19,7 @@ def create_label_tree
   Label.update_all("sort_order = id")
 end
 
-def create_preorder_tree
+def create_preorder_tree(suffix = "")
   %w(
     a/l/n/r
     a/l/n/q
@@ -30,15 +30,17 @@ def create_preorder_tree
     a/b/c/d/g
     a/b/c/d/f
     a/b/c/d/e
-  ).shuffle.each { |ea| Label.find_or_create_by_path(ea.split '/') }
-  a = Label.find_by_path(["a"])
-  a.order_value = 0
-  a.save!
-  a.self_and_descendants.each do |ea|
-    ea.children.to_a.sort_by(&:name).each_with_index do |ea, idx|
-      ea.order_value = idx
+  ).shuffle.each { |ea| Label.find_or_create_by_path(ea.split('/').collect { |ea| "#{ea}#{suffix}" }) }
+
+  Label.roots.each_with_index do |root, root_idx|
+    root.order_value = root_idx
+    root.save!
+    root.self_and_descendants.each do |ea|
+      ea.children.to_a.sort_by(&:name).each_with_index do |ea, idx|
+        ea.order_value = idx
       ea.save!
     end
+  end
   end
 end
 
@@ -343,6 +345,11 @@ describe Label do
       a.name.should == "a"
       expected = ('a'..'r').to_a
       a.self_and_descendants_preordered.collect { |ea| ea.name }.should == expected
+      Label.roots_and_descendants_preordered.collect { |ea| ea.name }.should == expected
+      create_preorder_tree("1")
+      # Should be no change:
+      a.reload.self_and_descendants_preordered.collect { |ea| ea.name }.should == expected
+      expected += ('a'..'r').collect { |ea| "#{ea}1" }
       Label.roots_and_descendants_preordered.collect { |ea| ea.name }.should == expected
     end
   end unless ENV["DB"] == "sqlite"
