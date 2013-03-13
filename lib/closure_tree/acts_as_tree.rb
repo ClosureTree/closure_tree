@@ -29,7 +29,7 @@ module ClosureTree
       # Auto-inject the hierarchy table
       # See https://github.com/patshaughnessy/class_factory/blob/master/lib/class_factory/class_factory.rb
       class_attribute :hierarchy_class
-      self.hierarchy_class = Object.const_set hierarchy_class_name, Class.new(ActiveRecord::Base)
+      self.hierarchy_class = ct_class.parent.const_set short_hierarchy_class_name, Class.new(ActiveRecord::Base)
 
       self.hierarchy_class.class_eval <<-RUBY
         belongs_to :ancestor, :class_name => "#{ct_class.to_s}"
@@ -50,5 +50,6 @@ module ClosureTree
         include ClosureTree::DeterministicNumericOrdering if order_is_numeric
       end
     end
+
   end
 end

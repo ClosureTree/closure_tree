@@ -37,6 +37,19 @@ module ClosureTree
       closure_tree_options[:hierarchy_class_name] || ct_class.to_s + "Hierarchy"
     end
 
+
+    #
+    # Returns the constant name of the hierarchy_class
+    #
+    # @return [String] the constant name
+    #
+    # @example
+    #   Namespace::Model.hierarchy_class_name # => "Namespace::ModelHierarchy"
+    #   Namespace::Model.short_hierarchy_class_name # => "ModelHierarchy"
+    def short_hierarchy_class_name
+      hierarchy_class_name.split('::').last
+    end
+
     def quoted_hierarchy_table_name
       connection.quote_table_name hierarchy_table_name
     end
