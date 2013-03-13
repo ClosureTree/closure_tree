@@ -336,6 +336,9 @@ When you enable ```order```, you'll also have the following new methods injected
 
 If your ```order``` column is an integer attribute, you'll also have these:
 
+* The class method ```#roots_and_descendants_preordered```, which returns all nodes in your tree,
+  [pre-ordered](http://en.wikipedia.org/wiki/Tree_traversal#Pre-order).
+
 * ```node1.self_and_descendants_preordered``` which will return descendants,
   [pre-ordered](http://en.wikipedia.org/wiki/Tree_traversal#Pre-order).
 
@@ -440,6 +443,11 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 [known issue](https://github.com/rails/rails/issues/7538).
 
 ## Change log
+
+### 3.10.0
+
+* Added ```#roots_and_descendants_preordered```.
+  Thanks for the suggestion, [Leonel Galan](https://github.com/leonelgalan)!
 
 ### 3.9.0
 
