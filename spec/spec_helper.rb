@@ -15,7 +15,7 @@ require 'bundler/setup'
 require 'rspec'
 require 'logger'
 
-require 'action_controller' # rspec-rails needs this :(
+#require 'action_controller' # rspec-rails needs this :(
 require 'closure_tree'
 require 'tmpdir'
 

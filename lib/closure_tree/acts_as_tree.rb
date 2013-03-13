@@ -34,7 +34,9 @@ module ClosureTree
       self.hierarchy_class.class_eval <<-RUBY
         belongs_to :ancestor, :class_name => "#{ct_class.to_s}"
         belongs_to :descendant, :class_name => "#{ct_class.to_s}"
-        attr_accessible :ancestor, :descendant, :generations
+        unless defined?(ActiveModel::ForbiddenAttributesProtection)
+          attr_accessible :ancestor, :descendant, :generations
+        end
         def ==(comparison_object)
           comparison_object.instance_of?(self.class) &&
           self.attributes == comparison_object.attributes

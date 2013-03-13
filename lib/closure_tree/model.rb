@@ -25,9 +25,9 @@ module ClosureTree
       )
 
       has_many :ancestor_hierarchies,
+        lambda {order "#{quoted_hierarchy_table_name}.generations asc"},
         :class_name => hierarchy_class_name,
-        :foreign_key => "descendant_id",
-        :order => "#{quoted_hierarchy_table_name}.generations asc"
+        :foreign_key => "descendant_id"
 
       has_many :self_and_ancestors,
         :through => :ancestor_hierarchies,

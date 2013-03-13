@@ -3,7 +3,10 @@ require 'uuidtools'
 class Tag < ActiveRecord::Base
   acts_as_tree :dependent => :destroy, :order => "name"
   before_destroy :add_destroyed_tag
-  attr_accessible :name
+
+  unless defined?(ActiveModel::ForbiddenAttributesProtection)
+    attr_accessible :name
+  end
 
   def to_s
     name
@@ -16,7 +19,9 @@ class Tag < ActiveRecord::Base
 end
 
 class DestroyedTag < ActiveRecord::Base
-  attr_accessible :name
+  unless defined?(ActiveModel::ForbiddenAttributesProtection)
+    attr_accessible :name
+  end
 end
 
 class User < ActiveRecord::Base
@@ -31,7 +36,9 @@ class User < ActiveRecord::Base
     Contract.where(:user_id => descendant_ids)
   end
 
-  attr_accessible :email, :referrer
+  unless defined?(ActiveModel::ForbiddenAttributesProtection)
+    attr_accessible :email, :referrer
+  end
 
   def to_s
     email
@@ -43,7 +50,9 @@ class Contract < ActiveRecord::Base
 end
 
 class Label < ActiveRecord::Base
-  attr_accessible :name # < - make sure order doesn't matter
+  unless defined?(ActiveModel::ForbiddenAttributesProtection)
+    attr_accessible :name # < - make sure order doesn't matter
+  end
   acts_as_tree :order => "sort_order",
     :parent_column_name => "mother_id",
     :dependent => :destroy
