@@ -335,13 +335,15 @@ describe Label do
     end
   end
 
-  context ".self_and_descendants_preordered" do
+  context "preorder" do
     it "returns descendants in proper order" do
       delete_all_labels
       create_preorder_tree
       a = Label.root
       a.name.should == "a"
-      a.self_and_descendants_preordered.collect { |ea| ea.name }.should == ('a'..'r').to_a
+      expected = ('a'..'r').to_a
+      a.self_and_descendants_preordered.collect { |ea| ea.name }.should == expected
+      Label.roots_and_descendants_preordered.collect { |ea| ea.name }.should == expected
     end
   end unless ENV["DB"] == "sqlite"
 end
