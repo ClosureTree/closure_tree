@@ -65,3 +65,14 @@ end
 class CuisineType < ActiveRecord::Base
   acts_as_tree
 end
+
+module Namespace
+  def self.table_name_prefix
+    'namespace_'
+  end
+
+  class Type < ActiveRecord::Base
+    acts_as_tree :dependent => :destroy
+    attr_accessible :name
+  end
+end
