@@ -244,6 +244,7 @@ shared_examples_for "Tag (2)" do
       it "should build hierarchy classname correctly" do
         Tag.hierarchy_class.to_s.should == "TagHierarchy"
         Tag.hierarchy_class_name.should == "TagHierarchy"
+        Tag.short_hierarchy_class_name.should == "TagHierarchy"
       end
 
       it "should have a correct parent column name" do
