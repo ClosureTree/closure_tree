@@ -36,11 +36,11 @@ module ClosureTree
         belongs_to :descendant, :class_name => "#{ct_class.to_s}"
         attr_accessible :ancestor, :descendant, :generations
         def ==(other)
-          ancestor == other.ancestor && descendant == other.descendant
+          self.class == other.class && ancestor == other.ancestor && descendant == other.descendant
         end
         alias :eql? :==
         def hash
-          ancestor.id.hash << 31 ^ descendant.id.hash
+          ancestor_id.hash << 31 ^ descendant_id.hash
         end
       RUBY
 
