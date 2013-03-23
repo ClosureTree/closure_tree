@@ -444,6 +444,17 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 
 ## Change log
 
+### 3.10.1
+
+* Multipart constant names like "Admin::PageHierarchy" are now supported.
+  Resolves [issue 47](https://github.com/mceachen/closure_tree/issues/47).
+  Thanks for the perfect pull request, [Simon Menke](https://github.com/fd)!
+
+* Committing transactions involving large numbers of hierarchy model classes was very slow due
+  to hash collisions in the hierarchy class. A better hash implementation addressed
+  [issue 48](https://github.com/mceachen/closure_tree/issues/48).
+  Thanks, [Joel Turkel](https://github.com/jturkel)!
+
 ### 3.10.0
 
 * Added ```#roots_and_descendants_preordered```.

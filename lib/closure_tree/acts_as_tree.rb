@@ -36,11 +36,11 @@ module ClosureTree
         belongs_to :descendant, :class_name => "#{ct_class.to_s}"
         attr_accessible :ancestor, :descendant, :generations
         def ==(other)
-          ancestor_id == other.ancestor_id && descendant_id == other.descendant_id
+          ancestor == other.ancestor && descendant == other.descendant
         end
         alias :eql? :==
         def hash
-          ancestor_id.hash << 31 ^ descendant_id.hash
+          ancestor.id.hash << 31 ^ descendant.id.hash
         end
       RUBY
 
@@ -52,6 +52,5 @@ module ClosureTree
         include ClosureTree::DeterministicNumericOrdering if order_is_numeric
       end
     end
-
   end
 end
