@@ -130,6 +130,15 @@ shared_examples_for "Tag (1)" do
         TagHierarchy.find_all_by_ancestor_id(@root.id).should == root_hiers
         TagHierarchy.find_all_by_descendant_id(@root.id).should == root_hiers
       end
+
+      it "should have different hash codes for each hierarchy model" do
+        hashes = TagHierarchy.all.map(&:hash)
+        hashes.should =~ hashes.uniq
+      end
+
+      it "should return the same hash code for equal hierarchy models" do
+        TagHierarchy.first.hash.should == TagHierarchy.first.hash
+      end
     end
 
     it "performs as the readme says it does" do

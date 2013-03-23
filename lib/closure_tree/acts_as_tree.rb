@@ -40,6 +40,9 @@ module ClosureTree
           self.attributes == comparison_object.attributes
         end
         alias :eql? :==
+        def hash
+          attributes.hash
+        end
       RUBY
 
       self.hierarchy_class.table_name = hierarchy_table_name
