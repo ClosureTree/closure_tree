@@ -244,6 +244,7 @@ module ClosureTree
     end
 
     def without_self(scope)
+      return scope if self.new_record?
       scope.where(["#{quoted_table_name}.#{ct_base_class.primary_key} != ?", self])
     end
 

@@ -126,6 +126,18 @@ describe "empty db" do
     b1.siblings.should =~ [b2, b3]
   end
 
+  context "when a user is not yet saved" do
+    it "supports siblings" do
+      User.order_option.should be_nil
+      a = User.create(:email => "a")
+      b1 = a.children.new(:email => "b1")
+      b2 = a.children.create(:email => "b2")
+      b3 = a.children.create(:email => "b3")
+      a.siblings.should be_empty
+      b1.siblings.should =~ [b2, b3]
+    end
+  end
+
   it "properly nullifies descendents" do
     c = User.find_or_create_by_path %w(a b c)
     b = c.parent
