@@ -444,6 +444,16 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 
 ## Change log
 
+### 3.10.2
+
+* Prevent faulty SQL statement when ```#siblings``` is called on an unsaved records.
+  Resolves [issue 52](https://github.com/mceachen/closure_tree/pull/52). Perfect pull
+  request by [Gary Greyling](https://github.com/garygreyling).
+
+* The ```.roots``` class method now correctly respects the ```:order``` option.
+  Resolves [issue 53](https://github.com/mceachen/closure_tree/issues/53).
+  Thanks for finding this, [Brendon Muir](https://github.com/brendon)!
+
 ### 3.10.1
 
 * Multipart constant names like "Admin::PageHierarchy" are now supported.
