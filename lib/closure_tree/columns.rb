@@ -74,6 +74,10 @@ module ClosureTree
       order_option ? options.merge(:order => order_option) : options
     end
 
+    def scope_with_order(scope)
+      order_option ? scope.order(order_option) : scope
+    end
+
     def append_order(order_by)
       order_option ? "#{order_by}, #{order_option}" : order_by
     end

@@ -38,9 +38,9 @@ def create_preorder_tree(suffix = "")
     root.self_and_descendants.each do |ea|
       ea.children.to_a.sort_by(&:name).each_with_index do |ea, idx|
         ea.order_value = idx
-      ea.save!
+        ea.save!
+      end
     end
-  end
   end
 end
 
@@ -55,6 +55,22 @@ describe Label do
       Label.exists?(a).should be_false
       Label.exists?(b).should be_false
       Label.exists?(c).should be_false
+    end
+  end
+
+  context "roots" do
+    before :each do
+      delete_all_labels
+    end
+    it "sorts alphabetically" do
+      expected = (0..10).to_a
+      expected.shuffle.each do |ea|
+        Label.create! do |l|
+          l.name = "root #{ea}"
+          l.sort_order = ea
+        end
+      end
+      Label.roots.collect { |ea| ea.sort_order }.should == expected
     end
   end
 

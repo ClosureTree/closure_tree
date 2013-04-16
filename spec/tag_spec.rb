@@ -162,6 +162,13 @@ shared_examples_for "Tag (1)" do
       h.ancestry_path.should == %w(a b c d e f g h)
     end
 
+    context "roots" do
+      it "sorts alphabetically" do
+        expected = ("a".."z").to_a
+        expected.shuffle.each { |ea| Tag.create!(:name => ea) }
+        Tag.roots.collect { |ea| ea.name }.should == expected
+      end
+    end
   end
 
   context "paths" do

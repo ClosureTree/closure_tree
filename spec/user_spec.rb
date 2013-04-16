@@ -31,7 +31,6 @@ describe "empty db" do
     end
   end
 
-
   context "3 User collection.create db" do
     before :each do
       @root = User.create! :email => "poppy@t.co"
@@ -144,5 +143,17 @@ describe "empty db" do
     c.root.destroy
     b.reload.should be_root
     b.child_ids.should == [c.id]
+  end
+
+  context "roots" do
+    it "works on models without ordering" do
+      expected = ("a".."z").to_a
+      expected.shuffle.each do |ea|
+        User.create! do |u|
+          u.email = ea
+        end
+      end
+      User.roots.collect { |ea| ea.email }.sort.should == expected
+    end
   end
 end
