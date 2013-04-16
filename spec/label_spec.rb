@@ -362,6 +362,11 @@ describe Label do
       expected = ('a'..'r').to_a
       a.self_and_descendants_preordered.collect { |ea| ea.name }.should == expected
       Label.roots_and_descendants_preordered.collect { |ea| ea.name }.should == expected
+      # Let's create the second root by hand so we can explicitly set the sort order
+      Label.create! do |l|
+        l.name = "a1"
+        l.sort_order = a.sort_order + 1
+      end
       create_preorder_tree("1")
       # Should be no change:
       a.reload.self_and_descendants_preordered.collect { |ea| ea.name }.should == expected
