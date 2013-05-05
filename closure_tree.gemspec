@@ -14,7 +14,7 @@ Gem::Specification.new do |gem|
   gem.files = Dir["lib/**/*"] + ["MIT-LICENSE", "Rakefile", "README.md"]
   gem.test_files = `git ls-files -- {test,spec,features}/*`.split("\n")
 
-  gem.add_runtime_dependency 'activerecord', '>= 3.0.0'
+  gem.add_runtime_dependency 'activerecord', '>= 4.0.0.rc1'
   gem.add_runtime_dependency 'with_advisory_lock', '>= 0.0.6' # <- to prevent duplicate roots
 
   gem.add_development_dependency 'rake'

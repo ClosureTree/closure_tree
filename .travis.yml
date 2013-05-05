@@ -1,15 +1,11 @@
 language: ruby
 rvm:
-  - 1.8.7
   - 1.9.3
-# TODO: - jruby-18mode # JRuby in 1.8 mode
-# TODO: - jruby-19mode # JRuby in 1.9 mode
-# TODO: - rbx-18mode
+  - 2.0.0
+  # - jruby-19mode
+  # - rbx-19mode
 
 gemfile:
-  - ci/Gemfile.rails-3.0.x
-  - ci/Gemfile.rails-3.1.x
-  - ci/Gemfile.rails-3.2.x
   - ci/Gemfile.rails-4.0.x
 
 env:
@@ -21,15 +17,3 @@ script: bundle exec rake specs_with_db_ixes
 before_script:
   - mysql -e 'create database closure_tree_test'
   - psql -c 'create database closure_tree_test' -U postgres
-
-matrix:
-  exclude:
-    - rvm: 1.8.7
-      gemfile: ci/Gemfile.rails-4.0.x
-      env: DB=sqlite
-    - rvm: 1.8.7
-      gemfile: ci/Gemfile.rails-4.0.x
-      env: DB=mysql
-    - rvm: 1.8.7
-      gemfile: ci/Gemfile.rails-4.0.x
-      env: DB=postgresql
