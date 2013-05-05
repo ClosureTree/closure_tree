@@ -25,6 +25,7 @@ ActiveRecord::Base.establish_connection(ENV["DB"])
 ActiveRecord::Migration.verbose = false
 require 'db/schema'
 require 'support/models'
+require 'rails' # < only required for rspec/rails >= 2.13.1
 require 'rspec/rails' # TODO: clean this up-- I don't want to pull the elephant through the mouse hole just for fixture support
 
 DB_QUERIES = []
