@@ -29,7 +29,7 @@ module ClosureTree
       # Auto-inject the hierarchy table
       # See https://github.com/patshaughnessy/class_factory/blob/master/lib/class_factory/class_factory.rb
       class_attribute :hierarchy_class
-      self.hierarchy_class = Object.const_set hierarchy_class_name, Class.new(ActiveRecord::Base)
+      self.hierarchy_class = ct_class.parent.const_set short_hierarchy_class_name, Class.new(ActiveRecord::Base)
 
       self.hierarchy_class.class_eval <<-RUBY
         belongs_to :ancestor, :class_name => "#{ct_class.to_s}"
@@ -37,11 +37,13 @@ module ClosureTree
         unless defined?(ActiveModel::ForbiddenAttributesProtection)
           attr_accessible :ancestor, :descendant, :generations
         end
-        def ==(comparison_object)
-          comparison_object.instance_of?(self.class) &&
-          self.attributes == comparison_object.attributes
+        def ==(other)
+          self.class == other.class && ancestor == other.ancestor && descendant == other.descendant
         end
         alias :eql? :==
+        def hash
+          ancestor_id.hash << 31 ^ descendant_id.hash
+        end
       RUBY
 
       self.hierarchy_class.table_name = hierarchy_table_name
@@ -54,3 +56,4 @@ module ClosureTree
     end
   end
 end
+

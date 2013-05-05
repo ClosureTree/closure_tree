@@ -42,4 +42,4 @@ describe "threadhot" do
   end
 
 # SQLite doesn't like parallelism, and Rails 3.0 and 3.1 have known threading issues. SKIP.
-end if ((ENV["DB"] != "sqlite3") && (ActiveRecord::VERSION::STRING =~ /^3.2/))
+end if ((ENV["DB"] != "sqlite") && (ActiveRecord::VERSION::STRING =~ /^3.2/))

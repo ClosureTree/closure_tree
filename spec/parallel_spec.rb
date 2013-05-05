@@ -6,7 +6,7 @@ describe "threadhot" do
     TagHierarchy.delete_all
     Tag.delete_all
     @iterations = 5
-    @workers = 8
+    @workers = 6 # Travis CI workers can't reliably handle larger numbers
     @parent = nil
   end
 

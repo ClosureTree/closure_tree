@@ -31,7 +31,6 @@ describe "empty db" do
     end
   end
 
-
   context "3 User collection.create db" do
     before :each do
       @root = User.create! :email => "poppy@t.co"
@@ -126,11 +125,35 @@ describe "empty db" do
     b1.siblings.should =~ [b2, b3]
   end
 
+  context "when a user is not yet saved" do
+    it "supports siblings" do
+      User.order_option.should be_nil
+      a = User.create(:email => "a")
+      b1 = a.children.new(:email => "b1")
+      b2 = a.children.create(:email => "b2")
+      b3 = a.children.create(:email => "b3")
+      a.siblings.should be_empty
+      b1.siblings.should =~ [b2, b3]
+    end
+  end
+
   it "properly nullifies descendents" do
     c = User.find_or_create_by_path %w(a b c)
     b = c.parent
     c.root.destroy
     b.reload.should be_root
     b.child_ids.should == [c.id]
+  end
+
+  context "roots" do
+    it "works on models without ordering" do
+      expected = ("a".."z").to_a
+      expected.shuffle.each do |ea|
+        User.create! do |u|
+          u.email = ea
+        end
+      end
+      User.roots.collect { |ea| ea.email }.sort.should == expected
+    end
   end
 end

@@ -244,6 +244,7 @@ module ClosureTree
     end
 
     def without_self(scope)
+      return scope if self.new_record?
       scope.where(["#{quoted_table_name}.#{ct_base_class.primary_key} != ?", self])
     end
 
@@ -260,7 +261,7 @@ module ClosureTree
 
     module ClassMethods
       def roots
-        where(parent_column_name => nil)
+        scope_with_order(where(parent_column_name => nil))
       end
 
       # Returns an arbitrary node that has no parents.

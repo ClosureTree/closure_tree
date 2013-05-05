@@ -336,6 +336,9 @@ When you enable ```order```, you'll also have the following new methods injected
 
 If your ```order``` column is an integer attribute, you'll also have these:
 
+* The class method ```#roots_and_descendants_preordered```, which returns all nodes in your tree,
+  [pre-ordered](http://en.wikipedia.org/wiki/Tree_traversal#Pre-order).
+
 * ```node1.self_and_descendants_preordered``` which will return descendants,
   [pre-ordered](http://en.wikipedia.org/wiki/Tree_traversal#Pre-order).
 
@@ -440,6 +443,32 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 [known issue](https://github.com/rails/rails/issues/7538).
 
 ## Change log
+
+### 3.10.2
+
+* Prevent faulty SQL statement when ```#siblings``` is called on an unsaved records.
+  Resolves [issue 52](https://github.com/mceachen/closure_tree/pull/52). Perfect pull
+  request by [Gary Greyling](https://github.com/garygreyling).
+
+* The ```.roots``` class method now correctly respects the ```:order``` option.
+  Resolves [issue 53](https://github.com/mceachen/closure_tree/issues/53).
+  Thanks for finding this, [Brendon Muir](https://github.com/brendon)!
+
+### 3.10.1
+
+* Multipart constant names like "Admin::PageHierarchy" are now supported.
+  Resolves [issue 47](https://github.com/mceachen/closure_tree/issues/47).
+  Thanks for the perfect pull request, [Simon Menke](https://github.com/fd)!
+
+* Committing transactions involving large numbers of hierarchy model classes was very slow due
+  to hash collisions in the hierarchy class. A better hash implementation addressed
+  [issue 48](https://github.com/mceachen/closure_tree/issues/48).
+  Thanks, [Joel Turkel](https://github.com/jturkel)!
+
+### 3.10.0
+
+* Added ```#roots_and_descendants_preordered```.
+  Thanks for the suggestion, [Leonel Galan](https://github.com/leonelgalan)!
 
 ### 3.9.0
 
