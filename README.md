@@ -1,9 +1,12 @@
-# Closure Tree [![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
+# Closure Tree
 
-### Closure_tree lets your ActiveRecord models act as nodes in a [tree data structure](http://en.wikipedia.org/wiki/Tree_%28data_structure%29)
+Closure_tree lets your ActiveRecord models act as nodes in a [tree data structure](http://en.wikipedia.org/wiki/Tree_%28data_structure%29)
 
 Common applications include modeling hierarchical data, like tags, page graphs in CMSes,
 and tracking user referrals.
+
+[![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
+[![Gem Version](https://badge.fury.io/rb/closure_tree.png)](http://badge.fury.io/rb/closure_tree)
 
 Mostly API-compatible with other popular nesting gems for Rails, like
 [ancestry](https://github.com/stefankroes/ancestry),
