@@ -11,40 +11,35 @@ module ClosureTree
       before_destroy :ct_before_destroy
 
       belongs_to :parent,
-        :class_name => ct_class.to_s,
-        :foreign_key => parent_column_name
+        class_name: ct_class.to_s,
+        foreign_key: parent_column_name
 
       unless defined?(ActiveModel::ForbiddenAttributesProtection) && ancestors.include?(ActiveModel::ForbiddenAttributesProtection)
         attr_accessible :parent
       end
 
-      has_many :children, with_order_option(
-        :class_name => ct_class.to_s,
-        :foreign_key => parent_column_name,
-        :dependent => closure_tree_options[:dependent]
-      )
+      has_many :children, -> { with_order_option },
+        class_name: ct_class.to_s,
+        foreign_key: parent_column_name,
+        dependent: closure_tree_options[:dependent]
 
-      has_many :ancestor_hierarchies,
-        lambda {order "#{quoted_hierarchy_table_name}.generations asc"},
-        :class_name => hierarchy_class_name,
-        :foreign_key => "descendant_id"
+      has_many :ancestor_hierarchies, -> { ct_order("#{quoted_hierarchy_table_name}.generations asc") },
+        class_name: hierarchy_class_name,
+        foreign_key: 'descendant_id'
 
-      has_many :self_and_ancestors,
-        :through => :ancestor_hierarchies,
-        :source => :ancestor,
-        :order => "#{quoted_hierarchy_table_name}.generations asc"
+      has_many :self_and_ancestors, -> { ct_order("#{quoted_hierarchy_table_name}.generations asc") },
+        through: :ancestor_hierarchies,
+        source: :ancestor
 
-      has_many :descendant_hierarchies,
-        :class_name => hierarchy_class_name,
-        :foreign_key => "ancestor_id",
-        :order => "#{quoted_hierarchy_table_name}.generations asc"
+      has_many :descendant_hierarchies, -> { ct_order("#{quoted_hierarchy_table_name}.generations asc") },
+        class_name: hierarchy_class_name,
+        foreign_key: "ancestor_id"
+
       # TODO: FIXME: this collection currently ignores sort_order
       # (because the quoted_table_named would need to be joined in to get to the order column)
-
-      has_many :self_and_descendants,
-        :through => :descendant_hierarchies,
-        :source => :descendant,
-        :order => append_order("#{quoted_hierarchy_table_name}.generations asc")
+      has_many :self_and_descendants, -> { ct_order("#{quoted_hierarchy_table_name}.generations asc") },
+        through: :descendant_hierarchies,
+        source: :descendant
     end
 
     # Returns true if this node has no parents.

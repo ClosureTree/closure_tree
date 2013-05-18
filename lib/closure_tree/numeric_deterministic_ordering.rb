@@ -4,7 +4,6 @@ module ClosureTree
     extend ActiveSupport::Concern
 
     def self_and_descendants_preordered
-      # TODO: raise NotImplementedError if sort_order is not numeric and not null?
       h = connection.select_one(<<-SQL)
         SELECT
           count(*) as total_descendants,
@@ -20,10 +19,7 @@ module ClosureTree
         JOIN #{quoted_hierarchy_table_name} depths
           ON depths.ancestor_id = #{ct_quote(self.id)} AND depths.descendant_id = anc.id
       SQL
-      node_score = "(1 + anc.#{quoted_order_column(false)}) * " +
-        "power(#{h['total_descendants']}, #{h['max_depth'].to_i + 1} - depths.generations)"
-      order_by = "sum(#{node_score})"
-      self_and_descendants.joins(join_sql).group("#{quoted_table_name}.id").reorder(order_by)
+      self.class.build_preordered_from_scope(self_and_descendants, h['total_descendants'], h['max_depth'], join_sql)
     end
 
     module ClassMethods
@@ -45,10 +41,14 @@ module ClosureTree
             GROUP BY 1
           ) AS depths ON depths.descendant_id = anc.id
         SQL
+        build_preordered_from_scope(scoped, h['total_descendants'], h['max_depth'], join_sql)
+      end
+
+      def build_preordered_from_scope(scope, total_descendants, max_depth, join_sql)
         node_score = "(1 + anc.#{quoted_order_column(false)}) * " +
-          "power(#{h['total_descendants']}, #{h['max_depth'].to_i + 1} - depths.max_depth)"
+          "power(#{total_descendants}, #{max_depth.to_i + 1} - depths.max_depth)"
         order_by = "sum(#{node_score})"
-        joins(join_sql).group("#{quoted_table_name}.id").reorder(order_by)
+        scope.joins(join_sql).group("#{quoted_table_name}.id").reorder(order_by)
       end
     end
 
