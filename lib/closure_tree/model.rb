@@ -45,6 +45,14 @@ module ClosureTree
         :through => :descendant_hierarchies,
         :source => :descendant,
         :order => "#{_ct.quoted_hierarchy_table_name}.generations asc")
+
+      scope :without, lambda { |instance|
+        if instance.new_record?
+          scoped
+        else
+          where(["#{_ct.quoted_table_name}.#{_ct.base_class.primary_key} != ?", instance.id])
+        end
+      }
     end
 
     # Delegate to the Support instance on the class:
@@ -248,8 +256,7 @@ module ClosureTree
     end
 
     def without_self(scope)
-      return scope if self.new_record?
-      scope.where(["#{_ct.quoted_table_name}.#{_ct.base_class.primary_key} != ?", self])
+      scope.without(self)
     end
 
     module ClassMethods

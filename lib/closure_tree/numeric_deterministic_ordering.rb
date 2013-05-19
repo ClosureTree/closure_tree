@@ -52,41 +52,35 @@ module ClosureTree
       end
     end
 
-    def append_sibling(sibling_node, use_update_all = true)
-      add_sibling(sibling_node, use_update_all, true)
+    def append_sibling(sibling_node)
+      add_sibling(sibling_node, true)
     end
 
-    def prepend_sibling(sibling_node, use_update_all = true)
-      add_sibling(sibling_node, use_update_all, false)
+    def prepend_sibling(sibling_node)
+      add_sibling(sibling_node, false)
     end
 
-    def add_sibling(sibling_node, use_update_all = true, add_after = true)
+    def add_sibling(sibling_node, add_after = true)
       fail "can't add self as sibling" if self == sibling_node
       # issue 40: we need to lock the parent to prevent deadlocks on parallel sibling additions
       ct_with_advisory_lock do
-        # issue 18: we need to set the order_value explicitly so subsequent orders will work.
-        update_attribute(:order_value, 0) if self.order_value.nil?
-        sibling_node.order_value = self.order_value.to_i + (add_after ? 1 : -1)
-        # We need to incr the before_siblings to make room for sibling_node:
-        if use_update_all
-          col = _ct.quoted_order_column(false)
-          # issue 21: we have to use the base class, so STI doesn't get in the way of only updating the child class instances:
-          _ct.base_class.update_all(
-            ["#{col} = #{col} #{add_after ? '+' : '-'} 1", "updated_at = now()"],
-            ["#{_ct.quoted_parent_column_name} = ? AND #{col} #{add_after ? '>=' : '<='} ?",
-              parent_id,
-              sibling_node.order_value])
-        else
-          last_value = sibling_node.order_value.to_i
-          (add_after ? siblings_after : siblings_before.reverse).each do |ea|
-            last_value += (add_after ? 1 : -1)
-            ea.order_value = last_value
-            ea.save!
-          end
+        if self.order_value.nil? || siblings_before.without(sibling_node).empty?
+          update_attribute(:order_value, 0)
         end
         sibling_node.parent = self.parent
-        sibling_node.save!
-        sibling_node.reload
+        starting_order_value = self.order_value.to_i
+        to_reorder = siblings_after.without(sibling_node).to_a
+        if add_after
+          to_reorder.unshift(sibling_node)
+        else
+          to_reorder.unshift(self)
+          sibling_node.update_attribute(:order_value, starting_order_value)
+        end
+
+        to_reorder.each_with_index do |ea, idx|
+          ea.update_attribute(:order_value, starting_order_value + idx + 1)
+        end
+        sibling_node.reload # because the parent may have changed.
       end
     end
   end

@@ -230,7 +230,7 @@ describe Label do
     end
 
     it "when inserted before" do
-      @b.append_sibling(@a, use_update_all = false)
+      @b.append_sibling(@a)
       # Have to reload because the sort_order will have changed out from under the references:
       @b.reload.sort_order.should be < @a.reload.sort_order
       @a.reload.sort_order.should be < @c.reload.sort_order
@@ -245,15 +245,19 @@ describe Label do
 
     a.append_sibling(b)
     root.reload.children.collect(&:name).should == %w(a b)
+    root.reload.children.collect(&:sort_order).should == [0, 1]
 
     a.prepend_sibling(b)
     root.reload.children.collect(&:name).should == %w(b a)
+    root.reload.children.collect(&:sort_order).should == [0, 1]
 
     a.append_sibling(c)
     root.reload.children.collect(&:name).should == %w(b a c)
+    root.reload.children.collect(&:sort_order).should == [0, 1, 2]
 
     b.append_sibling(c)
     root.reload.children.collect(&:name).should == %w(b c a)
+    root.reload.children.collect(&:sort_order).should == [0, 1, 2]
   end
 
   context "Deterministic siblings sort with custom integer column" do
@@ -280,9 +284,9 @@ describe Label do
     end
 
     it "should prepend a node as a sibling of another node (!update_all)" do
-      labels(:c16).prepend_sibling(labels(:c17), false)
+      labels(:c16).prepend_sibling(labels(:c17))
       labels(:c16).self_and_siblings.to_a.should == [labels(:c17), labels(:c16), labels(:c18), labels(:c19)]
-      labels(:c19).reload.prepend_sibling(labels(:c16).reload, false)
+      labels(:c19).reload.prepend_sibling(labels(:c16).reload)
       labels(:c16).self_and_siblings.to_a.should == [labels(:c17), labels(:c18), labels(:c16), labels(:c19)]
       labels(:c16).siblings_before.to_a.should == [labels(:c17), labels(:c18)]
       labels(:c16).siblings_after.to_a.should == [labels(:c19)]
@@ -316,7 +320,7 @@ describe Label do
 
     it "should move a node before another node" do
       labels(:c2).ancestry_path.should == %w{a1 b2 c2}
-      labels(:b2).prepend_sibling(labels(:c2), false)
+      labels(:b2).prepend_sibling(labels(:c2))
       labels(:c2).ancestry_path.should == %w{a1 c2}
       labels(:c2).self_and_siblings.to_a.should == [labels(:b1), labels(:c2), labels(:b2)]
     end
@@ -343,10 +347,10 @@ describe Label do
 
     it "should move a node after another node" do
       labels(:c2).ancestry_path.should == %w{a1 b2 c2}
-      labels(:b2).append_sibling(labels(:c2), false)
+      labels(:b2).append_sibling(labels(:c2))
       labels(:c2).ancestry_path.should == %w{a1 c2}
       labels(:c2).self_and_siblings.to_a.should == [labels(:b1), labels(:b2), labels(:c2)]
-      labels(:c2).append_sibling(labels(:e2), false)
+      labels(:c2).append_sibling(labels(:e2))
       labels(:e2).self_and_siblings.to_a.should == [labels(:b1), labels(:b2), labels(:c2), labels(:e2)]
       labels(:a1).self_and_descendants.collect(&:name).should == %w(a1 b1 b2 c2 e2 d2 c1-six c1-seven c1-eight c1-nine)
       labels(:a1).leaves.collect(&:name).should == %w(b2 e2 d2 c1-six c1-seven c1-eight c1-nine)
