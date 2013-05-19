@@ -13,9 +13,7 @@ module ClosureTree
         :name_column => 'name',
         :with_advisory_lock => true
       }.merge(options)
-
       raise IllegalArgumentException, "name_column can't be 'path'" if options[:name_column] == 'path'
-
     end
 
     def connection
@@ -101,24 +99,24 @@ module ClosureTree
       connection.quote(field)
     end
 
+    def order_option?
+      !options[:order].nil?
+    end
+
     def order_option
-      options[:order]
+      options[:order].to_s
     end
 
     def with_order_option(options)
-      order_option ? options.merge(:order => order_option) : options
+      order_option? ? options.merge(:order => order_option) : options
     end
 
     def scope_with_order(scope, additional_order_by = nil)
-      if order_option
-        scope.order(*([additional_order_by, order_option].compact))
-      else
-        scope
-      end
+      order_option? ? scope.order(*([additional_order_by, order_option].compact)) : scope
     end
 
     def with_order_option(options)
-      if order_option
+      if order_option?
         options[:order] = [options[:order], order_option].compact.join(",")
       end
       options
@@ -126,14 +124,13 @@ module ClosureTree
 
     def order_is_numeric?
       # The table might not exist yet (in the case of ActiveRecord::Observer use, see issue 32)
-      return false if order_option.nil? || !model_class.table_exists?
+      return false if !order_option? || !model_class.table_exists?
       c = model_class.columns_hash[order_option]
       c && c.type == :integer
     end
 
     def order_column
-      o = order_option
-      o.split(' ', 2).first if o
+      order_option.split(' ', 2).first if order_option?
     end
 
     def require_order_column

@@ -43,8 +43,8 @@ class Contract < ActiveRecord::Base
 end
 
 class Label < ActiveRecord::Base
-  attr_accessible :name # < - make sure order doesn't matter
-  acts_as_tree :order => "sort_order",
+  attr_accessible :name # <- make sure order doesn't matter
+  acts_as_tree :order => :sort_order, # <- LOOK IT IS A SYMBOL OMG
     :parent_column_name => "mother_id",
     :dependent => :destroy
 
