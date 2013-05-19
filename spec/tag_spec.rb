@@ -259,12 +259,12 @@ shared_examples_for "Tag (2)" do
     context "class injection" do
       it "should build hierarchy classname correctly" do
         Tag.hierarchy_class.to_s.should == "TagHierarchy"
-        Tag.hierarchy_class_name.should == "TagHierarchy"
-        Tag.short_hierarchy_class_name.should == "TagHierarchy"
+        Tag._ct.hierarchy_class_name.should == "TagHierarchy"
+        Tag._ct.short_hierarchy_class_name.should == "TagHierarchy"
       end
 
       it "should have a correct parent column name" do
-        Tag.parent_column_name.should == "parent_id"
+        Tag._ct.parent_column_name.should == "parent_id"
       end
     end
 
@@ -469,7 +469,7 @@ describe "Tag with UUID" do
     TagHierarchy.reset_column_information
 
     # We have to reset a few other caches
-    Tag.closure_tree_options[:hierarchy_table_name] = 'tag_hierarchies_uuid'
+    Tag._ct.options[:hierarchy_table_name] = 'tag_hierarchies_uuid'
     Tag.reflections.each do |key, ref|
       ref.instance_variable_set('@table_name', nil)
       ref.instance_variable_set('@quoted_table_name', nil)

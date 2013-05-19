@@ -1,12 +1,9 @@
-# Closure Tree
+# Closure Tree [![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
 
-Closure_tree lets your ActiveRecord models act as nodes in a [tree data structure](http://en.wikipedia.org/wiki/Tree_%28data_structure%29)
+### Closure_tree lets your ActiveRecord models act as nodes in a [tree data structure](http://en.wikipedia.org/wiki/Tree_%28data_structure%29)
 
 Common applications include modeling hierarchical data, like tags, page graphs in CMSes,
 and tracking user referrals.
-
-[![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
-[![Gem Version](https://badge.fury.io/rb/closure_tree.png)](http://badge.fury.io/rb/closure_tree)
 
 Mostly API-compatible with other popular nesting gems for Rails, like
 [ancestry](https://github.com/stefankroes/ancestry),
@@ -446,6 +443,16 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 [known issue](https://github.com/rails/rails/issues/7538).
 
 ## Change log
+
+### 4.0.0
+
+* Moved all of closure_tree's implementation-detail methods into a ```ClosureTree::Support```
+  instance, which removes almost all of the namespace pollution in your models that wasn't
+  for normal consumption. If you were using any of these methods, they're now available through
+  the "_ct" class and instance member.
+
+  *This change may break consumers*, so I incremented the major version number, even though no new
+  functionality was released.
 
 ### 3.10.2
 

@@ -6,8 +6,8 @@ end
 
 describe "model instances" do
 
-  def without_ar_callback_methods methods
-    methods.reject { |ea| ea =~ /^_run.*_callbacks$/ }
+  def without_ar_callback_methods(methods)
+    methods.reject { |ea| ea.to_s =~ /^_run.*_callbacks$/ }
   end
 
   it "doesn't remove methods" do
@@ -36,6 +36,7 @@ describe "model instances" do
       leaf?
       leaves
       parent
+      parent_id
       root
       root?
       self_and_ancestor_ids
@@ -47,7 +48,7 @@ describe "model instances" do
       siblings
       siblings_after
       siblings_before
-    }
+    }.map { |i| i.to_sym }
     ct_added_methods = without_ar_callback_methods(Label.new.methods - TreelessLabel.new.methods)
     unimplemented_api_methods = public_interface - ct_added_methods
     unimplemented_api_methods.should == []
@@ -86,16 +87,15 @@ describe "model instances" do
       closure_tree_options=
       closure_tree_options?
       ct_after_save
-      ct_attribute_names
-      ct_base_class
+      attribute_names
+      base_class
       ct_before_destroy
       ct_before_save
       ct_class
-      ct_has_type?
-      ct_parent_id
+      has_type?
       ct_quote
-      ct_subclass?
-      ct_table_name
+      subclass?
+      table_name
       ct_validate
       ct_with_advisory_lock
       ids_from
@@ -120,7 +120,7 @@ describe "model instances" do
       short_hierarchy_class_name
       with_order_option
       without_self
-    }
+    }.map { |i| i.to_sym }
     ct_added_methods = without_ar_callback_methods(Label.new.methods - TreelessLabel.new.methods)
     noisy_model_methods = ct_added_methods & ct_specific_methods
     unless noisy_model_methods.empty?

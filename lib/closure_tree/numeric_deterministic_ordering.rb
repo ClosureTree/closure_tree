@@ -9,21 +9,21 @@ module ClosureTree
         SELECT
           count(*) as total_descendants,
           max(generations) as max_depth
-        FROM #{quoted_hierarchy_table_name}
-        WHERE ancestor_id = #{ct_quote(self.id)}
+        FROM #{_ct.quoted_hierarchy_table_name}
+        WHERE ancestor_id = #{_ct.quote(self.id)}
       SQL
       join_sql = <<-SQL
-        JOIN #{quoted_hierarchy_table_name} anc_hier
-          ON anc_hier.descendant_id = #{quoted_hierarchy_table_name}.descendant_id
-        JOIN #{quoted_table_name} anc
+        JOIN #{_ct.quoted_hierarchy_table_name} anc_hier
+          ON anc_hier.descendant_id = #{_ct.quoted_hierarchy_table_name}.descendant_id
+        JOIN #{_ct.quoted_table_name} anc
           ON anc.id = anc_hier.ancestor_id
-        JOIN #{quoted_hierarchy_table_name} depths
-          ON depths.ancestor_id = #{ct_quote(self.id)} AND depths.descendant_id = anc.id
+        JOIN #{_ct.quoted_hierarchy_table_name} depths
+          ON depths.ancestor_id = #{_ct.quote(self.id)} AND depths.descendant_id = anc.id
       SQL
-      node_score = "(1 + anc.#{quoted_order_column(false)}) * " +
+      node_score = "(1 + anc.#{_ct.quoted_order_column(false)}) * " +
         "power(#{h['total_descendants']}, #{h['max_depth'].to_i + 1} - depths.generations)"
       order_by = "sum(#{node_score})"
-      self_and_descendants.joins(join_sql).group("#{quoted_table_name}.id").reorder(order_by)
+      self_and_descendants.joins(join_sql).group("#{_ct.quoted_table_name}.id").reorder(order_by)
     end
 
     module ClassMethods
@@ -32,23 +32,23 @@ module ClosureTree
           SELECT
             count(*) as total_descendants,
             max(generations) as max_depth
-          FROM #{quoted_hierarchy_table_name}
+          FROM #{_ct.quoted_hierarchy_table_name}
         SQL
         join_sql = <<-SQL
-          JOIN #{quoted_hierarchy_table_name} anc_hier
-            ON anc_hier.descendant_id = #{quoted_table_name}.id
-          JOIN #{quoted_table_name} anc
+          JOIN #{_ct.quoted_hierarchy_table_name} anc_hier
+            ON anc_hier.descendant_id = #{_ct.quoted_table_name}.id
+          JOIN #{_ct.quoted_table_name} anc
             ON anc.id = anc_hier.ancestor_id
           JOIN (
             SELECT descendant_id, max(generations) AS max_depth
-            FROM #{quoted_hierarchy_table_name}
+            FROM #{_ct.quoted_hierarchy_table_name}
             GROUP BY 1
           ) AS depths ON depths.descendant_id = anc.id
         SQL
-        node_score = "(1 + anc.#{quoted_order_column(false)}) * " +
+        node_score = "(1 + anc.#{_ct.quoted_order_column(false)}) * " +
           "power(#{h['total_descendants']}, #{h['max_depth'].to_i + 1} - depths.max_depth)"
         order_by = "sum(#{node_score})"
-        joins(join_sql).group("#{quoted_table_name}.id").reorder(order_by)
+        joins(join_sql).group("#{_ct.quoted_table_name}.id").reorder(order_by)
       end
     end
 
@@ -69,12 +69,12 @@ module ClosureTree
         sibling_node.order_value = self.order_value.to_i + (add_after ? 1 : -1)
         # We need to incr the before_siblings to make room for sibling_node:
         if use_update_all
-          col = quoted_order_column(false)
+          col = _ct.quoted_order_column(false)
           # issue 21: we have to use the base class, so STI doesn't get in the way of only updating the child class instances:
-          ct_base_class.update_all(
+          _ct.base_class.update_all(
             ["#{col} = #{col} #{add_after ? '+' : '-'} 1", "updated_at = now()"],
-            ["#{quoted_parent_column_name} = ? AND #{col} #{add_after ? '>=' : '<='} ?",
-              ct_parent_id,
+            ["#{_ct.quoted_parent_column_name} = ? AND #{col} #{add_after ? '>=' : '<='} ?",
+              parent_id,
               sibling_node.order_value])
         else
           last_value = sibling_node.order_value.to_i
