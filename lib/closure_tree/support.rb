@@ -123,21 +123,21 @@ module ClosureTree
       order_option? ? scope.order(*([additional_order_by, order_option].compact)) : scope
     end
 
-    def has_many(options)
+    # lambda-ize the order, but don't apply the default order_option
+    def has_many_without_order_option(opts)
       if ActiveRecord::VERSION::MAJOR == 4
-        order = options.delete(:order)
-        [lambda { order(order) }, options]
+        [lambda { order(opts[:order]) }, opts.except(:order)]
       else
-        [options]
+        [opts]
       end
     end
 
-    def has_many_with_order(options)
-      if ActiveRecord::VERSION::MAJOR == 4 && order_option?
-        order_options = [order_option, options[:order]].compact
-        [lambda { order(order_options) }, options.except(:order)].tap{|ea| puts "ea = #{ea.inspect}"}
+    def has_many_with_order_option(opts)
+      if ActiveRecord::VERSION::MAJOR == 4
+        order_options = [options[:order], opts[:order]].compact
+        [lambda { order(order_options) }, opts.except(:order)].tap{|ea| puts "ea = #{ea.inspect}"}
       else
-        [with_order_option(options)]
+        [with_order_option(opts)]
       end
     end
 

@@ -18,22 +18,22 @@ module ClosureTree
 
       order_by_generations = "#{_ct.quoted_hierarchy_table_name}.generations asc"
 
-      has_many :children, *_ct.has_many_with_order(
+      has_many :children, *_ct.has_many_with_order_option(
         :class_name => _ct.model_class.to_s,
         :foreign_key => _ct.parent_column_name,
         :dependent => _ct.options[:dependent])
 
-      has_many :ancestor_hierarchies, *_ct.has_many(
+      has_many :ancestor_hierarchies, *_ct.has_many_without_order_option(
         :class_name => _ct.hierarchy_class_name,
         :foreign_key => "descendant_id",
         :order => order_by_generations)
 
-      has_many :self_and_ancestors, *_ct.has_many(
+      has_many :self_and_ancestors, *_ct.has_many_without_order_option(
         :through => :ancestor_hierarchies,
         :source => :ancestor,
         :order => order_by_generations)
 
-      has_many :descendant_hierarchies, *_ct.has_many(
+      has_many :descendant_hierarchies, *_ct.has_many_without_order_option(
         :class_name => _ct.hierarchy_class_name,
         :foreign_key => "ancestor_id",
         :order => order_by_generations)
@@ -41,7 +41,7 @@ module ClosureTree
       # TODO: FIXME: this collection currently ignores sort_order
       # (because the quoted_table_named would need to be joined in to get to the order column)
 
-      has_many :self_and_descendants, *_ct.has_many_with_order(
+      has_many :self_and_descendants, *_ct.has_many_with_order_option(
         :through => :descendant_hierarchies,
         :source => :descendant,
         :order => order_by_generations)
