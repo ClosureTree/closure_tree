@@ -20,12 +20,17 @@ module ClosureTree
       model_class.connection
     end
 
+    def use_attr_accessible?
+      defined?(ActiveModel::ForbiddenAttributesProtection) && !defined?(ActiveModel::DeprecatedMassAssignmentSecurity)
+    end
+
     def hierarchy_class_for_model
       hierarchy_class = model_class.parent.const_set(short_hierarchy_class_name, Class.new(ActiveRecord::Base))
+      use_attr_accessible = use_attr_accessible?
       hierarchy_class.class_eval <<-RUBY, __FILE__, __LINE__ + 1
         belongs_to :ancestor, :class_name => "#{model_class}"
         belongs_to :descendant, :class_name => "#{model_class}"
-        attr_accessible :ancestor, :descendant, :generations
+        attr_accessible :ancestor, :descendant, :generations if use_attr_accessible
         def ==(other)
           self.class == other.class && ancestor_id == other.ancestor_id && descendant_id == other.descendant_id
         end
@@ -84,19 +89,19 @@ module ClosureTree
     end
 
     def quoted_hierarchy_table_name
-      _ct.connection.quote_table_name hierarchy_table_name
+      connection.quote_table_name hierarchy_table_name
     end
 
     def quoted_parent_column_name
-      _ct.connection.quote_column_name parent_column_name
+      connection.quote_column_name parent_column_name
     end
 
     def quoted_name_column
-      _ct.connection.quote_column_name name_column
+      connection.quote_column_name name_column
     end
 
     def quote(field)
-      _ct.connection.quote(field)
+      connection.quote(field)
     end
 
     def order_option?
@@ -108,18 +113,32 @@ module ClosureTree
     end
 
     def with_order_option(options)
-      order_option? ? options.merge(:order => order_option) : options
+      if order_option?
+        options[:order] = [options[:order], order_option].compact.join(",")
+      end
+      options
     end
 
     def scope_with_order(scope, additional_order_by = nil)
       order_option? ? scope.order(*([additional_order_by, order_option].compact)) : scope
     end
 
-    def with_order_option(options)
-      if order_option?
-        options[:order] = [options[:order], order_option].compact.join(",")
+    def has_many(options)
+      if ActiveRecord::VERSION::MAJOR == 4
+        order = options.delete(:order)
+        [lambda { order(order) }, options]
+      else
+        [options]
       end
-      options
+    end
+
+    def has_many_with_order(options)
+      if ActiveRecord::VERSION::MAJOR == 4 && order_option?
+        order_options = [order_option, options[:order]].compact
+        [lambda { order(order_options) }, options.except(:order)].tap{|ea| puts "ea = #{ea.inspect}"}
+      else
+        [with_order_option(options)]
+      end
     end
 
     def order_is_numeric?

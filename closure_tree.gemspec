@@ -6,22 +6,22 @@ Gem::Specification.new do |gem|
   gem.version     = ::ClosureTree::VERSION
   gem.authors     = ["Matthew McEachen"]
   gem.email       = ["matthew-github@mceachen.org"]
-  gem.homepage    = "http://matthew.mceachen.us/closure_tree"
+  gem.homepage    = "http://mceachen.github.io/closure_tree/"
 
   gem.summary = %q{Easily and efficiently make your ActiveRecord model support hierarchies}
-  gem.description = %q{Easily and efficiently make your ActiveRecord model support hierarchies}
+  gem.description = gem.summary
 
   gem.files = Dir["lib/**/*"] + ["MIT-LICENSE", "Rakefile", "README.md"]
   gem.test_files = `git ls-files -- {test,spec,features}/*`.split("\n")
 
-  gem.add_runtime_dependency 'activerecord', '>= 4.0.0.rc1'
+  gem.add_runtime_dependency 'activerecord', '>= 3.0.0'
   gem.add_runtime_dependency 'with_advisory_lock', '>= 0.0.6' # <- to prevent duplicate roots
 
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'yard'
   gem.add_development_dependency 'rspec'
   gem.add_development_dependency 'rails' # FIXME: for rspec-rails and rspec fixture support
-  gem.add_development_dependency 'rspec-rails' # FIXME: for rspec fixture support. TODO: Switch to minitest-spec-rails
+  gem.add_development_dependency 'rspec-rails' # FIXME: for rspec fixture support. TODO: Switch to minitest-spec-rails?
   gem.add_development_dependency 'mysql2'
   gem.add_development_dependency 'pg'
   gem.add_development_dependency 'sqlite3'

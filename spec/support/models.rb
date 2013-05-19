@@ -3,10 +3,7 @@ require 'uuidtools'
 class Tag < ActiveRecord::Base
   acts_as_tree :dependent => :destroy, :order => "name"
   before_destroy :add_destroyed_tag
-
-  unless defined?(ActiveModel::ForbiddenAttributesProtection)
-    attr_accessible :name
-  end
+  attr_accessible :name if _ct.use_attr_accessible?
 
   def to_s
     name
@@ -18,10 +15,10 @@ class Tag < ActiveRecord::Base
   end
 end
 
+USE_ATTR_ACCESSIBLE = Tag._ct.use_attr_accessible?
+
 class DestroyedTag < ActiveRecord::Base
-  unless defined?(ActiveModel::ForbiddenAttributesProtection)
-    attr_accessible :name
-  end
+  attr_accessible :name if USE_ATTR_ACCESSIBLE
 end
 
 class User < ActiveRecord::Base
@@ -36,9 +33,7 @@ class User < ActiveRecord::Base
     Contract.where(:user_id => descendant_ids)
   end
 
-  unless defined?(ActiveModel::ForbiddenAttributesProtection)
-    attr_accessible :email, :referrer
-  end
+  attr_accessible :email, :referrer if USE_ATTR_ACCESSIBLE
 
   def to_s
     email
@@ -50,10 +45,8 @@ class Contract < ActiveRecord::Base
 end
 
 class Label < ActiveRecord::Base
-  attr_accessible :name # <- make sure order doesn't matter
-  unless defined?(ActiveModel::ForbiddenAttributesProtection)
-    attr_accessible :name # < - make sure order doesn't matter
-  end
+  # make sure order doesn't matter
+  attr_accessible :name if USE_ATTR_ACCESSIBLE
   acts_as_tree :order => :sort_order, # <- LOOK IT IS A SYMBOL OMG
     :parent_column_name => "mother_id",
     :dependent => :destroy
@@ -79,6 +72,6 @@ end
 module Namespace
   class Type < ActiveRecord::Base
     acts_as_tree :dependent => :destroy
-    attr_accessible :name
+    attr_accessible :name if _ct.use_attr_accessible?
   end
 end
