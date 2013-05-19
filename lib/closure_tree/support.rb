@@ -84,19 +84,19 @@ module ClosureTree
     end
 
     def quoted_hierarchy_table_name
-      connection.quote_table_name hierarchy_table_name
+      _ct.connection.quote_table_name hierarchy_table_name
     end
 
     def quoted_parent_column_name
-      connection.quote_column_name parent_column_name
+      _ct.connection.quote_column_name parent_column_name
     end
 
     def quoted_name_column
-      connection.quote_column_name name_column
+      _ct.connection.quote_column_name name_column
     end
 
     def quote(field)
-      connection.quote(field)
+      _ct.connection.quote(field)
     end
 
     def order_option?
@@ -145,7 +145,7 @@ module ClosureTree
     def quoted_order_column(include_table_name = true)
       require_order_column
       prefix = include_table_name ? "#{quoted_table_name}." : ""
-      "#{prefix}#{connection.quote_column_name(order_column)}"
+      "#{prefix}#{_ct.connection.quote_column_name(order_column)}"
     end
 
     # This is the "topmost" class. This will only potentially not be ct_class if you are using STI.
@@ -170,7 +170,7 @@ module ClosureTree
     end
 
     def quoted_table_name
-      connection.quote_table_name table_name
+      _ct.connection.quote_table_name table_name
     end
 
     def remove_prefix_and_suffix(table_name)

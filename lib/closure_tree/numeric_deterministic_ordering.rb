@@ -5,7 +5,7 @@ module ClosureTree
 
     def self_and_descendants_preordered
       # TODO: raise NotImplementedError if sort_order is not numeric and not null?
-      h = connection.select_one(<<-SQL)
+      h = _ct.connection.select_one(<<-SQL)
         SELECT
           count(*) as total_descendants,
           max(generations) as max_depth
@@ -28,7 +28,7 @@ module ClosureTree
 
     module ClassMethods
       def roots_and_descendants_preordered
-        h = connection.select_one(<<-SQL)
+        h = _ct.connection.select_one(<<-SQL)
           SELECT
             count(*) as total_descendants,
             max(generations) as max_depth
