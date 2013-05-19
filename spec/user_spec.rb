@@ -116,7 +116,7 @@ describe "empty db" do
   end
 
   it "supports siblings" do
-    User.order_option.should be_nil
+    User._ct.order_option?.should be_false
     a = User.create(:email => "a")
     b1 = a.children.create(:email => "b1")
     b2 = a.children.create(:email => "b2")
@@ -127,7 +127,7 @@ describe "empty db" do
 
   context "when a user is not yet saved" do
     it "supports siblings" do
-      User.order_option.should be_nil
+      User._ct.order_option?.should be_false
       a = User.create(:email => "a")
       b1 = a.children.new(:email => "b1")
       b2 = a.children.create(:email => "b2")

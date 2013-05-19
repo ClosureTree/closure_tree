@@ -50,10 +50,11 @@ class Contract < ActiveRecord::Base
 end
 
 class Label < ActiveRecord::Base
+  attr_accessible :name # <- make sure order doesn't matter
   unless defined?(ActiveModel::ForbiddenAttributesProtection)
     attr_accessible :name # < - make sure order doesn't matter
   end
-  acts_as_tree :order => "sort_order",
+  acts_as_tree :order => :sort_order, # <- LOOK IT IS A SYMBOL OMG
     :parent_column_name => "mother_id",
     :dependent => :destroy
 

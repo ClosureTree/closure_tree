@@ -1,14 +1,17 @@
-# Closure Tree [![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
+# Closure Tree
 
 ### Closure_tree lets your ActiveRecord models act as nodes in a [tree data structure](http://en.wikipedia.org/wiki/Tree_%28data_structure%29)
 
 Common applications include modeling hierarchical data, like tags, page graphs in CMSes,
 and tracking user referrals.
 
-Mostly API-compatible with other popular nesting gems for Rails, like
-[ancestry](https://github.com/stefankroes/ancestry),
-[acts_as_tree](https://github.com/amerine/acts_as_tree) and
-[awesome_nested_set](https://github.com/collectiveidea/awesome_nested_set/),
+[![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
+[![Gem Version](https://badge.fury.io/rb/closure_tree.png)](http://rubygems.org/gems/closure_tree)
+
+Substantially more efficient than
+[ancestry](https://github.com/stefankroes/ancestry) and
+[acts_as_tree](https://github.com/amerine/acts_as_tree), and even more
+awesome than [awesome_nested_set](https://github.com/collectiveidea/awesome_nested_set/),
 closure_tree has some great features:
 
 * __Best-in-class select performance__:
@@ -93,8 +96,8 @@ Note that closure_tree only supports Rails 3.0 and later, and has test coverage 
 6.  Run ```rake db:migrate```
 
 7.  If you're migrating from another system where your model already has a
-    ```parent_id``` column, run ```Tag.rebuild!``` and the
-    …_hierarchy table will be truncated and rebuilt.
+    ```parent_id``` column, run ```Tag.rebuild!``` and your
+    ```tag_hierarchies``` table will be truncated and rebuilt.
 
     If you're starting from scratch you don't need to call ```rebuild!```.
 
@@ -443,6 +446,26 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 [known issue](https://github.com/rails/rails/issues/7538).
 
 ## Change log
+
+### 4.0.1
+
+* Numeric, deterministically ordered siblings will always be [0..#{self_and_siblings.count}]
+  (previously, the sort order might use negative values, which broke the preordering).
+  Resolves [issue 49](https://github.com/mceachen/closure_tree/issues/49). Thanks for the help,
+  [Leonel Galan](https://github.com/leonelgalan), [Juan Hoyos](https://github.com/elhoyos), and
+  [Michael Elfassy](https://github.com/elfassy)!
+
+* The ```order``` option can be a symbol now. Resolves [issue 46](https://github.com/mceachen/closure_tree/issues/46).
+
+### 4.0.0
+
+* Moved all of closure_tree's implementation-detail methods into a ```ClosureTree::Support```
+  instance, which removes almost all of the namespace pollution in your models that wasn't
+  for normal consumption. If you were using any of these methods, they're now available through
+  the "_ct" class and instance member.
+
+  *This change may break consumers*, so I incremented the major version number, even though no new
+  functionality was released.
 
 ### 3.10.2
 
