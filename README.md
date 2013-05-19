@@ -96,8 +96,8 @@ Note that closure_tree only supports Rails 3.0 and later, and has test coverage 
 6.  Run ```rake db:migrate```
 
 7.  If you're migrating from another system where your model already has a
-    ```parent_id``` column, run ```Tag.rebuild!``` and the
-    …_hierarchy table will be truncated and rebuilt.
+    ```parent_id``` column, run ```Tag.rebuild!``` and your
+    ```tag_hierarchies``` table will be truncated and rebuilt.
 
     If you're starting from scratch you don't need to call ```rebuild!```.
 
