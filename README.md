@@ -1,14 +1,17 @@
-# Closure Tree [![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
+# Closure Tree
 
 ### Closure_tree lets your ActiveRecord models act as nodes in a [tree data structure](http://en.wikipedia.org/wiki/Tree_%28data_structure%29)
 
 Common applications include modeling hierarchical data, like tags, page graphs in CMSes,
 and tracking user referrals.
 
-Mostly API-compatible with other popular nesting gems for Rails, like
-[ancestry](https://github.com/stefankroes/ancestry),
-[acts_as_tree](https://github.com/amerine/acts_as_tree) and
-[awesome_nested_set](https://github.com/collectiveidea/awesome_nested_set/),
+[![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
+[![Gem Version](https://badge.fury.io/rb/closure_tree.png)](http://rubygems.org/gems/closure_tree)
+
+Substantially more efficient than
+[ancestry](https://github.com/stefankroes/ancestry) and
+[acts_as_tree](https://github.com/amerine/acts_as_tree), and even more
+awesome than [awesome_nested_set](https://github.com/collectiveidea/awesome_nested_set/),
 closure_tree has some great features:
 
 * __Best-in-class select performance__:
@@ -443,6 +446,16 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 [known issue](https://github.com/rails/rails/issues/7538).
 
 ## Change log
+
+### 4.0.1
+
+* Numeric, deterministically ordered siblings will always be [0..#{self_and_siblings.count}]
+  (previously, the sort order might use negative values, which broke the preordering).
+  Resolves [issue 49](https://github.com/mceachen/closure_tree/issues/49). Thanks for the help,
+  [Leonel Galan](https://github.com/leonelgalan), [Juan Hoyos](https://github.com/elhoyos), and
+  [Michael Elfassy](https://github.com/elfassy)!
+
+* The ```order``` option can be a symbol now. Resolves [issue 46](https://github.com/mceachen/closure_tree/issues/46).
 
 ### 4.0.0
 
