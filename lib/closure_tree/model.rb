@@ -48,7 +48,7 @@ module ClosureTree
 
       scope :without, lambda { |instance|
         if instance.new_record?
-          scoped
+          all
         else
           where(["#{_ct.quoted_table_name}.#{_ct.base_class.primary_key} != ?", instance.id])
         end

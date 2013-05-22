@@ -4,7 +4,7 @@ shared_examples_for "Tag (1)" do
 
   it "has correct accessible_attributes" do
     Tag.accessible_attributes.to_a.should =~ %w(parent name)
-  end
+  end unless ActiveRecord::VERSION::MAJOR == 4
 
   describe "empty db" do
 
