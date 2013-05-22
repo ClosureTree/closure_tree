@@ -135,7 +135,7 @@ module ClosureTree
     def has_many_with_order_option(opts)
       if ActiveRecord::VERSION::MAJOR == 4
         order_options = [options[:order], opts[:order]].compact
-        [lambda { order(order_options) }, opts.except(:order)].tap{|ea| puts "ea = #{ea.inspect}"}
+        [lambda { order(order_options) }, opts.except(:order)]
       else
         [with_order_option(opts)]
       end
@@ -189,7 +189,7 @@ module ClosureTree
     end
 
     def quoted_table_name
-      _ct.connection.quote_table_name table_name
+      connection.quote_table_name table_name
     end
 
     def remove_prefix_and_suffix(table_name)

@@ -325,7 +325,7 @@ module ClosureTree
 
       def ct_scoped_to_path(path, parent_constraint)
         path = path.is_a?(Enumerable) ? path.dup : [path]
-        scope = scoped.where(_ct.name_sym => path.last).readonly(false)
+        scope = where(_ct.name_sym => path.last).readonly(false)
         path[0..-2].reverse.each_with_index do |ea, idx|
           subtable = idx == 0 ? _ct.quoted_table_name : "p#{idx - 1}"
           scope = scope.joins(<<-SQL)

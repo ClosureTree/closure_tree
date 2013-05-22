@@ -116,19 +116,19 @@ shared_examples_for "Tag (1)" do
 
       it "cleans up hierarchy references for leaves" do
         @leaf.destroy
-        TagHierarchy.find_all_by_ancestor_id(@leaf.id).should be_empty
-        TagHierarchy.find_all_by_descendant_id(@leaf.id).should be_empty
+        TagHierarchy.where(:ancestor_id => @leaf.id).should be_empty
+        TagHierarchy.where(:descendant_id => @leaf.id).should be_empty
       end
 
       it "cleans up hierarchy references" do
         @mid.destroy
-        TagHierarchy.find_all_by_ancestor_id(@mid.id).should be_empty
-        TagHierarchy.find_all_by_descendant_id(@mid.id).should be_empty
+        TagHierarchy.where(:ancestor_id => @mid.id).should be_empty
+        TagHierarchy.where(:descendant_id => @mid.id).should be_empty
         @root.reload.should be_root
         root_hiers = @root.ancestor_hierarchies.to_a
         root_hiers.size.should == 1
-        TagHierarchy.find_all_by_ancestor_id(@root.id).should == root_hiers
-        TagHierarchy.find_all_by_descendant_id(@root.id).should == root_hiers
+        TagHierarchy.where(:ancestor_id => @root.id).should == root_hiers
+        TagHierarchy.where(:descendant_id => @root.id).should == root_hiers
       end
 
       it "should have different hash codes for each hierarchy model" do
@@ -451,7 +451,7 @@ end
 # This has to be the last one, because we include strong parameters into Tag
 describe "Tag with strong parameters" do
   before(:all) do
-    require 'strong_parameters'
+    require 'strong_parameters' unless ActiveRecord::VERSION::MAJOR == 4
     class Tag
       include ActiveModel::ForbiddenAttributesProtection
     end

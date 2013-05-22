@@ -15,7 +15,8 @@ require 'bundler/setup'
 require 'rspec'
 require 'logger'
 
-#require 'action_controller' # rspec-rails needs this :(
+require 'rails/all'
+require 'rspec/rails' # TODO: clean this up-- I don't want to pull the elephant through the mouse hole just for fixture support
 require 'closure_tree'
 require 'tmpdir'
 
@@ -33,7 +34,6 @@ ActiveRecord::Base.establish_connection(ENV["DB"])
 ActiveRecord::Migration.verbose = false
 require 'db/schema'
 require 'support/models'
-require 'rspec/rails' # TODO: clean this up-- I don't want to pull the elephant through the mouse hole just for fixture support
 
 DB_QUERIES = []
 

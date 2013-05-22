@@ -20,7 +20,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'yard'
   gem.add_development_dependency 'rspec'
-  gem.add_development_dependency 'rails' # FIXME: for rspec-rails and rspec fixture support
+  gem.add_development_dependency 'rspec-rails' # FIXME: for rspec-rails and rspec fixture support
   gem.add_development_dependency 'mysql2'
   gem.add_development_dependency 'pg'
   gem.add_development_dependency 'sqlite3'
