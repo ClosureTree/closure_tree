@@ -164,7 +164,7 @@ module ClosureTree
     def quoted_order_column(include_table_name = true)
       require_order_column
       prefix = include_table_name ? "#{quoted_table_name}." : ""
-      "#{prefix}#{_ct.connection.quote_column_name(order_column)}"
+      "#{prefix}#{connection.quote_column_name(order_column)}"
     end
 
     # This is the "topmost" class. This will only potentially not be ct_class if you are using STI.
