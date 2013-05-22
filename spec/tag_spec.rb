@@ -446,16 +446,16 @@ describe "Tag with AR whitelisted attributes enabled" do
   end
   it_behaves_like "Tag (1)"
   it_behaves_like "Tag (2)"
-end
+end unless ActiveRecord::VERSION::MAJOR == 4
 
 # This has to be the last one, because we include strong parameters into Tag
 describe "Tag with strong parameters" do
   before(:all) do
-    require 'strong_parameters' unless ActiveRecord::VERSION::MAJOR == 4
+    require 'strong_parameters'
     class Tag
       include ActiveModel::ForbiddenAttributesProtection
     end
-  end
+  end unless ActiveRecord::VERSION::MAJOR == 4
   it_behaves_like "Tag (1)"
   it_behaves_like "Tag (2)"
 end
