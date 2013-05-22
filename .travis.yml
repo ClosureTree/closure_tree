@@ -22,8 +22,7 @@ env:
 script: bundle exec rake specs_with_db_ixes
 
 before_script:
-# TODO: reenable once tests pass with 4.0
-#  - mysql -e 'create database closure_tree_test'
+  - mysql -e 'create database closure_tree_test'
   - psql -c 'create database closure_tree_test' -U postgres
 
 matrix:
