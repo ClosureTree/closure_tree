@@ -432,7 +432,7 @@ describe Tag do
   end
   it_behaves_like "Tag (1)"
   it_behaves_like "Tag (2)"
-end
+end unless ActiveRecord::VERSION::MAJOR == 4
 
 describe "Tag with AR whitelisted attributes enabled" do
   before(:all) do
@@ -455,7 +455,7 @@ describe "Tag with strong parameters" do
     class Tag
       include ActiveModel::ForbiddenAttributesProtection
     end
-  end unless ActiveRecord::VERSION::MAJOR == 4
+  end unless ActiveRecord::VERSION::MAJOR == 4 # Rails 4 already has it
   it_behaves_like "Tag (1)"
   it_behaves_like "Tag (2)"
 end
