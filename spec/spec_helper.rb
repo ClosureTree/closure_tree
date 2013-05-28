@@ -1,22 +1,15 @@
 $:.unshift(File.dirname(__FILE__) + '/../lib')
 plugin_test_dir = File.dirname(__FILE__)
 
-# Don't run the test for activerecord 4 if we're using ruby 1.8.7:
-ruby_major_version, ruby_minor_version = RUBY_VERSION.split('.')[0..1]
-if ENV['BUNDLE_GEMFILE'] =~ /rails-4/ &&
-  ruby_major_version == "1" &&
-  ruby_minor_version == "8"
-  fail "Rails 4.0.x requires ruby >= 1.9.4"
-end
-
 require 'rubygems'
-require 'bundler/setup'
-
+ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../../Gemfile', __FILE__)
+require 'bundler/setup' if File.exists?(ENV['BUNDLE_GEMFILE'])
 require 'rspec'
-require 'logger'
-
-require 'rails/all'
-require 'rspec/rails' # TODO: clean this up-- I don't want to pull the elephant through the mouse hole just for fixture support
+require 'rails'
+require 'active_record'
+require 'active_record/fixtures'
+require 'rspec/rails/adapters'
+require 'rspec/rails/fixture_support'
 require 'closure_tree'
 require 'tmpdir'
 
