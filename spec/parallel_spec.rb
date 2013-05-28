@@ -1,5 +1,12 @@
 require 'spec_helper'
 
+parallelism_is_broken = begin
+  # Rails < 3.2 has known bugs with parallelism
+  (ActiveRecord::VERSION::MAJOR <= 3 && ActiveRecord::VERSION::MINOR < 2) ||
+  # SQLite doesn't support parallel writes
+  ENV["DB"] =~ /sqlite/
+end
+
 describe "threadhot" do
 
   before :each do
@@ -55,5 +62,4 @@ describe "threadhot" do
     Tag.find_all_by_name(@names).size.should > @iterations
   end
 
-# SQLite doesn't like parallelism, and Rails 3.0 and 3.1 have known threading issues. SKIP.
-end if ((ENV["DB"] != "sqlite") && (ActiveRecord::VERSION::STRING =~ /^3.2/))
+end unless parallelism_is_broken
