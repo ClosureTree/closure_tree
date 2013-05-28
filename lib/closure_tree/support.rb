@@ -92,6 +92,14 @@ module ClosureTree
       connection.quote_table_name hierarchy_table_name
     end
 
+    def id_column_name
+      model_class.primary_key
+    end
+
+    def quoted_id_column_name
+      connection.quote_column_name id_column_name
+    end
+
     def quoted_parent_column_name
       connection.quote_column_name parent_column_name
     end
@@ -125,7 +133,7 @@ module ClosureTree
 
     # lambda-ize the order, but don't apply the default order_option
     def has_many_without_order_option(opts)
-      if ActiveRecord::VERSION::MAJOR == 4
+      if ActiveRecord::VERSION::MAJOR > 3
         [lambda { order(opts[:order]) }, opts.except(:order)]
       else
         [opts]
@@ -133,8 +141,8 @@ module ClosureTree
     end
 
     def has_many_with_order_option(opts)
-      if ActiveRecord::VERSION::MAJOR == 4
-        order_options = [options[:order], opts[:order]].compact
+      if ActiveRecord::VERSION::MAJOR > 3
+        order_options = [opts[:order], options[:order]].compact
         [lambda { order(order_options) }, opts.except(:order)]
       else
         [with_order_option(opts)]
@@ -200,9 +208,9 @@ module ClosureTree
 
     def ids_from(scope)
       if scope.respond_to? :pluck
-        scope.pluck(:id)
+        scope.pluck(id_column_name)
       else
-        scope.select(:id).collect(&:id)
+        scope.select(id_column_name).select_values(id_column_name)
       end
     end
   end

@@ -26,17 +26,17 @@ ActiveRecord::Schema.define(:version => 0) do
     t.integer "generations", :null => false
   end
 
-  create_table "tags_uuid", :id => false, :force => true do |t|
-    t.string "id", :unique => true
+  create_table "uuid_tags", :id => false, :force => true do |t|
+    t.string "uuid", :unique => true
     t.string "name"
     t.string "title"
-    t.string "parent_id"
+    t.string "parent_uuid"
     t.integer "sort_order"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  create_table "tag_hierarchies_uuid", :id => false, :force => true do |t|
+  create_table "uuid_tag_hierarchies", :id => false, :force => true do |t|
     t.string "ancestor_id", :null => false
     t.string "descendant_id", :null => false
     t.integer "generations", :null => false

@@ -329,7 +329,8 @@ module ClosureTree
         path[0..-2].reverse.each_with_index do |ea, idx|
           subtable = idx == 0 ? _ct.quoted_table_name : "p#{idx - 1}"
           scope = scope.joins(<<-SQL)
-            INNER JOIN #{_ct.quoted_table_name} AS p#{idx} ON p#{idx}.id = #{subtable}.#{_ct.parent_column_name}
+            INNER JOIN #{_ct.quoted_table_name} AS p#{idx}
+              ON p#{idx}.#{_ct.quoted_id_column_name} = #{subtable}.#{_ct.parent_column_name}
           SQL
           scope = scope.where("p#{idx}.#{_ct.quoted_name_column} = #{_ct.quote(ea)}")
         end
