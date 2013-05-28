@@ -116,19 +116,15 @@ module ClosureTree
       !options[:order].nil?
     end
 
-    def order_option
-      options[:order].to_s
-    end
-
-    def with_order_option(options)
+    def with_order_option(opts)
       if order_option?
-        options[:order] = [options[:order], order_option].compact.join(",")
+        opts[:order] = [opts[:order], options[:order]].compact.join(",")
       end
-      options
+      opts
     end
 
     def scope_with_order(scope, additional_order_by = nil)
-      order_option? ? scope.order(*([additional_order_by, order_option].compact)) : scope
+      order_option? ? scope.order(*([additional_order_by, options[:order]].compact)) : scope
     end
 
     # lambda-ize the order, but don't apply the default order_option

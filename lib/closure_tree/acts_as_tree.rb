@@ -18,7 +18,7 @@ module ClosureTree
       include ClosureTree::Model
       include ClosureTree::WithAdvisoryLock
 
-      if _ct.order_option
+      if _ct.order_option?
         include ClosureTree::DeterministicOrdering
         include ClosureTree::DeterministicNumericOrdering if _ct.order_is_numeric?
       end
