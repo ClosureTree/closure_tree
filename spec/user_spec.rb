@@ -40,7 +40,7 @@ describe "empty db" do
     end
 
     it "should create all Users" do
-      User.all.should =~ [@root, @mid, @leaf]
+      User.all.to_a.should =~ [@root, @mid, @leaf]
     end
 
     it "should return a root and leaf without middle User" do
@@ -65,11 +65,11 @@ describe "empty db" do
     end
 
     def assert_mid_and_leaf_remain
-      ReferralHierarchy.find_all_by_ancestor_id(@root_id).should be_empty
-      ReferralHierarchy.find_all_by_descendant_id(@root_id).should be_empty
+      ReferralHierarchy.where(:ancestor_id => @root_id).should be_empty
+      ReferralHierarchy.where(:descendant_id => @root_id).should be_empty
       @mid.ancestry_path.should == %w{matt@t.co}
       @leaf.ancestry_path.should == %w{matt@t.co james@t.co}
-      @mid.self_and_descendants.should =~ [@mid, @leaf]
+      @mid.self_and_descendants.to_a.should =~ [@mid, @leaf]
       User.roots.should == [@mid]
       User.leaves.should == [@leaf]
     end
@@ -110,8 +110,8 @@ describe "empty db" do
     c2.children << d
 
     a.save
-    User.roots.should == [a]
-    User.leaves.should =~ [b1, c1, d]
+    User.roots.to_a.should == [a]
+    User.leaves.to_a.should =~ [b1, c1, d]
     d.ancestry_path.should == %w(a b2 c2 d)
   end
 
@@ -122,7 +122,7 @@ describe "empty db" do
     b2 = a.children.create(:email => "b2")
     b3 = a.children.create(:email => "b3")
     a.siblings.should be_empty
-    b1.siblings.should =~ [b2, b3]
+    b1.siblings.to_a.should =~ [b2, b3]
   end
 
   context "when a user is not yet saved" do
@@ -133,7 +133,7 @@ describe "empty db" do
       b2 = a.children.create(:email => "b2")
       b3 = a.children.create(:email => "b3")
       a.siblings.should be_empty
-      b1.siblings.should =~ [b2, b3]
+      b1.siblings.to_a.should =~ [b2, b3]
     end
   end
 
