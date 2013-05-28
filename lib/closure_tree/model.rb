@@ -284,7 +284,7 @@ module ClosureTree
             HAVING MAX(#{_ct.quoted_hierarchy_table_name}.generations) = 0
           ) AS leaves ON (#{_ct.quoted_table_name}.#{primary_key} = leaves.ancestor_id)
         SQL
-        _ct.scope_with_order(s)
+        _ct.scope_with_order(s.readonly(false))
       end
 
       # Rebuilds the hierarchy table based on the parent_id column in the database.
