@@ -153,7 +153,6 @@ shared_examples_for "Tag (without fixtures)" do
       parent.children << child2
       child3 = tag_class.new(:name => 'Third Child')
       parent.add_child child3
-      puts grandparent.self_and_descendants.to_sql
       grandparent.self_and_descendants.collect(&:name).should ==
         ["Grandparent", "Parent", "First Child", "Second Child", "Third Child"]
       child1.ancestry_path.should ==
