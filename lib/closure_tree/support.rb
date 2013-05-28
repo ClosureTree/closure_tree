@@ -148,7 +148,7 @@ module ClosureTree
     def order_is_numeric?
       # The table might not exist yet (in the case of ActiveRecord::Observer use, see issue 32)
       return false if !order_option? || !model_class.table_exists?
-      c = model_class.columns_hash[order_option]
+      c = model_class.columns_hash[options[:order]]
       c && c.type == :integer
     end
 
