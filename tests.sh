@@ -1,7 +1,10 @@
 #!/bin/sh -ex
 export BUNDLE_GEMFILE RMI DB
 
-for RMI in 1.8.7-p370 1.9.3-p327
+# On homebrew & mountain lion:
+# CONFIGURE_OPTS=--without-tk rbenv install 1.8.7-p370
+
+for RMI in 1.8.7-p370 1.9.3-p429
 do
   rbenv local $RMI
   gem install bundler rake # < just to make sure
@@ -18,11 +21,16 @@ do
   done
 done
 
-rbenv local 1.9.3-p327
-export BUNDLE_GEMFILE=ci/Gemfile.rails-4.0.x
-bundle update --quiet
-for DB in sqlite mysql postgresql
+for RMI in 1.9.3-p429 2.0.0-p195
 do
-  echo $DB $BUNDLE_GEMFILE `ruby -v`
-  bundle exec rake specs_with_db_ixes
-done
+  rbenv local $RMI
+  gem install bundler rake # < just to make sure
+  rbenv rehash || true
+  export BUNDLE_GEMFILE=ci/Gemfile.rails-4.0.x
+  bundle update --quiet
+  for DB in sqlite mysql postgresql
+  do
+    echo $DB $BUNDLE_GEMFILE `ruby -v`
+    bundle exec rake specs_with_db_ixes
+  done
+end
