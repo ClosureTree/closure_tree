@@ -15,6 +15,14 @@ class Tag < ActiveRecord::Base
   end
 end
 
+if ActiveRecord::VERSION::MAJOR == 3
+  require 'strong_parameters'
+  class StrongTag < Tag
+    include ActiveModel::ForbiddenAttributesProtection
+    self.table_name = "tags"
+  end
+end
+
 class UUIDTag < ActiveRecord::Base
   self.primary_key = :uuid
   before_create :set_uuid

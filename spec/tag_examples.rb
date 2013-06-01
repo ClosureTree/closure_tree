@@ -11,12 +11,24 @@ shared_examples_for "Tag (without fixtures)" do
     end
   end
 
-  def nuke_db
-    tag_hierarchy_class.delete_all
-    tag_class.delete_all
+  context 'class injection' do
+    it 'should build hierarchy classname correctly' do
+      tag_class.hierarchy_class.should == tag_hierarchy_class
+      tag_class._ct.hierarchy_class_name.should == tag_hierarchy_class.to_s
+      tag_class._ct.short_hierarchy_class_name.should == tag_hierarchy_class.to_s
+    end
+
+    it 'should have a correct parent column name' do
+      expected_parent_column_name = tag_class == UUIDTag ? "parent_uuid" : "parent_id"
+      tag_class._ct.parent_column_name.should == expected_parent_column_name
+    end
   end
 
   describe "from empty db" do
+    def nuke_db
+      tag_hierarchy_class.delete_all
+      tag_class.delete_all
+    end
 
     before :each do
       nuke_db
@@ -167,11 +179,49 @@ shared_examples_for "Tag (without fixtures)" do
       h.ancestry_path.should == %w(a b c d e f g h)
     end
 
-    context "roots" do
-      it "sorts alphabetically" do
-        expected = ("a".."z").to_a
-        expected.shuffle.each { |ea| tag_class.create!(:name => ea) }
-        tag_class.roots.collect { |ea| ea.name }.should == expected
+    it "roots sort alphabetically" do
+      expected = ("a".."z").to_a
+      expected.shuffle.each { |ea| tag_class.create!(:name => ea) }
+      tag_class.roots.collect { |ea| ea.name }.should == expected
+    end
+
+    context "with simple tree" do
+      before :each do
+        tag_class.find_or_create_by_path %w(a1 b1 c1a)
+        tag_class.find_or_create_by_path %w(a1 b1 c1b)
+        tag_class.find_or_create_by_path %w(a2 b2)
+        tag_class.find_or_create_by_path %w(a3)
+
+        @a1, @a2, @a3, @b1, @b2, @c1a, @c1b = tag_class.where(:name => %w(a1 a2 a3 b1 b2 c1a c1b)).reorder(:name).to_a
+        @expected_roots = [@a1, @a2, @a3]
+        @expected_leaves = [@c1a, @c1b, @b2, @a3]
+      end
+      it 'should find global roots' do
+        tag_class.roots.to_a.should =~ @expected_roots
+      end
+      it 'should return root? for roots' do
+        @expected_roots.each { |ea| ea.should be_root }
+      end
+      it 'should not return root? for non-roots' do
+        [@b1, @b2, @c1a, @c1b].each { |ea| ea.should_not be_root }
+      end
+      it 'should return the correct root' do
+        {@a1 => @a1, @a2 => @a2, @a3 => @a3,
+          @b1 => @a1, @b2 => @a2, @c1a => @a1, @c1b => @a1}.each do |node, root|
+          node.root.should == root
+        end
+      end
+      it 'should assemble global leaves' do
+        tag_class.leaves.to_a.should =~ @expected_leaves
+      end
+      it 'should assemble instance leaves' do
+        {@a1 => [@c1a, @c1b], @b1 => [@c1a, @c1b], @a2 => [@b2]}.each do |node, leaves|
+          node.leaves.to_a.should == leaves
+        end
+        @expected_leaves.each { |ea| ea.leaves.to_a.should == [ea] }
+      end
+      it 'should return leaf? for leaves' do
+        @expected_leaves.each { |ea| ea.should be_leaf }
       end
     end
 
