@@ -28,6 +28,20 @@ ActiveRecord::Migration.verbose = false
 require 'db/schema'
 require 'support/models'
 
+class Hash
+  def render_from_yield(&block)
+    inject({}) do |h, entry|
+      k, v = entry
+      h[block.call(k)] = if v.is_a?(Hash) then
+        v.render_from_yield(&block)
+      else
+        block.call(v)
+      end
+      h
+    end
+  end
+end
+
 DB_QUERIES = []
 
 ActiveRecord::ConnectionAdapters::AbstractAdapter.class_eval do
