@@ -5,10 +5,10 @@ module ClosureTree
     extend ActiveSupport::Concern
 
     included do
-      validate :ct_validate
-      before_save :ct_before_save
-      after_save :ct_after_save
-      before_destroy :ct_before_destroy
+      validate :_ct_validate
+      before_save :_ct_before_save
+      after_save :_ct_after_save
+      before_destroy :_ct_before_destroy
 
       belongs_to :parent,
         :class_name => _ct.model_class.to_s,
@@ -62,7 +62,7 @@ module ClosureTree
 
     # Returns true if this node has no parents.
     def root?
-      parent_id.nil?
+      _ct_parent_id.nil?
     end
 
     # Returns true if this node has a parent, and is not a root.
@@ -118,7 +118,7 @@ module ClosureTree
     end
 
     def self_and_siblings
-      _ct.scope_with_order(_ct.base_class.where(_ct.parent_column_sym => parent_id))
+      _ct.scope_with_order(_ct.base_class.where(_ct.parent_column_sym => _ct_parent_id))
     end
 
     def siblings
@@ -190,11 +190,20 @@ module ClosureTree
       self.class.build_hash_tree(hash_tree_scope(options[:limit_depth]))
     end
 
-    def parent_id
+    # override this method in your model class if you want a different digraph label.
+    def to_digraph_label
+      _ct.has_name? ? read_attribute(_ct.name_column) : to_s
+    end
+
+    def _ct_parent_id
       read_attribute(_ct.parent_column_sym)
     end
 
-    def ct_validate
+    def _ct_id
+      read_attribute(_ct.model_class.primary_key)
+    end
+
+    def _ct_validate
       if changes[_ct.parent_column_name] &&
         parent.present? &&
         parent.self_and_ancestors.include?(self)
@@ -202,12 +211,12 @@ module ClosureTree
       end
     end
 
-    def ct_before_save
+    def _ct_before_save
       @was_new_record = new_record?
       true # don't cancel the save
     end
 
-    def ct_after_save
+    def _ct_after_save
       rebuild! if changes[_ct.parent_column_name] || @was_new_record
       @was_new_record = false # we aren't new anymore.
       true # don't cancel anything.
@@ -223,7 +232,7 @@ module ClosureTree
               (ancestor_id, descendant_id, generations)
             SELECT x.ancestor_id, #{_ct.quote(id)}, x.generations + 1
             FROM #{_ct.quoted_hierarchy_table_name} x
-            WHERE x.descendant_id = #{_ct.quote(self.parent_id)}
+            WHERE x.descendant_id = #{_ct.quote(self._ct_parent_id)}
           SQL
           _ct.connection.execute sql.strip
         end
@@ -231,7 +240,7 @@ module ClosureTree
       end
     end
 
-    def ct_before_destroy
+    def _ct_before_destroy
       delete_hierarchy_references
       if _ct.options[:dependent] == :nullify
         children.each { |c| c.rebuild! }
@@ -257,6 +266,10 @@ module ClosureTree
 
     def without_self(scope)
       scope.without(self)
+    end
+
+    def to_dot_digraph
+      self.class.to_dot_digraph(self_and_descendants)
     end
 
     module ClassMethods
@@ -356,12 +369,13 @@ module ClosureTree
       def hash_tree_scope(limit_depth = nil)
         # Deepest generation, within limit, for each descendant
         # NOTE: Postgres requires HAVING clauses to always contains aggregate functions (!!)
+        having_clause = limit_depth ? "HAVING MAX(generations) <= #{limit_depth - 1}" : ''
         generation_depth = <<-SQL
           INNER JOIN (
             SELECT descendant_id, MAX(generations) as depth
             FROM #{_ct.quoted_hierarchy_table_name}
             GROUP BY descendant_id
-            #{limit_depth ? "HAVING MAX(generations) <= #{limit_depth - 1}" : ""}
+            #{having_clause}
           ) AS generation_depth
             ON #{_ct.quoted_table_name}.#{primary_key} = generation_depth.descendant_id
         SQL
@@ -378,10 +392,25 @@ module ClosureTree
           if ea.root? || tree.empty? # We're at the top of the tree.
             tree[ea] = h
           else
-            id_to_hash[ea.parent_id][ea] = h
+            id_to_hash[ea._ct_parent_id][ea] = h
           end
         end
         tree
+      end
+
+      # Renders the given scope as a DOT digraph, suitable for rendering by Graphviz
+      def to_dot_digraph(tree_scope)
+        id_to_instance = tree_scope.inject({}) { |h, ea| h[ea.id] = ea; h }
+        output = StringIO.new
+        output << "digraph G {\n"
+        tree_scope.each do |ea|
+          if id_to_instance.has_key? ea._ct_parent_id
+            output << "  #{ea._ct_parent_id} -> #{ea._ct_id}\n"
+          end
+          output << "  #{ea._ct_id} [label=\"#{ea.to_digraph_label}\"]\n"
+        end
+        output << "}\n"
+        output.string
       end
     end
   end

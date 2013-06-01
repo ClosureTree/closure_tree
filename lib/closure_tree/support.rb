@@ -154,7 +154,13 @@ module ClosureTree
 
     def order_column
       o = options[:order]
-      o.is_a?(Symbol) ? o : o.split(' ', 2).first if o
+      if o.nil?
+        nil
+      elsif o.is_a?(String)
+        o.split(' ', 2).first
+      else
+        o.to_s
+      end
     end
 
     def require_order_column
