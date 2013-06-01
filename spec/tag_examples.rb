@@ -6,8 +6,10 @@ shared_examples_for "Tag (without fixtures)" do
   let (:tag_hierarchy_class) { described_class.hierarchy_class }
 
   it "has correct accessible_attributes" do
-    tag_class.accessible_attributes.to_a.should =~ %w(parent name)
-  end unless ActiveRecord::VERSION::MAJOR == 4
+    if tag_class._ct.use_attr_accessible?
+      tag_class.accessible_attributes.to_a.should =~ %w(parent name)
+    end
+  end
 
   def nuke_db
     tag_hierarchy_class.delete_all
