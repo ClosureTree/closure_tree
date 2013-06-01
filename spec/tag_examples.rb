@@ -2,33 +2,32 @@ require 'spec_helper'
 
 shared_examples_for "Tag (without fixtures)" do
 
-  let (:tag_class) {described_class}
-  let (:tag_hierarchy_class) {described_class.hierarchy_class}
+  let (:tag_class) { described_class }
+  let (:tag_hierarchy_class) { described_class.hierarchy_class }
 
   it "has correct accessible_attributes" do
-
     tag_class.accessible_attributes.to_a.should =~ %w(parent name)
   end unless ActiveRecord::VERSION::MAJOR == 4
 
-  describe "empty db" do
+  def nuke_db
+    tag_hierarchy_class.delete_all
+    tag_class.delete_all
+  end
 
-    def nuke_db
-      tag_hierarchy_class.delete_all
-      tag_class.delete_all
-    end
+  describe "from empty db" do
 
     before :each do
       nuke_db
     end
 
-    context "empty db" do
+    context "with no tags" do
       it "should return no entities" do
         tag_class.roots.should be_empty
         tag_class.leaves.should be_empty
       end
     end
 
-    context "1 tag db" do
+    context "with 1 tag" do
       it "should return the only entity as a root and leaf" do
         a = tag_class.create!(:name => "a")
         tag_class.roots.should == [a]
@@ -36,7 +35,7 @@ shared_examples_for "Tag (without fixtures)" do
       end
     end
 
-    context "2 tag db" do
+    context "with 2 tags" do
       before :each do
         @root = tag_class.create!(:name => "root")
         @leaf = @root.add_child(tag_class.create!(:name => "leaf"))
@@ -245,6 +244,124 @@ shared_examples_for "Tag (without fixtures)" do
         a.ancestry_path.should == %w{a}
         # instance method:
         a.find_or_create_by_path(%w{b c}).ancestry_path.should == %w{a b c}
+      end
+    end
+
+    context "hash_tree" do
+
+      before :each do
+        @b = tag_class.find_or_create_by_path %w(a b)
+        @a = @b.parent
+        @b2 = tag_class.find_or_create_by_path %w(a b2)
+        @d1 = @b.find_or_create_by_path %w(c1 d1)
+        @c1 = @d1.parent
+        @d2 = @b.find_or_create_by_path %w(c2 d2)
+        @c2 = @d2.parent
+        @full_tree = {@a => {@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}, @b2 => {}}}
+      end
+
+      context "#hash_tree" do
+        it "returns {} for depth 0" do
+          tag_class.hash_tree(:limit_depth => 0).should == {}
+        end
+        it "limit_depth 1" do
+          tag_class.hash_tree(:limit_depth => 1).should == {@a => {}}
+        end
+        it "limit_depth 2" do
+          tag_class.hash_tree(:limit_depth => 2).should == {@a => {@b => {}, @b2 => {}}}
+        end
+        it "limit_depth 3" do
+          tag_class.hash_tree(:limit_depth => 3).should == {@a => {@b => {@c1 => {}, @c2 => {}}, @b2 => {}}}
+        end
+        it "limit_depth 4" do
+          tag_class.hash_tree(:limit_depth => 4).should == @full_tree
+        end
+        it "no limit holdum" do
+          tag_class.hash_tree.should == @full_tree
+        end
+      end
+
+      def assert_no_dupes(scope)
+        # the named scope is complicated enough that an incorrect join could result in unnecessarily
+        # duplicated rows:
+        a = scope.collect { |ea| ea.id }
+        a.should == a.uniq
+      end
+
+      context "#hash_tree_scope" do
+        it "no dupes for any depth" do
+          (0..5).each do |ea|
+            assert_no_dupes(tag_class.hash_tree_scope(ea))
+          end
+        end
+        it "no limit holdum" do
+          assert_no_dupes(tag_class.hash_tree_scope)
+        end
+      end
+
+      context ".hash_tree_scope" do
+        it "no dupes for any depth" do
+          (0..5).each do |ea|
+            assert_no_dupes(@a.hash_tree_scope(ea))
+          end
+        end
+        it "no limit holdum" do
+          assert_no_dupes(@a.hash_tree_scope)
+        end
+      end
+
+      context ".hash_tree" do
+        before :each do
+        end
+        it "returns {} for depth 0" do
+          @b.hash_tree(:limit_depth => 0).should == {}
+        end
+        it "limit_depth 1" do
+          @b.hash_tree(:limit_depth => 1).should == {@b => {}}
+        end
+        it "limit_depth 2" do
+          @b.hash_tree(:limit_depth => 2).should == {@b => {@c1 => {}, @c2 => {}}}
+        end
+        it "limit_depth 3" do
+          @b.hash_tree(:limit_depth => 3).should == {@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}}
+        end
+        it "no limit holdum from subsubroot" do
+          @c1.hash_tree.should == {@c1 => {@d1 => {}}}
+        end
+        it "no limit holdum from subroot" do
+          @b.hash_tree.should == {@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}}
+        end
+        it "no limit holdum from root" do
+          @a.hash_tree.should == @full_tree
+        end
+      end
+    end
+
+    describe 'DOT rendering' do
+      it 'should render for an empty scope' do
+        tag_class.to_dot_digraph(tag_class.where("0=1")).should == "digraph G {\n}\n"
+      end
+      it 'should render for an empty scope' do
+        tag_class.find_or_create_by_path(%w(a b1 c1))
+        tag_class.find_or_create_by_path(%w(a b2 c2))
+        tag_class.find_or_create_by_path(%w(a b2 c3))
+        a, b1, b2, c1, c2, c3 = %w(a b1 b2 c1 c2 c3).map { |ea| tag_class.where(:name => ea).first.id }
+        dot = tag_class.roots.first.to_dot_digraph
+        dot.should == <<-DOT
+digraph G {
+  #{a} [label="a"]
+  #{a} -> #{b1}
+  #{b1} [label="b1"]
+  #{a} -> #{b2}
+  #{b2} [label="b2"]
+  #{b1} -> #{c1}
+  #{c1} [label="c1"]
+  #{b2} -> #{c2}
+  #{c2} [label="c2"]
+  #{b2} -> #{c3}
+  #{c3} [label="c3"]
+}
+        DOT
       end
     end
   end
