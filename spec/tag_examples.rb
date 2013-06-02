@@ -8,9 +8,7 @@ shared_examples_for "Tag (without fixtures)" do
   context 'class setup' do
 
     it 'has correct accessible_attributes' do
-      use_attr_accessible = !!ENV['ATTR_ACCESSIBLE']
-      tag_class._ct.use_attr_accessible?.should == use_attr_accessible
-      if use_attr_accessible
+      if tag_class._ct.use_attr_accessible?
         tag_class.accessible_attributes.to_a.should =~ %w(parent name)
       end
     end
