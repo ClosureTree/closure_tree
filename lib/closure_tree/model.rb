@@ -230,9 +230,9 @@ module ClosureTree
           sql = <<-SQL
             INSERT INTO #{_ct.quoted_hierarchy_table_name}
               (ancestor_id, descendant_id, generations)
-            SELECT x.ancestor_id, #{_ct.quote(id)}, x.generations + 1
+            SELECT x.ancestor_id, #{_ct.quote(_ct_id)}, x.generations + 1
             FROM #{_ct.quoted_hierarchy_table_name} x
-            WHERE x.descendant_id = #{_ct.quote(self._ct_parent_id)}
+            WHERE x.descendant_id = #{_ct.quote(_ct_parent_id)}
           SQL
           _ct.connection.execute sql.strip
         end
