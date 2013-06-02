@@ -41,7 +41,7 @@ describe "threadhot" do
     Tag.roots.collect { |ea| ea.name.to_i }.should =~ @times
     # No dupe children:
     %w(a b c).each do |ea|
-      Tag.find_all_by_name(ea).size.should == @iterations
+      Tag.where(:name => ea).size.should == @iterations
     end
   end
 
@@ -49,9 +49,9 @@ describe "threadhot" do
     @parent = Tag.create!(:name => "root")
     run_workers
     @parent.reload.children.collect { |ea| ea.name.to_i }.should =~ @times
-    Tag.find_all_by_name(@names).size.should == @iterations
+    Tag.where(:name => @names).size.should == @iterations
     %w(a b c).each do |ea|
-      Tag.find_all_by_name(ea).size.should == @iterations
+      Tag.where(:name => ea).size.should == @iterations
     end
   end
 
@@ -59,7 +59,7 @@ describe "threadhot" do
     # disable with_advisory_lock:
     Tag.should_receive(:with_advisory_lock).any_number_of_times { |lock_name, &block| block.call }
     run_workers
-    Tag.find_all_by_name(@names).size.should > @iterations
+    Tag.where(:name => @names).size.should > @iterations
   end
 
 end unless parallelism_is_broken
