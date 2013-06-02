@@ -5,13 +5,16 @@ shared_examples_for "Tag (without fixtures)" do
   let (:tag_class) { described_class }
   let (:tag_hierarchy_class) { described_class.hierarchy_class }
 
-  it "has correct accessible_attributes" do
-    if tag_class._ct.use_attr_accessible?
-      tag_class.accessible_attributes.to_a.should =~ %w(parent name)
-    end
-  end
+  context 'class setup' do
 
-  context 'class injection' do
+    it 'has correct accessible_attributes' do
+      use_attr_accessible = ['ATTR_ACCESSIBLE']
+      tag_class._ct.use_attr_accessible?.should == use_attr_accessible
+      if use_attr_accessible
+        tag_class.accessible_attributes.to_a.should =~ %w(parent name)
+      end
+    end
+
     it 'should build hierarchy classname correctly' do
       tag_class.hierarchy_class.should == tag_hierarchy_class
       tag_class._ct.hierarchy_class_name.should == tag_hierarchy_class.to_s

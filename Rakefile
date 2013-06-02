@@ -16,9 +16,12 @@ RSpec::Core::RakeTask.new(:spec)
 
 task :default => :spec
 
-task :specs_with_db_ixes do
+task :all_spec_flavors do
   [["", ""], ["db_prefix_", ""], ["", "_db_suffix"], ["abc_", "_123"]].each do |prefix, suffix|
     fail unless system("rake spec DB_PREFIX=#{prefix} DB_SUFFIX=#{suffix}")
+  end
+  if ActiveRecord::VERSION::MAJOR == 3
+    system("rake spec ATTR_ACCESSIBLE=1")
   end
 end
 

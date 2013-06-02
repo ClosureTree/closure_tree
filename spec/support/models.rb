@@ -4,22 +4,12 @@ class Tag < ActiveRecord::Base
   acts_as_tree :dependent => :destroy, :order => "name"
   before_destroy :add_destroyed_tag
   attr_accessible :name if _ct.use_attr_accessible?
-
   def to_s
     name
   end
-
   def add_destroyed_tag
     # Proof for the tests that the destroy rather than the delete method was called:
     DestroyedTag.create(:name => name)
-  end
-end
-
-if ActiveRecord::VERSION::MAJOR == 3
-  require 'strong_parameters'
-  class StrongTag < Tag
-    include ActiveModel::ForbiddenAttributesProtection
-    self.table_name = "tags"
   end
 end
 

@@ -22,6 +22,12 @@ require 'erb'
 ENV["DB"] ||= "mysql"
 ActiveRecord::Base.table_name_prefix = ENV['DB_PREFIX'].to_s
 ActiveRecord::Base.table_name_suffix = ENV['DB_SUFFIX'].to_s
+
+if ENV['ATTR_ACCESSIBLE'] == '1'
+  # turn on whitelisted attributes:
+  ActiveRecord::Base.send(:include, ActiveModel::MassAssignmentSecurity)
+end
+
 ActiveRecord::Base.configurations = YAML::load(ERB.new(IO.read(plugin_test_dir + "/db/database.yml")).result)
 ActiveRecord::Base.establish_connection(ENV["DB"])
 ActiveRecord::Migration.verbose = false
