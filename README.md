@@ -23,12 +23,14 @@ closure_tree has some great features:
 * __Best-in-class mutation performance__:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
+* __Support for Rails 3.0, 3.1, 3.2, and 4.0.0.rc1__
 * Support for reparenting children (and all their progeny)
 * Support for [concurrency](#concurrency) (using [with_advisory_lock](https://github/mceachen/with_advisory_lock))
 * Support for polymorphism [STI](#sti) within the hierarchy
 * ```find_or_create_by_path``` for [building out hierarchies quickly and conveniently](#find_or_create_by_path)
 * Support for [deterministic ordering](#deterministic-ordering) of children
 * Support for [preordered](http://en.wikipedia.org/wiki/Tree_traversal#Pre-order) traversal of descendants
+* Support for rendering trees in [DOT format](http://en.wikipedia.org/wiki/DOT_(graph_description_language)), using [Graphviz](http://www.graphviz.org/)
 * Excellent [test coverage](#testing) in a variety of environments
 
 See [Bill Karwin](http://karwin.blogspot.com/)'s excellent
@@ -209,6 +211,22 @@ Without this option, ```hash_tree``` will load the entire contents of that table
 server may not be happy trying to do this.
 
 HT: [ancestry](https://github.com/stefankroes/ancestry#arrangement) and [elhoyos](https://github.com/mceachen/closure_tree/issues/11)
+
+### Graph visualization
+
+```to_dot_digraph``` is suitable for passing into (Graphviz)[http://www.graphviz.org/].
+
+For example, from the above tree:
+```
+File.open("example.dot", "w") { |f| f.write(Tag.root.to_dot_digraph) }
+```
+The result from ```dot -Tpng example.dot > example.png```:
+
+![Example tree](https://raw.github.com/mceachen/closure_tree/master/wip_rails4/example.png)
+
+Just for kicks, this is the test tree I used for proving that preordered tree traversal was correct:
+
+![Preordered test tree](https://raw.github.com/mceachen/closure_tree/wip_rails4/img/preorder.png)
 
 ### <a id="options"></a>Available options
 
@@ -446,6 +464,11 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 [known issue](https://github.com/rails/rails/issues/7538).
 
 ## Change log
+
+### 4.1.0.rc1
+
+* Support for Rails 4.0.0.rc1 and Ruby 2.0.0 (while maintaining backward compatibility with Rails 3)
+* Added ```#to_dot_digraph```, suitable for Graphviz rendering
 
 ### 4.0.1
 
