@@ -222,7 +222,7 @@ File.open("example.dot", "w") { |f| f.write(Tag.root.to_dot_digraph) }
 ```
 The result from ```dot -Tpng example.dot > example.png```:
 
-![Example tree](https://raw.github.com/mceachen/closure_tree/master/wip_rails4/example.png)
+![Example tree](https://raw.github.com/mceachen/closure_tree/master/wip_rails4/img/example.png)
 
 Just for kicks, this is the test tree I used for proving that preordered tree traversal was correct:
 
