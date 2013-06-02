@@ -224,6 +224,8 @@ Then, in a shell, ```dot -Tpng example.dot > example.png```, which produces:
 
 ![Example tree](https://raw.github.com/mceachen/closure_tree/wip_rails4/img/example.png)
 
+If you want to customize the label value, override the ```#to_digraph_label``` instance method in your model.
+
 Just for kicks, this is the test tree I used for proving that preordered tree traversal was correct:
 
 ![Preordered test tree](https://raw.github.com/mceachen/closure_tree/wip_rails4/img/preorder.png)
