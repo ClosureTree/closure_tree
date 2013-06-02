@@ -222,15 +222,15 @@ File.open("example.dot", "w") { |f| f.write(Tag.root.to_dot_digraph) }
 ```
 Then, in a shell, ```dot -Tpng example.dot > example.png```, which produces:
 
-![Example tree](https://raw.github.com/mceachen/closure_tree/wip_rails4/img/example.png)
+![Example tree](https://raw.github.com/mceachen/closure_tree/master/img/example.png)
 
 If you want to customize the label value, override the ```#to_digraph_label``` instance method in your model.
 
 Just for kicks, this is the test tree I used for proving that preordered tree traversal was correct:
 
-![Preordered test tree](https://raw.github.com/mceachen/closure_tree/wip_rails4/img/preorder.png)
+![Preordered test tree](https://raw.github.com/mceachen/closure_tree/master/img/preorder.png)
 
-### <a id="options"></a>Available options
+### Available options
 
 When you include ```acts_as_tree``` in your model, you can provide a hash to override the following defaults:
 
@@ -465,11 +465,12 @@ run the test matrix locally.
 Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 [known issue](https://github.com/rails/rails/issues/7538).
 
+
 ## Change log
 
-### 4.1.0.rc1
+### 4.1.0
 
-* Support for Rails 4.0.0.rc1 and Ruby 2.0.0 (while maintaining backward compatibility with Rails 3)
+* Added support for Rails 4.0.0.rc1 and Ruby 2.0.0 (while maintaining backward compatibility with Rails 3, BOOYA)
 * Added ```#to_dot_digraph```, suitable for Graphviz rendering
 
 ### 4.0.1
