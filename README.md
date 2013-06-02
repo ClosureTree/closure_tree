@@ -216,11 +216,11 @@ HT: [ancestry](https://github.com/stefankroes/ancestry#arrangement) and [elhoyos
 
 ```to_dot_digraph``` is suitable for passing into [Graphviz](http://www.graphviz.org/).
 
-For example, from the above tree:
-```
+For example, for the above tree, write out the DOT file with ruby:
+```ruby
 File.open("example.dot", "w") { |f| f.write(Tag.root.to_dot_digraph) }
 ```
-The result from ```dot -Tpng example.dot > example.png```:
+Then, in a shell, ```dot -Tpng example.dot > example.png```, which produces:
 
 ![Example tree](https://raw.github.com/mceachen/closure_tree/wip_rails4/img/example.png)
 
