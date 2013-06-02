@@ -453,10 +453,10 @@ rather than using fixtures? [Lots of people have written about this already](htt
 
 ## Testing
 
-Closure tree is [tested under every combination](http://travis-ci.org/#!/mceachen/closure_tree) of
+Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
 
-* Ruby 1.8.7 and Ruby 1.9.3
-* The latest Rails 3.0, 3.1, and 3.2 branches, and
+* Ruby 1.8.7, Ruby 1.9.3, and Ruby 2.0.0
+* The latest Rails 3.0, 3.1, 3.2, and 4.0 branches, and
 * MySQL and PostgreSQL. SQLite works in a single-threaded environment.
 
 Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
