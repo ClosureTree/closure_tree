@@ -214,7 +214,7 @@ HT: [ancestry](https://github.com/stefankroes/ancestry#arrangement) and [elhoyos
 
 ### Graph visualization
 
-```to_dot_digraph``` is suitable for passing into (Graphviz)[http://www.graphviz.org/].
+```to_dot_digraph``` is suitable for passing into [Graphviz](http://www.graphviz.org/).
 
 For example, from the above tree:
 ```
