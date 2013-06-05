@@ -151,10 +151,10 @@ module ClosureTree
           child_name = subpath.shift
           return self unless child_name
           child = transaction do
-            attrs = {_ct.name_sym => child_name}
+            attrs = {_ct.name_sym => child_name}.merge(attributes)
             attrs[:type] = self.type if _ct.subclass? && _ct.has_type?
             self.children.where(attrs).first || begin
-              child = self.class.new(attributes.merge(attrs))
+              child = self.class.new(attrs)
               self.children << child
               child
             end
