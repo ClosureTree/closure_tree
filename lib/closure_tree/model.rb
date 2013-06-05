@@ -359,7 +359,7 @@ module ClosureTree
           ct_with_advisory_lock do
             # shenanigans because find_or_create can't infer we want the same class as this:
             # Note that roots will already be constrained to this subclass (in the case of polymorphism):
-            root = roots.where(_ct.name_sym => root_name).first
+            root = roots.where(attributes.merge(_ct.name_sym => root_name)).first
             root ||= create!(attributes.merge(_ct.name_sym => root_name))
             root.find_or_create_by_path(subpath, attributes)
           end
