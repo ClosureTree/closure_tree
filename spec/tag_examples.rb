@@ -226,6 +226,24 @@ shared_examples_for "Tag (without fixtures)" do
       end
     end
 
+    context 'with_ancestor' do
+      it 'works with no rows' do
+        tag_class.with_ancestor().to_a.should be_empty
+      end
+      it 'finds only children' do
+        c = tag_class.find_or_create_by_path %w(A B C)
+        a, b = c.parent.parent, c.parent
+        e = tag_class.find_or_create_by_path %w(D E)
+        tag_class.with_ancestor(a).to_a.should == [b, c]
+      end
+      it 'limits subsequent where clauses' do
+        a1c = tag_class.find_or_create_by_path %w(A1 B C)
+        a2c = tag_class.find_or_create_by_path %w(A2 B C)
+        tag_class.where(:name => "C").to_a.should =~ [a1c, a2c]
+        tag_class.with_ancestor(a1c.parent.parent).where(:name => "C").to_a.should == [a1c]
+      end
+    end
+
     context "paths" do
       before :each do
         @child = tag_class.find_or_create_by_path(%w(grandparent parent child))
@@ -311,6 +329,7 @@ shared_examples_for "Tag (without fixtures)" do
         @d2 = @b.find_or_create_by_path %w(c2 d2)
         @c2 = @d2.parent
         @full_tree = {@a => {@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}, @b2 => {}}}
+        #File.open("example.dot", "w") { |f| f.write(tag_class.root.to_dot_digraph) }
       end
 
       context "#hash_tree" do
