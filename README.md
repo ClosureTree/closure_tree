@@ -475,7 +475,8 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 * Added ```with_ancestor(*ancestors)```. Thanks for the idea, [Matt](https://github.com/mgornick)!
 * Applied [Leonel Galan](https://github.com/leonelgalan)'s fix for Strong Attribute support
 * ```find_or_create_by``` now uses passed-in attributes as both selection and creation criteria.
-  This changes prior behavior. Please test your code with this new version!
+  Thanks for the help, [Judd Blair](https://github.com/juddblair)!
+  **Please note that this changes prior behavior—test your code with this new version!**
 
 ### 4.1.0
 
