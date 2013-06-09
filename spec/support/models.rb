@@ -34,10 +34,8 @@ class UUIDTag < ActiveRecord::Base
   end
 end
 
-USE_ATTR_ACCESSIBLE = Tag._ct.use_attr_accessible?
-
 class DestroyedTag < ActiveRecord::Base
-  attr_accessible :name if USE_ATTR_ACCESSIBLE
+  attr_accessible :name if Tag._ct.use_attr_accessible?
 end
 
 class User < ActiveRecord::Base
@@ -52,7 +50,7 @@ class User < ActiveRecord::Base
     Contract.where(:user_id => descendant_ids)
   end
 
-  attr_accessible :email, :referrer if USE_ATTR_ACCESSIBLE
+  attr_accessible :email, :referrer if _ct.use_attr_accessible?
 
   def to_s
     email
@@ -65,10 +63,11 @@ end
 
 class Label < ActiveRecord::Base
   # make sure order doesn't matter
-  attr_accessible :name if USE_ATTR_ACCESSIBLE
   acts_as_tree :order => :sort_order, # <- LOOK IT IS A SYMBOL OMG
     :parent_column_name => "mother_id",
     :dependent => :destroy
+
+  attr_accessible :name if _ct.use_attr_accessible?
 
   def to_s
     "#{self.class}: #{name}"
