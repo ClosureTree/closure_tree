@@ -1,3 +1,4 @@
+require 'with_advisory_lock'
 require 'closure_tree/support'
 require 'closure_tree/model'
 require 'closure_tree/finders'

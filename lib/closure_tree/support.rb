@@ -227,7 +227,7 @@ module ClosureTree
     def with_advisory_lock(&block)
       if options[:with_advisory_lock]
         model_class.with_advisory_lock("closure_tree") do
-          transaction do
+          model_class.transaction do
             yield
           end
         end
