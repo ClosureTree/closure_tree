@@ -18,7 +18,7 @@ class UUIDTag < ActiveRecord::Base
   before_create :set_uuid
   acts_as_tree :dependent => :destroy, :order => 'name', :parent_column_name => 'parent_uuid'
   before_destroy :add_destroyed_tag
-  attr_accessible :name if _ct.use_attr_accessible?
+  attr_accessible :name, :title if _ct.use_attr_accessible?
 
   def set_uuid
     self.uuid = UUIDTools::UUID.timestamp_create.to_s
