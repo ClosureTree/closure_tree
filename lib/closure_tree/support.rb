@@ -223,5 +223,17 @@ module ClosureTree
         scope.select(model_class.primary_key).map { |ea| ea._ct_id }
       end
     end
+
+    def with_advisory_lock(&block)
+      if options[:with_advisory_lock]
+        model_class.with_advisory_lock("closure_tree") do
+          transaction do
+            yield
+          end
+        end
+      else
+        yield
+      end
+    end
   end
 end

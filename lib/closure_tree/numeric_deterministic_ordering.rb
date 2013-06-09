@@ -63,7 +63,7 @@ module ClosureTree
     def add_sibling(sibling_node, add_after = true)
       fail "can't add self as sibling" if self == sibling_node
       # issue 40: we need to lock the parent to prevent deadlocks on parallel sibling additions
-      ct_with_advisory_lock do
+      _ct.with_advisory_lock do
         if self.order_value.nil? || siblings_before.without(sibling_node).empty?
           update_attribute(:order_value, 0)
         end

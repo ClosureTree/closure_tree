@@ -12,7 +12,7 @@ module ClosureTree
     def find_or_create_by_path(path, attributes = {}, find_before_lock = true)
       attributes[:type] ||= self.type if _ct.subclass? && _ct.has_type?
       (find_before_lock && find_by_path(path, attributes)) || begin
-        ct_with_advisory_lock do
+        _ct.with_advisory_lock do
           subpath = path.is_a?(Enumerable) ? path.dup : [path]
           child_name = subpath.shift
           return self unless child_name
@@ -95,7 +95,7 @@ module ClosureTree
         find_by_path(path, attributes) || begin
           subpath = path.dup
           root_name = subpath.shift
-          ct_with_advisory_lock do
+          _ct.with_advisory_lock do
             # shenanigans because find_or_create can't infer that we want the same class as this:
             # Note that roots will already be constrained to this subclass (in the case of polymorphism):
             attrs = attributes.merge(_ct.name_sym => root_name)

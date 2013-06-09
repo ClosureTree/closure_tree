@@ -477,6 +477,7 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 * ```find_or_create_by``` now uses passed-in attributes as both selection and creation criteria.
   Thanks for the help, [Judd Blair](https://github.com/juddblair)!
   **Please note that this changes prior behavior—test your code with this new version!**
+* ```ct_advisory_lock``` was moved into the ```_ct``` support class, to reduce model method pollution
 
 ### 4.1.0
 

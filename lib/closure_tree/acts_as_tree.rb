@@ -2,9 +2,9 @@ require 'closure_tree/support'
 require 'closure_tree/model'
 require 'closure_tree/finders'
 require 'closure_tree/hash_tree'
+require 'closure_tree/hierarchy_maintenance'
 require 'closure_tree/deterministic_ordering'
 require 'closure_tree/numeric_deterministic_ordering'
-require 'closure_tree/with_advisory_lock'
 
 module ClosureTree
   module ActsAsTree
@@ -18,9 +18,9 @@ module ClosureTree
       self.hierarchy_class = _ct.hierarchy_class_for_model
 
       include ClosureTree::Model
+      include ClosureTree::HierarchyMaintenance
       include ClosureTree::Finders
       include ClosureTree::HashTree
-      include ClosureTree::WithAdvisoryLock
 
       if _ct.order_option?
         include ClosureTree::DeterministicOrdering
