@@ -156,7 +156,8 @@ Ancestry paths may be built using any column in your model. The default
 column is ```name```, which can be changed with the :name_column option
 provided to ```acts_as_tree```.
 
-Note that any other AR fields can be set with the second, optional ```attributes``` argument.
+Note that any other AR fields can be set with the second, optional ```attributes``` argument,
+and as of version 4.2.0, these attributes are added to the where clause as selection criteria.
 
 ```ruby
 child = Tag.find_or_create_by_path(%w{home chuck Photos"}, {:tag_type => "File"})
@@ -252,9 +253,10 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```Tag.roots``` returns all root nodes
 * ```Tag.leaves``` returns all leaf nodes
 * ```Tag.hash_tree``` returns an [ordered, nested hash](#nested-hashes) that can be depth-limited.
-* ```Tag.find_by_path(path)``` returns the node whose name path is ```path```. See (#find_or_create_by_path).
-* ```Tag.find_or_create_by_path(path)``` returns the node whose name path is ```path```, and will create the node if it doesn't exist already.See (#find_or_create_by_path).
+* ```Tag.find_by_path(path, attributes)``` returns the node whose name path is ```path```. See (#find_or_create_by_path).
+* ```Tag.find_or_create_by_path(path, attributes)``` returns the node whose name path is ```path```, and will create the node if it doesn't exist already.See (#find_or_create_by_path).
 * ```Tag.find_all_by_generation(generation_level)``` returns the descendant nodes who are ```generation_level``` away from a root. ```Tag.find_all_by_generation(0)``` is equivalent to ```Tag.roots```.
+* ```Tag.with_ancestor(ancestors)``` scopes to all descendants whose ancestor is in the given list.
 
 ### Instance methods
 
@@ -467,6 +469,13 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 
 
 ## Change log
+
+### 4.2.0
+
+* Added ```with_ancestor(*ancestors)```. Thanks for the idea, [Matt](https://github.com/mgornick)!
+* Applied [Leonel Galan](https://github.com/leonelgalan)'s fix for Strong Attribute support
+* ```find_or_create_by``` now uses passed-in attributes as both selection and creation criteria.
+  This changes prior behavior. Please test your code with this new version!
 
 ### 4.1.0
 
