@@ -58,7 +58,7 @@ module ClosureTree
       # It shouldn't affect performance of postgresql.
       # See http://dev.mysql.com/doc/refman/5.0/en/subquery-errors.html
       # Also: PostgreSQL doesn't support INNER JOIN on DELETE, so we can't use that.
-      _ct.connection.execute <<-SQL
+      connection.execute <<-SQL
         DELETE FROM #{_ct.quoted_hierarchy_table_name}
         WHERE descendant_id IN (
           SELECT DISTINCT descendant_id
