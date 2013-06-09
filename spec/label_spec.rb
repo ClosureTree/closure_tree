@@ -88,7 +88,6 @@ describe Label do
     it "should find or create by path" do
       date = DateLabel.find_or_create_by_path(%w{2011 November 23})
       date.ancestry_path.should == %w{2011 November 23}
-      date.parent
       date.self_and_ancestors.each { |ea| ea.class.should == DateLabel }
       date.name.should == "23"
       date.parent.name.should == "November"

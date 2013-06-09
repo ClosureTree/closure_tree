@@ -9,7 +9,7 @@ shared_examples_for "Tag (without fixtures)" do
 
     it 'has correct accessible_attributes' do
       if tag_class._ct.use_attr_accessible?
-        tag_class.accessible_attributes.to_a.should =~ %w(parent name)
+        tag_class.accessible_attributes.to_a.should =~ %w(parent name title)
       end
     end
 
@@ -315,6 +315,26 @@ shared_examples_for "Tag (without fixtures)" do
         a.ancestry_path.should == %w{a}
         # instance method:
         a.find_or_create_by_path(%w{b c}).ancestry_path.should == %w{a b c}
+      end
+
+      it "should respect attribute hashes with both selection and creation" do
+        expected_title = 'something else'
+        attrs = {:title => expected_title}
+        existing_title = @grandparent.title
+        new_grandparent = tag_class.find_or_create_by_path(%w{grandparent}, attrs)
+        new_grandparent.should_not == @grandparent
+        new_grandparent.title.should == expected_title
+        @grandparent.reload.title.should == existing_title
+      end
+
+      it "should create a hierarchy with a given attribute" do
+        expected_title = 'unicorn rainbows'
+        attrs = {:title => expected_title}
+        child = tag_class.find_or_create_by_path(%w{grandparent parent child}, attrs)
+        child.should_not == @child
+        [child, child.parent, child.parent.parent].each do |ea|
+          ea.title.should == expected_title
+        end
       end
     end
 
