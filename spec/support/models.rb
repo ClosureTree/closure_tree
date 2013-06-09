@@ -3,7 +3,7 @@ require 'uuidtools'
 class Tag < ActiveRecord::Base
   acts_as_tree :dependent => :destroy, :order => "name"
   before_destroy :add_destroyed_tag
-  attr_accessible :name if _ct.use_attr_accessible?
+  attr_accessible :name, :title if _ct.use_attr_accessible?
   def to_s
     name
   end

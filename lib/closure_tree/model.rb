@@ -137,27 +137,22 @@ module ClosureTree
     end
 
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.
-    def find_by_path(path)
+    def find_by_path(path, attributes = {})
       return self if path.empty?
-      parent_constraint = "#{_ct.quoted_parent_column_name} = #{_ct.quote(id)}"
-      self.class.ct_scoped_to_path(path, parent_constraint).first
+      self.class.find_by_path(path, attributes, id)
     end
 
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
     def find_or_create_by_path(path, attributes = {}, find_before_lock = true)
-      (find_before_lock && find_by_path(path)) || begin
+      (find_before_lock && find_by_path(path, attributes)) || begin
         ct_with_advisory_lock do
           subpath = path.is_a?(Enumerable) ? path.dup : [path]
           child_name = subpath.shift
           return self unless child_name
           child = transaction do
-            attrs = {_ct.name_sym => child_name}.merge(attributes)
+            attrs = attributes.merge(_ct.name_sym => child_name)
             attrs[:type] = self.type if _ct.subclass? && _ct.has_type?
-            self.children.where(attrs).first || begin
-              child = self.class.new(attrs)
-              self.children << child
-              child
-            end
+            self.children.where(attrs).first || self.children.create!(attrs)
           end
           child.find_or_create_by_path(subpath, attributes, false)
         end
@@ -330,37 +325,43 @@ module ClosureTree
         _ct.scope_with_order(s)
       end
 
-      # Find the node whose +ancestry_path+ is +path+
-      def find_by_path(path)
-        parent_constraint = "#{_ct.quoted_parent_column_name} IS NULL"
-        ct_scoped_to_path(path, parent_constraint).first
+      def ct_scoped_attributes(scope, attributes, target_table = table_name)
+        attributes.inject(scope) do |scope, pair|
+          scope.where("#{target_table}.#{pair.first}" => pair.last)
+        end
       end
 
-      def ct_scoped_to_path(path, parent_constraint)
+      # Find the node whose +ancestry_path+ is +path+
+      def find_by_path(path, attributes = {}, parent_id = nil)
         path = path.is_a?(Enumerable) ? path.dup : [path]
-        scope = where(_ct.name_sym => path.last).readonly(false)
-        path[0..-2].reverse.each_with_index do |ea, idx|
-          subtable = idx == 0 ? _ct.quoted_table_name : "p#{idx - 1}"
+        scope = where(_ct.name_sym => path.pop).readonly(false)
+        scope = ct_scoped_attributes(scope, attributes)
+        last_joined_table = _ct.table_name
+        path.reverse.each_with_index do |ea, idx|
+          next_joined_table = "p#{idx}"
           scope = scope.joins(<<-SQL)
-            INNER JOIN #{_ct.quoted_table_name} AS p#{idx}
-              ON p#{idx}.#{_ct.quoted_id_column_name} = #{subtable}.#{_ct.parent_column_name}
+            INNER JOIN #{_ct.quoted_table_name} AS #{next_joined_table}
+              ON #{next_joined_table}.#{_ct.quoted_id_column_name} =
+                #{connection.quote_table_name(last_joined_table)}.#{_ct.quoted_parent_column_name}
           SQL
-          scope = scope.where("p#{idx}.#{_ct.quoted_name_column} = #{_ct.quote(ea)}")
+          scope = scope.where("#{next_joined_table}.#{_ct.name_column}" => ea)
+          scope = ct_scoped_attributes(scope, attributes, next_joined_table)
+          last_joined_table = next_joined_table
         end
-        root_table_name = path.size > 1 ? "p#{path.size - 2}" : _ct.quoted_table_name
-        scope.where("#{root_table_name}.#{parent_constraint}")
+        scope = scope.where("#{last_joined_table}.#{_ct.parent_column_name}" => parent_id)
+        scope.first
       end
 
       # Find or create nodes such that the +ancestry_path+ is +path+
       def find_or_create_by_path(path, attributes = {})
-        find_by_path(path) || begin
+        find_by_path(path, attributes) || begin
           subpath = path.dup
           root_name = subpath.shift
           ct_with_advisory_lock do
             # shenanigans because find_or_create can't infer we want the same class as this:
             # Note that roots will already be constrained to this subclass (in the case of polymorphism):
-            root = roots.where(attributes.merge(_ct.name_sym => root_name)).first
-            root ||= create!(attributes.merge(_ct.name_sym => root_name))
+            attrs = attributes.merge(_ct.name_sym => root_name)
+            root = roots.where(attrs).first || create!(attrs)
             root.find_or_create_by_path(subpath, attributes)
           end
         end
