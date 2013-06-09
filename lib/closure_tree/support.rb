@@ -23,7 +23,8 @@ module ClosureTree
     def use_attr_accessible?
       ActiveRecord::VERSION::MAJOR == 3 &&
         defined?(ActiveModel::MassAssignmentSecurity) &&
-        model_class.ancestors.include?(ActiveModel::MassAssignmentSecurity)
+        model_class.respond_to?(:accessible_attributes) &&
+        model_class.accessible_attributes.present?
     end
 
     def include_forbidden_attributes_protection?
