@@ -12,6 +12,8 @@ require 'rspec/rails/adapters'
 require 'rspec/rails/fixture_support'
 require 'closure_tree'
 require 'tmpdir'
+require 'coveralls'
+Coveralls.wear!
 
 #log = Logger.new(STDOUT)
 #log.sev_threshold = Logger::DEBUG
