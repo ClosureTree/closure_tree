@@ -43,6 +43,16 @@ describe "empty db" do
       User.all.to_a.should =~ [@root, @mid, @leaf]
     end
 
+    it "should have children" do
+      @root.children.should == [@mid]
+      @mid.children.should == [@leaf]
+      @leaf.children.should == []
+    end
+
+    it "roots should have children" do
+      User.roots.first.children.should =~ [@mid]
+    end
+
     it "should return a root and leaf without middle User" do
       User.roots.should == [@root]
       User.leaves.should == [@leaf]
