@@ -471,6 +471,10 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 
 ## Change log
 
+### 4.2.1
+
+* Fixed deprecation warning
+
 ### 4.2.0
 
 * Added ```with_ancestor(*ancestors)```. Thanks for the idea, [Matt](https://github.com/mgornick)!
@@ -479,6 +483,7 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
   Thanks for the help, [Judd Blair](https://github.com/juddblair)!
   **Please note that this changes prior behavior—test your code with this new version!**
 * ```ct_advisory_lock``` was moved into the ```_ct``` support class, to reduce model method pollution
+* Moved a bunch of code into more focused piles of module mixins
 
 ### 4.1.0
 
