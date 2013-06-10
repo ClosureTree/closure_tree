@@ -1,0 +1,41 @@
+module ClosureTree
+  module SupportFlags
+
+    def use_attr_accessible?
+      ActiveRecord::VERSION::MAJOR == 3 &&
+        defined?(ActiveModel::MassAssignmentSecurity) &&
+        model_class.respond_to?(:accessible_attributes) &&
+        model_class.accessible_attributes.present?
+    end
+
+    def include_forbidden_attributes_protection?
+      ActiveRecord::VERSION::MAJOR == 3 &&
+        defined?(ActiveModel::ForbiddenAttributesProtection) &&
+        model_class.ancestors.include?(ActiveModel::ForbiddenAttributesProtection)
+    end
+
+    def order_option?
+      !options[:order].nil?
+    end
+
+    def order_is_numeric?
+      # The table might not exist yet (in the case of ActiveRecord::Observer use, see issue 32)
+      return false if !order_option? || !model_class.table_exists?
+      c = model_class.columns_hash[order_column]
+      c && c.type == :integer
+    end
+
+    def subclass?
+      model_class != model_class.base_class
+    end
+
+    def has_type?
+      attribute_names.include? 'type'
+    end
+
+    def has_name?
+      model_class.new.attributes.include? options[:name_column]
+    end
+
+  end
+end

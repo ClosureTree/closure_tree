@@ -3,6 +3,7 @@ require 'closure_tree/support'
 require 'closure_tree/model'
 require 'closure_tree/finders'
 require 'closure_tree/hash_tree'
+require 'closure_tree/hierarchy_maintenance'
 require 'closure_tree/deterministic_ordering'
 require 'closure_tree/numeric_deterministic_ordering'
 
@@ -17,14 +18,14 @@ module ClosureTree
       class_attribute :hierarchy_class
       self.hierarchy_class = _ct.hierarchy_class_for_model
 
+      # tests fail if you include Model before HierarchyMaintenance wtf
+      include ClosureTree::HierarchyMaintenance
       include ClosureTree::Model
       include ClosureTree::Finders
       include ClosureTree::HashTree
 
-      if _ct.order_option?
-        include ClosureTree::DeterministicOrdering
-        include ClosureTree::DeterministicNumericOrdering if _ct.order_is_numeric?
-      end
+      include ClosureTree::DeterministicOrdering if _ct.order_option?
+      include ClosureTree::NumericDeterministicOrdering if _ct.order_is_numeric?
     end
   end
 end

@@ -17,6 +17,12 @@ module ClosureTree
 
     module ClassMethods
 
+      # There is no default depth limit. This might be crazy-big, depending
+      # on your tree shape. Hash huge trees at your own peril!
+      def hash_tree(options = {})
+        build_hash_tree(hash_tree_scope(options[:limit_depth]))
+      end
+
       def hash_tree_scope(limit_depth = nil)
         # Deepest generation, within limit, for each descendant
         # NOTE: Postgres requires HAVING clauses to always contains aggregate functions (!!)

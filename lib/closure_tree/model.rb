@@ -5,11 +5,6 @@ module ClosureTree
     extend ActiveSupport::Concern
 
     included do
-      validate :_ct_validate
-      before_save :_ct_before_save
-      after_save :_ct_after_save
-      before_destroy :_ct_before_destroy
-
       belongs_to :parent,
         :class_name => _ct.model_class.to_s,
         :foreign_key => _ct.parent_column_name
@@ -149,67 +144,6 @@ module ClosureTree
       read_attribute(_ct.model_class.primary_key)
     end
 
-    def _ct_validate
-      if changes[_ct.parent_column_name] &&
-        parent.present? &&
-        parent.self_and_ancestors.include?(self)
-        errors.add(_ct.parent_column_sym, "You cannot add an ancestor as a descendant")
-      end
-    end
-
-    def _ct_before_save
-      @was_new_record = new_record?
-      true # don't cancel the save
-    end
-
-    def _ct_after_save
-      rebuild! if changes[_ct.parent_column_name] || @was_new_record
-      @was_new_record = false # we aren't new anymore.
-      true # don't cancel anything.
-    end
-
-    def rebuild!
-      _ct.with_advisory_lock do
-        delete_hierarchy_references unless @was_new_record
-        hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
-        unless root?
-          sql = <<-SQL
-            INSERT INTO #{_ct.quoted_hierarchy_table_name}
-              (ancestor_id, descendant_id, generations)
-            SELECT x.ancestor_id, #{_ct.quote(_ct_id)}, x.generations + 1
-            FROM #{_ct.quoted_hierarchy_table_name} x
-            WHERE x.descendant_id = #{_ct.quote(_ct_parent_id)}
-          SQL
-          _ct.connection.execute sql.strip
-        end
-        children.each { |c| c.rebuild! }
-      end
-    end
-
-    def _ct_before_destroy
-      delete_hierarchy_references
-      if _ct.options[:dependent] == :nullify
-        children.each { |c| c.rebuild! }
-      end
-    end
-
-    def delete_hierarchy_references
-      # The crazy double-wrapped sub-subselect works around MySQL's limitation of subselects on the same table that is being mutated.
-      # It shouldn't affect performance of postgresql.
-      # See http://dev.mysql.com/doc/refman/5.0/en/subquery-errors.html
-      # Also: PostgreSQL doesn't support INNER JOIN on DELETE, so we can't use that.
-      _ct.connection.execute <<-SQL
-        DELETE FROM #{_ct.quoted_hierarchy_table_name}
-        WHERE descendant_id IN (
-          SELECT DISTINCT descendant_id
-          FROM (SELECT descendant_id
-            FROM #{_ct.quoted_hierarchy_table_name}
-            WHERE ancestor_id = #{_ct.quote(id)}
-          ) AS x )
-          OR descendant_id = #{_ct.quote(id)}
-      SQL
-    end
-
     def without_self(scope)
       scope.without(self)
     end
@@ -237,12 +171,6 @@ module ClosureTree
         roots.first
       end
 
-      # There is no default depth limit. This might be crazy-big, depending
-      # on your tree shape. Hash huge trees at your own peril!
-      def hash_tree(options = {})
-        build_hash_tree(hash_tree_scope(options[:limit_depth]))
-      end
-
       def leaves
         s = joins(<<-SQL)
           INNER JOIN (
@@ -253,16 +181,6 @@ module ClosureTree
           ) AS leaves ON (#{_ct.quoted_table_name}.#{primary_key} = leaves.ancestor_id)
         SQL
         _ct.scope_with_order(s.readonly(false))
-      end
-
-      # Rebuilds the hierarchy table based on the parent_id column in the database.
-      # Note that the hierarchy table will be truncated.
-      def rebuild!
-        _ct.with_advisory_lock do
-          hierarchy_class.delete_all # not destroy_all -- we just want a simple truncate.
-          roots.each { |n| n.send(:rebuild!) } # roots just uses the parent_id column, so this is safe.
-        end
-        nil
       end
 
       # Renders the given scope as a DOT digraph, suitable for rendering by Graphviz
