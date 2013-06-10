@@ -7,6 +7,7 @@ and tracking user referrals.
 
 [![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
 [![Gem Version](https://badge.fury.io/rb/closure_tree.png)](http://rubygems.org/gems/closure_tree)
+[![Code Climate](https://codeclimate.com/github/mceachen/closure_tree.png)](https://codeclimate.com/github/mceachen/closure_tree)
 
 Substantially more efficient than
 [ancestry](https://github.com/stefankroes/ancestry) and
