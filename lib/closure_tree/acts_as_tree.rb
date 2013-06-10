@@ -1,9 +1,10 @@
 require 'with_advisory_lock'
 require 'closure_tree/support'
+require 'closure_tree/hierarchy_maintenance'
 require 'closure_tree/model'
 require 'closure_tree/finders'
 require 'closure_tree/hash_tree'
-require 'closure_tree/hierarchy_maintenance'
+require 'closure_tree/digraphs'
 require 'closure_tree/deterministic_ordering'
 require 'closure_tree/numeric_deterministic_ordering'
 
@@ -23,6 +24,7 @@ module ClosureTree
       include ClosureTree::Model
       include ClosureTree::Finders
       include ClosureTree::HashTree
+      include ClosureTree::Digraphs
 
       include ClosureTree::DeterministicOrdering if _ct.order_option?
       include ClosureTree::NumericDeterministicOrdering if _ct.order_is_numeric?

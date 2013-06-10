@@ -42,7 +42,50 @@ module ClosureTree
       _ct.scope_with_order(s)
     end
 
+    def without_self(scope)
+      scope.without(self)
+    end
+
     module ClassMethods
+
+      def without(instance)
+        if instance.new_record?
+          all
+        else
+          where(["#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name} != ?", instance.id])
+        end
+      end
+
+      def roots
+        _ct.scope_with_order(where(_ct.parent_column_name => nil))
+      end
+
+      # Returns an arbitrary node that has no parents.
+      def root
+        roots.first
+      end
+
+      def leaves
+        s = joins(<<-SQL)
+          INNER JOIN (
+            SELECT ancestor_id
+            FROM #{_ct.quoted_hierarchy_table_name}
+            GROUP BY 1
+            HAVING MAX(#{_ct.quoted_hierarchy_table_name}.generations) = 0
+          ) AS leaves ON (#{_ct.quoted_table_name}.#{primary_key} = leaves.ancestor_id)
+        SQL
+        _ct.scope_with_order(s.readonly(false))
+      end
+
+      def with_ancestor(*ancestors)
+        ancestor_ids = ancestors.map { |ea| ea.is_a?(ActiveRecord::Base) ? ea._ct_id : ea }
+        scope = ancestor_ids.blank? ? scoped : joins(:ancestor_hierarchies).
+          where("#{_ct.hierarchy_table_name}.ancestor_id" => ancestor_ids).
+          where("#{_ct.hierarchy_table_name}.generations > 0").
+          readonly(false)
+        _ct.scope_with_order(scope)
+      end
+
       def find_all_by_generation(generation_level)
         s = joins(<<-SQL)
           INNER JOIN (

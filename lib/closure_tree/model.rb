@@ -123,81 +123,12 @@ module ClosureTree
       child_node
     end
 
-    # override this method in your model class if you want a different digraph label.
-    def to_digraph_label
-      _ct.has_name? ? read_attribute(_ct.name_column) : to_s
-    end
-
     def _ct_parent_id
       read_attribute(_ct.parent_column_sym)
     end
 
     def _ct_id
       read_attribute(_ct.model_class.primary_key)
-    end
-
-    def without_self(scope)
-      scope.without(self)
-    end
-
-    def to_dot_digraph
-      self.class.to_dot_digraph(self_and_descendants)
-    end
-
-    module ClassMethods
-
-      def without(instance)
-        if instance.new_record?
-          all
-        else
-          where(["#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name} != ?", instance.id])
-        end
-      end
-
-      def roots
-        _ct.scope_with_order(where(_ct.parent_column_name => nil))
-      end
-
-      def with_ancestor(*ancestors)
-        ancestor_ids = ancestors.map { |ea| ea.is_a?(ActiveRecord::Base) ? ea._ct_id : ea }
-        scope = ancestor_ids.blank? ? scoped : joins(:ancestor_hierarchies).
-          where("#{_ct.hierarchy_table_name}.ancestor_id" => ancestor_ids).
-          where("#{_ct.hierarchy_table_name}.generations > 0").
-          readonly(false)
-        _ct.scope_with_order(scope)
-      end
-
-      # Returns an arbitrary node that has no parents.
-      def root
-        roots.first
-      end
-
-      def leaves
-        s = joins(<<-SQL)
-          INNER JOIN (
-            SELECT ancestor_id
-            FROM #{_ct.quoted_hierarchy_table_name}
-            GROUP BY 1
-            HAVING MAX(#{_ct.quoted_hierarchy_table_name}.generations) = 0
-          ) AS leaves ON (#{_ct.quoted_table_name}.#{primary_key} = leaves.ancestor_id)
-        SQL
-        _ct.scope_with_order(s.readonly(false))
-      end
-
-      # Renders the given scope as a DOT digraph, suitable for rendering by Graphviz
-      def to_dot_digraph(tree_scope)
-        id_to_instance = tree_scope.inject({}) { |h, ea| h[ea.id] = ea; h }
-        output = StringIO.new
-        output << "digraph G {\n"
-        tree_scope.each do |ea|
-          if id_to_instance.has_key? ea._ct_parent_id
-            output << "  #{ea._ct_parent_id} -> #{ea._ct_id}\n"
-          end
-          output << "  #{ea._ct_id} [label=\"#{ea.to_digraph_label}\"]\n"
-        end
-        output << "}\n"
-        output.string
-      end
     end
   end
 end
