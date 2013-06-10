@@ -40,14 +40,6 @@ module ClosureTree
         :through => :descendant_hierarchies,
         :source => :descendant,
         :order => order_by_generations)
-
-      scope :without, lambda { |instance|
-        if instance.new_record?
-          all
-        else
-          where(["#{_ct.quoted_table_name}.#{_ct.base_class.primary_key} != ?", instance.id])
-        end
-      }
     end
 
     # Delegate to the Support instance on the class:
@@ -153,6 +145,15 @@ module ClosureTree
     end
 
     module ClassMethods
+
+      def without(instance)
+        if instance.new_record?
+          all
+        else
+          where(["#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name} != ?", instance.id])
+        end
+      end
+
       def roots
         _ct.scope_with_order(where(_ct.parent_column_name => nil))
       end

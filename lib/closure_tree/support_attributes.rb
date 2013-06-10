@@ -19,7 +19,7 @@ module ClosureTree
     end
 
     def quoted_table_name
-      connection.quote_table_name table_name
+      connection.quote_table_name(table_name)
     end
 
     def hierarchy_class_name
