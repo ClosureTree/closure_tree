@@ -258,7 +258,7 @@ module ClosureTree
       # Rebuilds the hierarchy table based on the parent_id column in the database.
       # Note that the hierarchy table will be truncated.
       def rebuild!
-        ct_with_advisory_lock do
+        _ct.with_advisory_lock do
           hierarchy_class.delete_all # not destroy_all -- we just want a simple truncate.
           roots.each { |n| n.send(:rebuild!) } # roots just uses the parent_id column, so this is safe.
         end
