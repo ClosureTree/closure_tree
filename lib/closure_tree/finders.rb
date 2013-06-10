@@ -79,7 +79,7 @@ module ClosureTree
 
       def with_ancestor(*ancestors)
         ancestor_ids = ancestors.map { |ea| ea.is_a?(ActiveRecord::Base) ? ea._ct_id : ea }
-        scope = ancestor_ids.blank? ? all : joins(:ancestor_hierarchies).
+        scope = ancestor_ids.blank? ? scoped : joins(:ancestor_hierarchies).
           where("#{_ct.hierarchy_table_name}.ancestor_id" => ancestor_ids).
           where("#{_ct.hierarchy_table_name}.generations > 0").
           readonly(false)

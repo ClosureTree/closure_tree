@@ -471,10 +471,6 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 
 ## Change log
 
-### 4.2.1
-
-* Fixed deprecation warning
-
 ### 4.2.0
 
 * Added ```with_ancestor(*ancestors)```. Thanks for the idea, [Matt](https://github.com/mgornick)!
