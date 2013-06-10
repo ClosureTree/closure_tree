@@ -44,24 +44,24 @@ describe "empty db" do
     end
 
     it "should have children" do
-      @root.children.should == [@mid]
-      @mid.children.should == [@leaf]
-      @leaf.children.should == []
+      @root.children.to_a.should == [@mid]
+      @mid.children.to_a.should == [@leaf]
+      @leaf.children.to_a.should == []
     end
 
     it "roots should have children" do
-      User.roots.first.children.should =~ [@mid]
+      User.roots.first.children.to_a.should =~ [@mid]
     end
 
     it "should return a root and leaf without middle User" do
-      User.roots.should == [@root]
-      User.leaves.should == [@leaf]
+      User.roots.to_a.should == [@root]
+      User.leaves.to_a.should == [@leaf]
     end
 
     it "should delete leaves" do
       User.leaves.destroy_all
-      User.roots.should == [@root] # untouched
-      User.leaves.should == [@mid]
+      User.roots.to_a.should == [@root] # untouched
+      User.leaves.to_a.should == [@mid]
     end
 
     it "should delete roots and maintain hierarchies" do
