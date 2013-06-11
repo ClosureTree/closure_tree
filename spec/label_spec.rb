@@ -259,6 +259,25 @@ describe Label do
     root.reload.children.collect(&:sort_order).should == [0, 1, 2]
   end
 
+  context "destructive reordering" do
+    before :each do
+      @root = Label.create(:name => "root")
+      @a = @root.children.create!(:name => "a")
+      @b = @a.append_sibling(Label.new(:name => "b"))
+      @c = @b.append_sibling(Label.new(:name => "c"))
+    end
+    it "doesn't create sort order gaps from deletions" do
+      @a.destroy
+      @root.children.should == [@b, @c]
+      @root.children.map { |ea| ea.sort_order }.should == [0, 1]
+    end
+    it "doesn't create sort order gaps from deletions" do
+      @b.destroy
+      @root.children.should == [@a, @c]
+      @root.children.map { |ea| ea.sort_order }.should == [0, 1]
+    end
+  end
+
   context "Deterministic siblings sort with custom integer column" do
     delete_all_labels
     fixtures :labels

@@ -1,7 +1,13 @@
+require 'active_support/concern'
+
 # This module is only included if the order column is an integer.
 module ClosureTree
   module NumericDeterministicOrdering
     extend ActiveSupport::Concern
+
+    included do
+      before_destroy :_ct_reorder_siblings
+    end
 
     def self_and_descendants_preordered
       # TODO: raise NotImplementedError if sort_order is not numeric and not null?
@@ -24,6 +30,19 @@ module ClosureTree
         "power(#{h['total_descendants']}, #{h['max_depth'].to_i + 1} - depths.generations)"
       order_by = "sum(#{node_score})"
       self_and_descendants.joins(join_sql).group("#{_ct.quoted_table_name}.id").reorder(order_by)
+    end
+
+    def _ct_reorder_siblings
+      db_id = id.is_a?(Numeric) ? id : _ct.quote(id)
+      transaction do
+        _ct.connection.execute "SET @i = 0"
+        _ct.connection.execute <<-SQL
+        UPDATE #{_ct.quoted_table_name}
+          SET #{_ct.quoted_order_column(false)} = (@i := @i + 1)
+        WHERE #{_ct.quoted_parent_column_name} = #{db_id}
+        ORDER BY #{_ct.options[:order]}
+        SQL
+      end
     end
 
     module ClassMethods
