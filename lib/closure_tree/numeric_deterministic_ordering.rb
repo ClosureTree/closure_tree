@@ -6,7 +6,7 @@ module ClosureTree
     extend ActiveSupport::Concern
 
     included do
-      before_destroy :_ct_reorder_siblings
+      after_destroy :_ct_reorder_siblings
     end
 
     def self_and_descendants_preordered
@@ -33,14 +33,15 @@ module ClosureTree
     end
 
     def _ct_reorder_siblings
-      db_id = id.is_a?(Numeric) ? id : _ct.quote(id)
+      ppid = _ct_parent_id
+      db_ppid = ppid.is_a?(Numeric) ? ppid : _ct.quote(ppid)
       transaction do
-        _ct.connection.execute "SET @i = 0"
+        _ct.connection.execute "SET @i = -1"
         _ct.connection.execute <<-SQL
-        UPDATE #{_ct.quoted_table_name}
-          SET #{_ct.quoted_order_column(false)} = (@i := @i + 1)
-        WHERE #{_ct.quoted_parent_column_name} = #{db_id}
-        ORDER BY #{_ct.options[:order]}
+          UPDATE #{_ct.quoted_table_name}
+            SET #{_ct.quoted_order_column(false)} = (@i := @i + 1)
+          WHERE #{_ct.quoted_parent_column_name} = #{db_ppid}
+          ORDER BY #{_ct.options[:order]}
         SQL
       end
     end

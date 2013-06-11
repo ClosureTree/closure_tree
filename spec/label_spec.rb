@@ -261,20 +261,33 @@ describe Label do
 
   context "destructive reordering" do
     before :each do
+      Label.delete_all
       @root = Label.create(:name => "root")
       @a = @root.children.create!(:name => "a")
       @b = @a.append_sibling(Label.new(:name => "b"))
       @c = @b.append_sibling(Label.new(:name => "c"))
+      @root.reload
     end
-    it "doesn't create sort order gaps from deletions" do
-      @a.destroy
-      @root.children.should == [@b, @c]
-      @root.children.map { |ea| ea.sort_order }.should == [0, 1]
+    context "doesn't create sort order gaps from" do
+      it "from head" do
+        @a.destroy
+        @root.children.should == [@b, @c]
+        @root.children.map { |ea| ea.sort_order }.should == [0, 1]
+      end
+      it "from mid" do
+        @b.destroy
+        @root.children.should == [@a, @c]
+        @root.children.map { |ea| ea.sort_order }.should == [0, 1]
+      end
+      it "from tail" do
+        @c.destroy
+        @root.children.should == [@a, @b]
+        @root.children.map { |ea| ea.sort_order }.should == [0, 1]
+      end
     end
-    it "doesn't create sort order gaps from deletions" do
-      @b.destroy
-      @root.children.should == [@a, @c]
-      @root.children.map { |ea| ea.sort_order }.should == [0, 1]
+    it "shouldn't fail if all children are destroyd" do
+      @root.children.destroy_all
+      Label.all.should == [@root]
     end
   end
 
