@@ -243,20 +243,67 @@ describe Label do
     c = Label.create(:name => "c")
 
     a.append_sibling(b)
+    a.self_and_siblings.collect(&:name).should == %w(a b)
     root.reload.children.collect(&:name).should == %w(a b)
-    root.reload.children.collect(&:sort_order).should == [0, 1]
+    root.children.collect(&:sort_order).should == [0, 1]
 
     a.prepend_sibling(b)
+    a.self_and_siblings.collect(&:name).should == %w(b a)
     root.reload.children.collect(&:name).should == %w(b a)
-    root.reload.children.collect(&:sort_order).should == [0, 1]
+    root.children.collect(&:sort_order).should == [0, 1]
 
     a.append_sibling(c)
+    a.self_and_siblings.collect(&:name).should == %w(b a c)
     root.reload.children.collect(&:name).should == %w(b a c)
-    root.reload.children.collect(&:sort_order).should == [0, 1, 2]
+    root.children.collect(&:sort_order).should == [0, 1, 2]
 
     b.append_sibling(c)
+    a.self_and_siblings.collect(&:name).should == %w(b c a)
     root.reload.children.collect(&:name).should == %w(b c a)
-    root.reload.children.collect(&:sort_order).should == [0, 1, 2]
+    root.children.collect(&:sort_order).should == [0, 1, 2]
+
+    # We need to reload a because it was updated by b.append(c)
+    d = a.reload.append_sibling(Label.new(:name => "d"))
+    d.self_and_siblings.collect(&:name).should == %w(b c a d)
+    d.self_and_siblings.collect(&:sort_order).should == [0, 1, 2, 3]
+  end
+
+  context "#add_sibling" do
+    before :each do
+      Label.delete_all
+    end
+
+    it "should move a node before another node which has an uninitialized sort_order" do
+      f = Label.find_or_create_by_path %w(a b c d e fa)
+      f0 = f.prepend_sibling(Label.new(:name => "fb")) # < not alpha sort, so name shouldn't matter
+      f0.ancestry_path.should == %w(a b c d e fb)
+      f.siblings_before.to_a.should == [f0]
+      f0.siblings_before.should be_empty
+      f0.siblings_after.should == [f]
+      f.siblings_after.should be_empty
+      f0.self_and_siblings.should == [f0, f]
+      f.self_and_siblings.should == [f0, f]
+    end
+
+    it "should move a node to another tree" do
+      f1 = Label.find_or_create_by_path %w(a1 b1 c1 d1 e1 f1)
+      f2 = Label.find_or_create_by_path %w(a2 b2 c2 d2 e2 f2)
+      f1.add_sibling(f2)
+      f2.ancestry_path.should == %w(a1 b1 c1 d1 e1 f2)
+      f1.parent.children.should == [f1, f2]
+    end
+
+    it "should reorder old-parent siblings when a node moves to another tree" do
+      f1 = Label.find_or_create_by_path %w(a1 b1 c1 d1 e1 f1)
+      f2 = Label.find_or_create_by_path %w(a2 b2 c2 d2 e2 f2)
+      f3 = f2.prepend_sibling(Label.new(:name => "f3"))
+      f4 = f2.append_sibling(Label.new(:name => "f4"))
+      f1.add_sibling(f2)
+      f1.self_and_siblings.collect(&:sort_order).should == [0, 1]
+      f3.self_and_siblings.collect(&:sort_order).should == [0, 1]
+      f1.self_and_siblings.collect(&:name).should == %w(f1 f2)
+      f3.self_and_siblings.collect(&:name).should == %w(f3 f4)
+    end
   end
 
   context "destructive reordering" do
@@ -285,106 +332,9 @@ describe Label do
         @root.children.map { |ea| ea.sort_order }.should == [0, 1]
       end
     end
-    it "shouldn't fail if all children are destroyd" do
+    it "shouldn't fail if all children are destroyed" do
       @root.children.destroy_all
       Label.all.should == [@root]
-    end
-  end
-
-  context "Deterministic siblings sort with custom integer column" do
-    delete_all_labels
-    fixtures :labels
-
-    before :each do
-      Label.rebuild!
-    end
-
-    it "orders siblings_before and siblings_after correctly" do
-      labels(:c16).self_and_siblings.to_a.should == [labels(:c16), labels(:c17), labels(:c18), labels(:c19)]
-      labels(:c16).siblings_before.to_a.should == []
-      labels(:c16).siblings_after.to_a.should == [labels(:c17), labels(:c18), labels(:c19)]
-    end
-
-    it "should prepend a node as a sibling of another node" do
-      labels(:c16).prepend_sibling(labels(:c17))
-      labels(:c16).self_and_siblings.to_a.should == [labels(:c17), labels(:c16), labels(:c18), labels(:c19)]
-      labels(:c19).prepend_sibling(labels(:c16))
-      labels(:c16).self_and_siblings.to_a.should == [labels(:c17), labels(:c18), labels(:c16), labels(:c19)]
-      labels(:c16).siblings_before.to_a.should == [labels(:c17), labels(:c18)]
-      labels(:c16).siblings_after.to_a.should == [labels(:c19)]
-    end
-
-    it "should prepend a node as a sibling of another node (!update_all)" do
-      labels(:c16).prepend_sibling(labels(:c17))
-      labels(:c16).self_and_siblings.to_a.should == [labels(:c17), labels(:c16), labels(:c18), labels(:c19)]
-      labels(:c19).reload.prepend_sibling(labels(:c16).reload)
-      labels(:c16).self_and_siblings.to_a.should == [labels(:c17), labels(:c18), labels(:c16), labels(:c19)]
-      labels(:c16).siblings_before.to_a.should == [labels(:c17), labels(:c18)]
-      labels(:c16).siblings_after.to_a.should == [labels(:c19)]
-    end
-
-    it "appends a node as a sibling of another node" do
-      labels(:c19).append_sibling(labels(:c17))
-      labels(:c16).self_and_siblings.to_a.should == [labels(:c16), labels(:c18), labels(:c19), labels(:c17)]
-      labels(:c16).append_sibling(labels(:c19))
-      labels(:c16).self_and_siblings.to_a.should == [labels(:c16), labels(:c19), labels(:c18), labels(:c17)]
-      labels(:c16).siblings_before.to_a.should == []
-      labels(:c16).siblings_after.to_a.should == labels(:c16).siblings.to_a
-    end
-
-    it "should move a node before another node (update_all)" do
-      labels(:c2).ancestry_path.should == %w{a1 b2 c2}
-      labels(:b2).prepend_sibling(labels(:c2))
-      labels(:c2).ancestry_path.should == %w{a1 c2}
-      labels(:c2).self_and_siblings.to_a.should == [labels(:b1), labels(:c2), labels(:b2)]
-      labels(:c2).siblings_before.to_a.should == [labels(:b1)]
-      labels(:c2).siblings_after.to_a.should == [labels(:b2)]
-      labels(:b1).siblings_after.to_a.should == [labels(:c2), labels(:b2)]
-    end
-
-    it "should move a node after another node (update_all)" do
-      labels(:c2).ancestry_path.should == %w{a1 b2 c2}
-      labels(:b2).append_sibling(labels(:c2))
-      labels(:c2).ancestry_path.should == %w{a1 c2}
-      labels(:c2).self_and_siblings.to_a.should == [labels(:b1), labels(:b2), labels(:c2)]
-    end
-
-    it "should move a node before another node" do
-      labels(:c2).ancestry_path.should == %w{a1 b2 c2}
-      labels(:b2).prepend_sibling(labels(:c2))
-      labels(:c2).ancestry_path.should == %w{a1 c2}
-      labels(:c2).self_and_siblings.to_a.should == [labels(:b1), labels(:c2), labels(:b2)]
-    end
-
-    it "should move a node before another node which has an uninitialized sort_order" do
-      labels(:f3).ancestry_path.should == %w{f3}
-      labels(:e2).children << labels(:f3)
-      labels(:f3).reload.ancestry_path.should == %w{a1 b2 c2 d2 e2 f3}
-      labels(:f3).self_and_siblings.to_a.should == [labels(:f3)]
-      labels(:f3).prepend_sibling labels(:f4)
-      labels(:f3).siblings_before.to_a.should == [labels(:f4)]
-      labels(:f3).self_and_siblings.to_a.should == [labels(:f4), labels(:f3)]
-    end
-
-    it "should move a node after another node which has an uninitialized sort_order" do
-      labels(:f3).ancestry_path.should == %w{f3}
-      labels(:e2).children << labels(:f3)
-      labels(:f3).reload.ancestry_path.should == %w{a1 b2 c2 d2 e2 f3}
-      labels(:f3).self_and_siblings.to_a.should == [labels(:f3)]
-      labels(:f3).append_sibling labels(:f4)
-      labels(:f3).siblings_after.to_a.should == [labels(:f4)]
-      labels(:f3).self_and_siblings.to_a.should == [labels(:f3), labels(:f4)]
-    end
-
-    it "should move a node after another node" do
-      labels(:c2).ancestry_path.should == %w{a1 b2 c2}
-      labels(:b2).append_sibling(labels(:c2))
-      labels(:c2).ancestry_path.should == %w{a1 c2}
-      labels(:c2).self_and_siblings.to_a.should == [labels(:b1), labels(:b2), labels(:c2)]
-      labels(:c2).append_sibling(labels(:e2))
-      labels(:e2).self_and_siblings.to_a.should == [labels(:b1), labels(:b2), labels(:c2), labels(:e2)]
-      labels(:a1).self_and_descendants.collect(&:name).should == %w(a1 b1 b2 c2 e2 d2 c1-six c1-seven c1-eight c1-nine)
-      labels(:a1).leaves.collect(&:name).should =~ %w(b2 e2 d2 c1-six c1-seven c1-eight c1-nine)
     end
   end
 
