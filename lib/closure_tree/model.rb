@@ -127,6 +127,11 @@ module ClosureTree
       read_attribute(_ct.parent_column_sym)
     end
 
+    def _ct_quoted_parent_id
+      p_id = _ct_parent_id
+      p_id.is_a?(Numeric) ? p_id : _ct.quote(p_id)
+    end
+
     def _ct_id
       read_attribute(_ct.model_class.primary_key)
     end

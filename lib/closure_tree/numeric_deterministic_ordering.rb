@@ -7,6 +7,8 @@ module ClosureTree
 
     included do
       after_destroy :_ct_reorder_siblings
+      driver = "::ClosureTree::NumericDeterministicOrdering::#{connection.class.to_s.demodulize}"
+      include driver.constantize
     end
 
     def self_and_descendants_preordered
@@ -30,20 +32,6 @@ module ClosureTree
         "power(#{h['total_descendants']}, #{h['max_depth'].to_i + 1} - depths.generations)"
       order_by = "sum(#{node_score})"
       self_and_descendants.joins(join_sql).group("#{_ct.quoted_table_name}.id").reorder(order_by)
-    end
-
-    def _ct_reorder_siblings
-      ppid = _ct_parent_id
-      db_ppid = ppid.is_a?(Numeric) ? ppid : _ct.quote(ppid)
-      transaction do
-        _ct.connection.execute "SET @i = -1"
-        _ct.connection.execute <<-SQL
-          UPDATE #{_ct.quoted_table_name}
-            SET #{_ct.quoted_order_column(false)} = (@i := @i + 1)
-          WHERE #{_ct.quoted_parent_column_name} = #{db_ppid}
-          ORDER BY #{_ct.options[:order]}
-        SQL
-      end
     end
 
     module ClassMethods
@@ -100,6 +88,43 @@ module ClosureTree
           ea.update_attribute(:order_value, starting_order_value + idx + 1)
         end
         sibling_node.reload # because the parent may have changed.
+      end
+    end
+
+    module Mysql2Adapter
+      def _ct_reorder_siblings
+        transaction do
+          _ct.connection.execute "SET @i = -1"
+          _ct.connection.execute <<-SQL
+            UPDATE #{_ct.quoted_table_name}
+              SET #{_ct.quoted_order_column(false)} = (@i := @i + 1)
+            WHERE #{_ct.quoted_parent_column_name} = #{_ct_quoted_parent_id}
+            ORDER BY #{_ct.options[:order]}
+          SQL
+        end
+      end
+    end
+
+    module PostgreSQLAdapter
+      def _ct_reorder_siblings
+        transaction do
+          _ct.connection.execute <<-SQL
+            UPDATE #{_ct.quoted_table_name}
+              SET #{_ct.quoted_order_column(false)} = row_number()
+            WHERE #{_ct.quoted_parent_column_name} = #{_ct_quoted_parent_id}
+            ORDER BY #{_ct.options[:order]}
+          SQL
+        end
+      end
+    end
+
+    module SQLite3Adapter
+      def _ct_reorder_siblings
+        transaction do
+          self_and_siblings.each_with_index do |ea, idx|
+            ea.update_attribute(_ct.order_column_sym, idx)
+          end
+        end
       end
     end
   end
