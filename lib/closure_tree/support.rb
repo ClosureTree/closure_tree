@@ -58,13 +58,13 @@ module ClosureTree
 
     def with_order_option(opts)
       if order_option?
-        opts[:order] = [opts[:order], options[:order]].compact.join(",")
+        opts[:order] = [opts[:order], order_by].compact.join(",")
       end
       opts
     end
 
     def scope_with_order(scope, additional_order_by = nil)
-      order_option? ? scope.order(*([additional_order_by, options[:order]].compact)) : scope
+      order_option? ? scope.order(*([additional_order_by, order_by].compact)) : scope
     end
 
     # lambda-ize the order, but don't apply the default order_option
@@ -78,7 +78,7 @@ module ClosureTree
 
     def has_many_with_order_option(opts)
       if ActiveRecord::VERSION::MAJOR > 3
-        order_options = [opts[:order], options[:order]].compact
+        order_options = [opts[:order], order_by].compact
         [lambda { order(order_options) }, opts.except(:order)]
       else
         [with_order_option(opts)]

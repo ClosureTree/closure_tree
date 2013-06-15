@@ -101,7 +101,7 @@ module ClosureTree
               SET #{_ct.quoted_order_column} = (@i := @i + 1) + #{delta}
             WHERE #{_ct.quoted_parent_column_name} = #{_ct_quoted_parent_id}
               AND #{_ct.quoted_order_column} >= #{minimum_sort_order_value}
-            ORDER BY #{_ct.options[:order]}
+            ORDER BY #{_ct.order_by}
           SQL
         end
       end
@@ -112,10 +112,13 @@ module ClosureTree
         transaction do
           _ct.connection.execute <<-SQL
             UPDATE #{_ct.quoted_table_name}
-              SET #{_ct.quoted_order_column(false)} = row_number() + #{minimum_sort_order_value} + #{delta}
-            WHERE #{_ct.quoted_parent_column_name} = #{_ct_quoted_parent_id}
-              AND #{_ct.quoted_order_column} >= #{minimum_sort_order_value}
-            ORDER BY #{_ct.options[:order]}
+              SET #{_ct.quoted_order_column} = t.seq
+            FROM (
+              SELECT id, row_number() OVER (ORDER BY #{_ct.order_by}) AS seq
+              FROM #{_ct.quoted_table_name}
+              WHERE #{_ct.quoted_parent_column_name} = #{_ct_quoted_parent_id}
+                AND #{_ct.quoted_order_column} >= #{minimum_sort_order_value} ) AS t
+            JOIN #{_ct.quoted_table_name} on t.id = #{_ct.quoted_table_name}.id
           SQL
         end
       end

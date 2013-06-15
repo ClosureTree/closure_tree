@@ -15,7 +15,7 @@ module ClosureTree
     end
 
     def order_option?
-      !options[:order].nil?
+      order_by.present?
     end
 
     def order_is_numeric?

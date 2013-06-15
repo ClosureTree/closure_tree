@@ -69,8 +69,12 @@ module ClosureTree
       connection.quote_column_name name_column
     end
 
+    def order_by
+      options[:order]
+    end
+
     def order_column
-      o = options[:order]
+      o = order_by
       if o.nil?
         nil
       elsif o.is_a?(String)
