@@ -89,7 +89,7 @@ module ClosureTree
         prior_sibling_parent = sibling.parent
         if prior_sibling_parent == self.parent
           # We have to adjust the prior siblings by moving sibling out of the way:
-          sibling.update_column(_ct.parent_column_sym, nil)
+          sibling._ct_update_column(_ct.parent_column_sym, nil)
           if sibling.order_value && sibling.order_value < self.order_value
             _ct_reorder_siblings(sibling.order_value, 0)
             reload # < because self.order_value changed
