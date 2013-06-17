@@ -51,8 +51,8 @@ module ClosureTree
             WHERE x.descendant_id = #{_ct.quote(_ct_parent_id)}
           SQL
         end
-        _ct_reorder_siblings if _ct.order_is_numeric?
         children.each { |c| c.rebuild! }
+        _ct_reorder_children if _ct.order_is_numeric?
       end
     end
 

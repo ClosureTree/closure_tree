@@ -33,9 +33,6 @@ module ClosureTree
         :foreign_key => "ancestor_id",
         :order => order_by_generations)
 
-      # TODO: FIXME: this collection currently ignores sort_order
-      # (because the quoted_table_named would need to be joined in to get to the order column)
-
       has_many :self_and_descendants, *_ct.has_many_with_order_option(
         :through => :descendant_hierarchies,
         :source => :descendant,
@@ -128,12 +125,15 @@ module ClosureTree
     end
 
     def _ct_quoted_parent_id
-      p_id = _ct_parent_id
-      p_id.is_a?(Numeric) ? p_id : _ct.quote(p_id)
+      _ct.quoted_value(_ct_parent_id)
     end
 
     def _ct_id
       read_attribute(_ct.model_class.primary_key)
+    end
+
+    def _ct_quoted_id
+      _ct.quoted_value(_ct_id)
     end
   end
 end

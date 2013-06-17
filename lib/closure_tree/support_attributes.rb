@@ -1,5 +1,9 @@
+require 'forwardable'
 module ClosureTree
   module SupportAttributes
+
+    extend Forwardable
+    def_delegators :model_class, :connection, :transaction, :table_name
 
     # This is the "topmost" class. This will only potentially not be ct_class if you are using STI.
     def base_class
@@ -10,16 +14,12 @@ module ClosureTree
       @attribute_names ||= model_class.new.attributes.keys - model_class.protected_attributes.to_a
     end
 
-    def connection
-      model_class.connection
-    end
-
-    def table_name
-      model_class.table_name
-    end
-
     def quoted_table_name
       connection.quote_table_name(table_name)
+    end
+
+    def quoted_value(value)
+      value.is_a?(Numeric) ? value : quote(value)
     end
 
     def hierarchy_class_name

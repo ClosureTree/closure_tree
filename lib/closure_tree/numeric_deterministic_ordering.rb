@@ -6,9 +6,19 @@ module ClosureTree
     extend ActiveSupport::Concern
 
     included do
-      after_destroy :_ct_reorder_siblings
-      driver = "::ClosureTree::NumericDeterministicOrdering::#{connection.class.to_s.demodulize}"
-      include driver.constantize
+      after_destroy :_ct_reorder_after_destroy
+    end
+
+    def _ct_reorder_after_destroy
+      _ct_reorder_siblings
+    end
+
+    def _ct_reorder_siblings(minimum_sort_order_value = nil, delta = 0)
+      _ct.reorder_with_parent_id(_ct_parent_id, minimum_sort_order_value, delta)
+    end
+
+    def _ct_reorder_children(minimum_sort_order_value = nil, delta = 0)
+      _ct.reorder_with_parent_id(_ct_id, minimum_sort_order_value, delta)
     end
 
     def self_and_descendants_preordered
@@ -68,72 +78,41 @@ module ClosureTree
       add_sibling(sibling_node, false)
     end
 
-    def add_sibling(sibling_node, add_after = true)
-      fail "can't add self as sibling" if self == sibling_node
+    def add_sibling(sibling, add_after = true)
+      fail "can't add self as sibling" if self == sibling
       _ct.with_advisory_lock do
-        prior_sibling_parent = sibling_node.parent
-        if self.order_value.nil? || siblings_before.without(sibling_node).empty?
-          update_attribute(:order_value, 0)
+        if self.order_value.nil?
+          # ergh, we don't know where we stand within the siblings, so establish that first:
+          _ct_reorder_siblings
+          reload # < because self.order_value changed
         end
-        _ct_reorder_siblings(order_value + 1, 1)
-        if add_after
-          sibling_node.order_value = self.order_value + 1
-        else
-          sibling_node.order_value = self.order_value
-          self.order_value += 1
-          self.save!
-        end
-        parent.add_child(sibling_node) # <- this causes sibling_node to be saved.
-        if prior_sibling_parent
-          first_child = prior_sibling_parent.children.first
-          first_child._ct_reorder_siblings if first_child
-        end
-        sibling_node
-      end
-    end
-
-    module Mysql2Adapter
-      def _ct_reorder_siblings(minimum_sort_order_value = 0, delta = 0)
-        transaction do
-          _ct.connection.execute "SET @i = #{minimum_sort_order_value} - 1"
-          _ct.connection.execute <<-SQL
-            UPDATE #{_ct.quoted_table_name}
-              SET #{_ct.quoted_order_column} = (@i := @i + 1) + #{delta}
-            WHERE #{_ct.quoted_parent_column_name} = #{_ct_quoted_parent_id}
-              AND #{_ct.quoted_order_column} >= #{minimum_sort_order_value}
-            ORDER BY #{_ct.order_by}
-          SQL
-        end
-      end
-    end
-
-    module PostgreSQLAdapter
-      def _ct_reorder_siblings(minimum_sort_order_value = 0, delta = 0)
-        transaction do
-          _ct.connection.execute <<-SQL
-            UPDATE #{_ct.quoted_table_name}
-              SET #{_ct.quoted_order_column} = t.seq
-            FROM (
-              SELECT id, row_number() OVER (ORDER BY #{_ct.order_by}) AS seq
-              FROM #{_ct.quoted_table_name}
-              WHERE #{_ct.quoted_parent_column_name} = #{_ct_quoted_parent_id}
-                AND #{_ct.quoted_order_column} >= #{minimum_sort_order_value} ) AS t
-            JOIN #{_ct.quoted_table_name} on t.id = #{_ct.quoted_table_name}.id
-          SQL
-        end
-      end
-    end
-
-    module SQLite3Adapter
-      def _ct_reorder_siblings(minimum_sort_order_value = 0, delta = 0)
-        transaction do
-          self_and_siblings.
-            where("#{_ct.quoted_order_column} >= #{minimum_sort_order_value}").
-            each_with_index do |ea, idx|
-            ea.update_attribute(_ct.order_column_sym, idx + minimum_sort_order_value + delta)
+        prior_sibling_parent = sibling.parent
+        if prior_sibling_parent == self.parent
+          # We have to adjust the prior siblings by moving sibling out of the way:
+          sibling.update_column(_ct.parent_column_sym, nil)
+          if sibling.order_value && sibling.order_value < self.order_value
+            _ct_reorder_siblings(sibling.order_value, 0)
+            reload # < because self.order_value changed
           end
         end
+        _ct_move_new_sibling(sibling, add_after)
+        if prior_sibling_parent && prior_sibling_parent != self.parent
+          prior_sibling_parent._ct_reorder_children
+        end
+        sibling
       end
+    end
+
+    def _ct_move_new_sibling(sibling, add_after)
+      _ct_reorder_siblings(self.order_value + 1, 1)
+      if add_after
+        sibling.order_value = self.order_value + 1
+      else
+        sibling.order_value = self.order_value
+        self.order_value += 1
+        self.save!
+      end
+      parent.add_child(sibling) # <- this causes sibling to be saved.
     end
   end
 end

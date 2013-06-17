@@ -1,5 +1,6 @@
 require 'closure_tree/support_flags'
 require 'closure_tree/support_attributes'
+require 'closure_tree/numeric_order_support'
 
 module ClosureTree
   class Support
@@ -19,6 +20,9 @@ module ClosureTree
         :with_advisory_lock => true
       }.merge(options)
       raise IllegalArgumentException, "name_column can't be 'path'" if options[:name_column] == 'path'
+      if order_is_numeric?
+        extend NumericOrderSupport.adapter_for_connection(connection)
+      end
     end
 
     def hierarchy_class_for_model

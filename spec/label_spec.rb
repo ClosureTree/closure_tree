@@ -216,23 +216,29 @@ describe Label do
       @a = EventLabel.new(:name => "a")
       @b = DirectoryLabel.new(:name => "b")
       @c = DateLabel.new(:name => "c")
+      @d = Label.new(:name => "d")
       @parent.children << @a
       @a.append_sibling(@b)
       @b.append_sibling(@c)
+      @c.append_sibling(@d)
+    end
+
+    def children_name_and_order
+      @parent.reload.children.map { |ea| [ea.name, ea.sort_order] }
+    end
+
+    it "sort_orders properly" do
+      children_name_and_order.should == [['a', 0], ['b', 1], ['c', 2], ['d', 3]]
     end
 
     it "when inserted before" do
       @b.append_sibling(@a)
-      # Have to reload because the sort_order will have changed out from under the references:
-      @b.reload.sort_order.should be < @a.reload.sort_order
-      @a.reload.sort_order.should be < @c.reload.sort_order
+      children_name_and_order.should == [['b', 0], ['a', 1], ['c', 2], ['d', 3]]
     end
 
-    it "when inserted before" do
-      @b.append_sibling(@a)
-      # Have to reload because the sort_order will have changed out from under the references:
-      @b.reload.sort_order.should be < @a.reload.sort_order
-      @a.reload.sort_order.should be < @c.reload.sort_order
+    it "when inserted after" do
+      @a.append_sibling(@c)
+      children_name_and_order.should == [['a', 0], ['c', 1], ['b', 2], ['d', 3]]
     end
   end
 
@@ -257,12 +263,12 @@ describe Label do
     root.reload.children.collect(&:name).should == %w(b a c)
     root.children.collect(&:sort_order).should == [0, 1, 2]
 
-    b.append_sibling(c)
-    a.self_and_siblings.collect(&:name).should == %w(b c a)
+    # We need to reload b because it was updated by a.append_sibling(c)
+    b.reload.append_sibling(c)
     root.reload.children.collect(&:name).should == %w(b c a)
     root.children.collect(&:sort_order).should == [0, 1, 2]
 
-    # We need to reload a because it was updated by b.append(c)
+    # We need to reload a because it was updated by b.append_sibling(c)
     d = a.reload.append_sibling(Label.new(:name => "d"))
     d.self_and_siblings.collect(&:name).should == %w(b c a d)
     d.self_and_siblings.collect(&:sort_order).should == [0, 1, 2, 3]
@@ -309,32 +315,34 @@ describe Label do
   context "destructive reordering" do
     before :each do
       Label.delete_all
+      # to make sure sort_order isn't affected by additional nodes:
+      create_preorder_tree
       @root = Label.create(:name => "root")
       @a = @root.children.create!(:name => "a")
       @b = @a.append_sibling(Label.new(:name => "b"))
       @c = @b.append_sibling(Label.new(:name => "c"))
-      @root.reload
     end
     context "doesn't create sort order gaps from" do
       it "from head" do
         @a.destroy
-        @root.children.should == [@b, @c]
+        @root.reload.children.should == [@b, @c]
         @root.children.map { |ea| ea.sort_order }.should == [0, 1]
       end
       it "from mid" do
         @b.destroy
-        @root.children.should == [@a, @c]
+        @root.reload.children.should == [@a, @c]
         @root.children.map { |ea| ea.sort_order }.should == [0, 1]
       end
       it "from tail" do
         @c.destroy
-        @root.children.should == [@a, @b]
+        @root.reload.children.should == [@a, @b]
         @root.children.map { |ea| ea.sort_order }.should == [0, 1]
       end
     end
     it "shouldn't fail if all children are destroyed" do
-      @root.children.destroy_all
-      Label.all.should == [@root]
+      roots = Label.roots.to_a
+      roots.each { |ea| ea.children.destroy_all }
+      Label.all.to_a.should =~ roots
     end
   end
 
