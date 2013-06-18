@@ -13,7 +13,7 @@ require 'rspec/rails/fixture_support'
 require 'closure_tree'
 require 'tmpdir'
 require 'coveralls'
-Coveralls.wear!
+Coveralls.wear! if ENV['DB_PREFIX'].present? && ENV['DB_SUFFIX'].present?
 
 #log = Logger.new(STDOUT)
 #log.sev_threshold = Logger::DEBUG
