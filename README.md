@@ -6,10 +6,9 @@ Common applications include modeling hierarchical data, like tags, page graphs i
 and tracking user referrals.
 
 [![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
-<!--[![Gem Version](https://badge.fury.io/rb/closure_tree.png)](http://rubygems.org/gems/closure_tree)
+[![Gem Version](https://badge.fury.io/rb/closure_tree.png)](http://rubygems.org/gems/closure_tree)
 [![Code Climate](https://codeclimate.com/github/mceachen/closure_tree.png)](https://codeclimate.com/github/mceachen/closure_tree)
 [![Coverage Status](https://coveralls.io/repos/mceachen/closure_tree/badge.png?branch=master)](https://coveralls.io/r/mceachen/closure_tree?branch=master)
--->
 
 Substantially more efficient than
 [ancestry](https://github.com/stefankroes/ancestry) and
@@ -454,6 +453,25 @@ the spec ```tag_spec.rb```:
 
 **However, if you're just starting with Rails, may I humbly suggest you adopt a factory library**,
 rather than using fixtures? [Lots of people have written about this already](https://www.google.com/search?q=fixtures+versus+factories).
+
+### There are many ```lock-*``` files in my project directory after test runs
+
+This is expected if you aren't using MySQL or Postgresql for your tests.
+
+SQLite doesn't have advisory locks, so we resort to file locking, which will only work
+if the ```FLOCK_DIR``` is set consistently for all ruby processes.
+
+In your ```spec_helper.rb``` or ```minitest_helper.rb```, add a ```before``` and ```after``` block:
+
+```ruby
+before do
+  ENV['FLOCK_DIR'] = Dir.mktmpdir
+end
+
+after do
+  FileUtils.remove_entry_secure ENV['FLOCK_DIR']
+end
+```
 
 
 ## Testing
