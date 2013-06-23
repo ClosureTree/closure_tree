@@ -491,6 +491,10 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 
 ## Change log
 
+### 4.2.2
+
+* Support attr_accessible and strong_attributes even if you're on Rails 4
+
 ### 4.2.1
 
 * Deleting from NumericDeterministicOrdering doesn't create sort order gaps anymore.
