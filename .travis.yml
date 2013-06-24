@@ -19,7 +19,7 @@ env:
   - DB=sqlite
   - DB=mysql
   - DB=postgresql
-script: bundle exec rake all_spec_flavors
+script: bundle exec rake --trace all_spec_flavors
 
 before_script:
   - mysql -e 'create database closure_tree_test'
