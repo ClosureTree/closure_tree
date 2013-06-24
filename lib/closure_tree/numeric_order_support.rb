@@ -3,7 +3,7 @@ module ClosureTree
 
     def self.adapter_for_connection(connection)
       case connection.adapter_name.downcase.to_sym
-        when :postgresql
+        when :postgresql, :postgis #Postgis is based on Postgresql
           ::ClosureTree::NumericOrderSupport::PostgreSQLAdapter
         when :mysql, :mysql2
           ::ClosureTree::NumericOrderSupport::MysqlAdapter
