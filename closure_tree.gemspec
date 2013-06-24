@@ -26,6 +26,5 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'pg'
   gem.add_development_dependency 'sqlite3'
   gem.add_development_dependency 'uuidtools'
-  gem.add_development_dependency 'coveralls'
   # TODO: gem 'activerecord-jdbcsqlite3-adapter', :platform => :jruby
 end
