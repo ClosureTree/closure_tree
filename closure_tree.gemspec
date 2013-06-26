@@ -15,7 +15,7 @@ Gem::Specification.new do |gem|
   gem.test_files = `git ls-files -- {test,spec,features}/*`.split("\n")
 
   gem.add_runtime_dependency 'activerecord', '>= 3.0.0'
-  gem.add_runtime_dependency 'with_advisory_lock', '>= 0.0.6' # <- to prevent duplicate roots
+  gem.add_runtime_dependency 'with_advisory_lock', '>= 0.0.9' # <- to prevent duplicate roots
 
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'yard'

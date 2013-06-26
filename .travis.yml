@@ -19,7 +19,7 @@ env:
   - DB=sqlite
   - DB=mysql
   - DB=postgresql
-script: bundle exec rake --trace all_spec_flavors
+script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rake --trace all_spec_flavors
 
 before_script:
   - mysql -e 'create database closure_tree_test'

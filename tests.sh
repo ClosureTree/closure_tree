@@ -16,7 +16,7 @@ do
     for DB in sqlite mysql postgresql
     do
       echo $DB $BUNDLE_GEMFILE `ruby -v`
-      bundle exec rake all_spec_flavors
+      WITH_ADVISORY_LOCK_PREFIX=$(date +%s) bundle exec rake all_spec_flavors
     done
   done
 done
@@ -31,6 +31,6 @@ do
   for DB in sqlite mysql postgresql
   do
     echo $DB $BUNDLE_GEMFILE `ruby -v`
-    bundle exec rake all_spec_flavors
+    WITH_ADVISORY_LOCK_PREFIX=$(date +%s) bundle exec rake all_spec_flavors
   done
 end

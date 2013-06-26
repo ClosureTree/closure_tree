@@ -24,7 +24,7 @@ closure_tree has some great features:
 * __Best-in-class mutation performance__:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
-* __Support for Rails 3.0, 3.1, 3.2, and 4.0.0.rc2__
+* __Support for Rails 3.0, 3.1, 3.2, and 4.0__
 * Support for reparenting children (and all their progeny)
 * Support for [concurrency](#concurrency) (using [with_advisory_lock](https://github/mceachen/with_advisory_lock))
 * Support for polymorphism [STI](#sti) within the hierarchy
@@ -489,6 +489,11 @@ Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
 
 
 ## Change log
+
+### 4.2.3
+
+* Fixed ```attr_accessible?``` error introduced in 4.2.2 ([issue 66](https://github.com/mceachen/closure_tree/issues/66)).
+* Switched to use new WithAdvisoryLock::DatabaseAdapterSupport (in v0.0.9) to add Postgis support
 
 ### 4.2.2
 

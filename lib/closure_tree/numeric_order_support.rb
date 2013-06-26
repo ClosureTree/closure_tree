@@ -2,13 +2,13 @@ module ClosureTree
   module NumericOrderSupport
 
     def self.adapter_for_connection(connection)
-      case connection.adapter_name.downcase.to_sym
-        when :postgresql, :postgis #Postgis is based on Postgresql
-          ::ClosureTree::NumericOrderSupport::PostgreSQLAdapter
-        when :mysql, :mysql2
-          ::ClosureTree::NumericOrderSupport::MysqlAdapter
-        else
-          ::ClosureTree::NumericOrderSupport::GenericAdapter
+      das = WithAdvisoryLock::DatabaseAdapterSupport.new(connection)
+      if das.postgresql?
+        ::ClosureTree::NumericOrderSupport::PostgreSQLAdapter
+      elsif das.mysql?
+        ::ClosureTree::NumericOrderSupport::MysqlAdapter
+      else
+        ::ClosureTree::NumericOrderSupport::GenericAdapter
       end
     end
 

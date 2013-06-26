@@ -2,15 +2,13 @@ module ClosureTree
   module SupportFlags
 
     def use_attr_accessible?
-      (3..4).include? ActiveRecord::VERSION::MAJOR  &&
-        defined?(ActiveModel::MassAssignmentSecurity) &&
+      defined?(ActiveModel::MassAssignmentSecurity) &&
         model_class.respond_to?(:accessible_attributes) &&
         model_class.accessible_attributes.present?
     end
 
     def include_forbidden_attributes_protection?
-      (3..4).include? ActiveRecord::VERSION::MAJOR &&
-        defined?(ActiveModel::ForbiddenAttributesProtection) &&
+      defined?(ActiveModel::ForbiddenAttributesProtection) &&
         model_class.ancestors.include?(ActiveModel::ForbiddenAttributesProtection)
     end
 
