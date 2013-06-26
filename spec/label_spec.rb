@@ -84,6 +84,17 @@ describe Label do
     end
   end
 
+  context "Parent/child inverse relationships" do
+    it "should associate both sides of the parent and child relationships" do
+      parent = Label.new(:name => '123')
+      child = parent.children.build
+      parent.should be_root
+      parent.should_not be_leaf
+      child.should_not be_root
+      child.should be_leaf
+    end
+  end
+
   context "DateLabel" do
     it "should find or create by path" do
       date = DateLabel.find_or_create_by_path(%w{2011 November 23})
