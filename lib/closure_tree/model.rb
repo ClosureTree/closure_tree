@@ -7,7 +7,8 @@ module ClosureTree
     included do
       belongs_to :parent,
         :class_name => _ct.model_class.to_s,
-        :foreign_key => _ct.parent_column_name
+        :foreign_key => _ct.parent_column_name,
+        :inverse_of => :children
 
       attr_accessible :parent if _ct.use_attr_accessible?
 
@@ -16,7 +17,8 @@ module ClosureTree
       has_many :children, *_ct.has_many_with_order_option(
         :class_name => _ct.model_class.to_s,
         :foreign_key => _ct.parent_column_name,
-        :dependent => _ct.options[:dependent])
+        :dependent => _ct.options[:dependent],
+        :inverse_of => :parent)
 
       has_many :ancestor_hierarchies, *_ct.has_many_without_order_option(
         :class_name => _ct.hierarchy_class_name,
