@@ -20,7 +20,6 @@ module ClosureTree
         :dependent => _ct.options[:dependent],
         :inverse_of => :parent)
 
-
       has_many :ancestor_hierarchies, *_ct.has_many_without_order_option(
         :class_name => _ct.hierarchy_class_name,
         :foreign_key => "descendant_id",
@@ -49,12 +48,14 @@ module ClosureTree
 
     # Returns true if this node has no parents.
     def root?
-      _ct_parent_id.nil?
+      # Accessing the parent will fetch that row from the database,
+      # so if we are persisted, just check that the parent_id column is nil.
+      persisted? ? _ct_parent_id.nil? : parent.nil?
     end
 
     # Returns true if this node has a parent, and is not a root.
     def child?
-      !parent.nil?
+      !root?
     end
 
     # Returns true if this node has no children.

@@ -86,8 +86,8 @@ describe Label do
 
   context "Parent/child inverse relationships" do
     it "should associate both sides of the parent and child relationships" do
-      parent = Label.new(:name => '123')
-      child = parent.children.build
+      parent = Label.new(:name => 'parent')
+      child = parent.children.build(:name => 'child')
       parent.should be_root
       parent.should_not be_leaf
       child.should_not be_root
