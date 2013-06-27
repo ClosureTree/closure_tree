@@ -3,7 +3,7 @@
 ### 4.2.4
 
 * Support for ```root?```, ```child?```, and proper parent-child associations
-  when both the parent and the child are not persisted. Addresses [issue 64(https://github.com/mceachen/closure_tree/issues/64).
+  when both the parent and the child are not persisted. Addresses [issue 64](https://github.com/mceachen/closure_tree/issues/64).
   Thanks for the help, [Gabriel Mazetto](https://github.com/brodock)!
 
 ### 4.2.3
