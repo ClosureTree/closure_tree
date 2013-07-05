@@ -46,7 +46,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.string "name"
   end
 
-  force_add_index "tag_hierarchies", [:ancestor_id, :descendant_id], :unique => true, :name => "tag_anc_desc_idx"
+  force_add_index "tag_hierarchies", [:ancestor_id, :descendant_id, :generations], :unique => true, :name => "tag_anc_desc_idx"
   force_add_index "tag_hierarchies", [:descendant_id], :name => "tag_desc_idx"
 
   create_table "users", :force => true do |t|
@@ -66,7 +66,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.integer "generations", :null => false
   end
 
-  force_add_index "referral_hierarchies", [:ancestor_id, :descendant_id], :unique => true, :name => "ref_anc_desc_idx"
+  force_add_index "referral_hierarchies", [:ancestor_id, :descendant_id, :generations], :unique => true, :name => "ref_anc_desc_idx"
   force_add_index "referral_hierarchies", [:descendant_id], :name => "ref_desc_idx"
 
   create_table "labels", :force => true do |t|
@@ -82,7 +82,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.integer "generations", :null => false
   end
 
-  force_add_index "label_hierarchies", [:ancestor_id, :descendant_id], :unique => true, :name => "lh_anc_desc_idx"
+  force_add_index "label_hierarchies", [:ancestor_id, :descendant_id, :generations], :unique => true, :name => "lh_anc_desc_idx"
   force_add_index "label_hierarchies", [:descendant_id], :name => "lh_desc_idx"
 
   create_table "cuisine_types", :force => true do |t|
