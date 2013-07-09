@@ -8,6 +8,7 @@ and tracking user referrals.
 [![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
 [![Gem Version](https://badge.fury.io/rb/closure_tree.png)](http://rubygems.org/gems/closure_tree)
 [![Code Climate](https://codeclimate.com/github/mceachen/closure_tree.png)](https://codeclimate.com/github/mceachen/closure_tree)
+[![Dependency Status](https://gemnasium.com/mceachen/closure_tree.png)](https://gemnasium.com/mceachen/closure_tree)
 
 Substantially more efficient than
 [ancestry](https://github.com/stefankroes/ancestry) and
@@ -26,7 +27,7 @@ closure_tree has some great features:
   * 3 SQL INSERT/UPDATEs on node reparenting
 * __Support for Rails 3.0, 3.1, 3.2, and 4.0__
 * Support for reparenting children (and all their progeny)
-* Support for [concurrency](#concurrency) (using [with_advisory_lock](https://github/mceachen/with_advisory_lock))
+* Support for [concurrency](#concurrency) (using [with_advisory_lock](https://github.com/mceachen/with_advisory_lock))
 * Support for polymorphism [STI](#sti) within the hierarchy
 * ```find_or_create_by_path``` for [building out hierarchies quickly and conveniently](#find_or_create_by_path)
 * Support for [deterministic ordering](#deterministic-ordering) of children
