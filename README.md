@@ -88,11 +88,13 @@ Note that closure_tree only supports Rails 3.0 and later, and has test coverage 
           t.integer  :generations, :null => false   # Number of generations between the ancestor and the descendant. Parent/child = 1, for example.
         end
 
-        # For "all progeny of…" selects:
-        add_index :tag_hierarchies, [:ancestor_id, :descendant_id], :unique => true
+        # For "all progeny of…" and leaf selects:
+        add_index :tag_hierarchies, [:ancestor_id, :descendant_id, :generations],
+          :unique => true, :name => "tag_anc_desc_udx"
 
-        # For "all ancestors of…" selects
+        # For "all ancestors of…" selects,
         add_index :tag_hierarchies, [:descendant_id]
+          :name => "tag_desc_idx"
       end
     end
     ```

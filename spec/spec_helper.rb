@@ -31,7 +31,11 @@ end
 ActiveRecord::Base.configurations = YAML::load(ERB.new(IO.read(plugin_test_dir + "/db/database.yml")).result)
 ActiveRecord::Base.establish_connection(ENV["DB"])
 ActiveRecord::Migration.verbose = false
-require 'db/schema'
+if ENV['NONUKES']
+  puts "skipping database creation"
+else
+  require 'db/schema'
+end
 require 'support/models'
 
 class Hash
