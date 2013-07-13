@@ -78,7 +78,6 @@ describe "threadhot" do
             target.children.create!(:name => name)
             children_to_delete << name
             added_children << name
-            puts "+ #{name}"
           end
         end while !children_to_add.empty?
       end
@@ -93,7 +92,6 @@ describe "threadhot" do
           if victim
             target.children.where(:name => victim).first.destroy
             deleted_children << victim
-            puts "- #{victim}"
           else
             sleep 0.1
           end
@@ -127,7 +125,6 @@ describe "threadhot" do
         ActiveRecord::Base.connection.reconnect!
         begin
           victim = nodes_to_delete.shift
-          puts "- #{victim}"
           victim.destroy if victim
         end while !nodes_to_delete.empty?
       end
