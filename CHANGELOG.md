@@ -5,6 +5,9 @@
 * Fix for potential deadlock from ```delete_hierarchy_references``` not being called within an
   advisory lock. Thanks, [Armando Guereca](https://github.com/aguereca), for finding that!
 
+* For Rails 3.2 and later, changed ```find_or_create_by_path``` to use ```first_or_create```. The
+  parallel path destruction test now takes 13 seconds instead of 132 seconds from this one-line change.
+
 ### 4.2.4
 
 * Support for ```root?```, ```child?```, and proper parent-child associations

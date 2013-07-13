@@ -63,7 +63,7 @@ describe "threadhot" do
 
   it "fails to deadlock from parallel sibling churn" do
     # target should be non-trivially long to maximize time spent in hierarchy maintenance
-    target = Tag.find_or_create_by_path ('a'..'z').to_a + ('A'..'Z').to_a
+    target = Tag.find_or_create_by_path(('a'..'z').to_a + ('A'..'Z').to_a)
     expected_children = (1..100).to_a.map { |ea| "root ##{ea}" }
     children_to_add = expected_children.dup
     added_children = []
@@ -108,9 +108,20 @@ describe "threadhot" do
     deleted_children.should =~ expected_children
   end
 
+  def bad_shuffle(array, pairs_to_shuffle = nil)
+    pairs_to_shuffle ||= (array.size / 10)
+    s = array.dup
+    from_ix = (0..(array.size)).to_a.shuffle.first(pairs_to_shuffle)
+    to_idx = (0..(array.size)).to_a.shuffle.first(pairs_to_shuffle)
+    from_ix.zip(to_idx).each do |from, to|
+      s[from], s[to] = s[to], s[from]
+    end
+    s
+  end
+
   it "fails to deadlock while simultaneously deleting items from the same hierarchy" do
-    target = User.find_or_create_by_path (1..500).to_a.map { |ea| "child ##{ea}" }
-    nodes_to_delete = target.self_and_ancestors.to_a
+    target = User.find_or_create_by_path((1..500).to_a.map { |ea| ea.to_s })
+    nodes_to_delete = bad_shuffle(target.self_and_ancestors.to_a)
     destroyer_threads = @workers.times.map do
       Thread.new do
         ActiveRecord::Base.connection.reconnect!
