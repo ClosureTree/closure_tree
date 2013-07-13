@@ -16,13 +16,15 @@ module ClosureTree
           subpath = path.is_a?(Enumerable) ? path.dup : [path]
           child_name = subpath.shift
           return self unless child_name
-          child = transaction do
+          child = if ActiveRecord::VERSION::MAJOR <= 3 && ActiveRecord::VERSION::MINOR < 2
             attrs = attributes.merge(_ct.name_sym => child_name)
             # shenanigans because children.create is bound to the superclass
             # (in the case of polymorphism):
             self.children.where(attrs).first || begin
               self.class.new(attrs).tap { |ea| self.children << ea }
             end
+          else
+            self.children.where(_ct.name_sym => child_name).first_or_create(attributes)
           end
           child.find_or_create_by_path(subpath, attributes, false)
         end

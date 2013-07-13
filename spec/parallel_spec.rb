@@ -64,7 +64,7 @@ describe "threadhot" do
   it "fails to deadlock from parallel sibling churn" do
     # target should be non-trivially long to maximize time spent in hierarchy maintenance
     target = Tag.find_or_create_by_path ('a'..'z').to_a + ('A'..'Z').to_a
-    expected_children = (1..500).to_a.map { |ea| "child ##{ea}" }
+    expected_children = (1..100).to_a.map { |ea| "root ##{ea}" }
     children_to_add = expected_children.dup
     added_children = []
     children_to_delete = []
@@ -78,11 +78,12 @@ describe "threadhot" do
             target.children.create!(:name => name)
             children_to_delete << name
             added_children << name
+            puts "+ #{name}"
           end
         end while !children_to_add.empty?
       end
     end
-
+    sleep 0.5
     run_destruction = true
     destroyer_threads = @workers.times.map do
       Thread.new do
@@ -92,6 +93,7 @@ describe "threadhot" do
           if victim
             target.children.where(:name => victim).first.destroy
             deleted_children << victim
+            puts "- #{victim}"
           else
             sleep 0.1
           end
@@ -104,6 +106,23 @@ describe "threadhot" do
 
     added_children.should =~ expected_children
     deleted_children.should =~ expected_children
+  end
+
+  it "fails to deadlock while simultaneously deleting items from the same hierarchy" do
+    target = User.find_or_create_by_path (1..500).to_a.map { |ea| "child ##{ea}" }
+    nodes_to_delete = target.self_and_ancestors.to_a
+    destroyer_threads = @workers.times.map do
+      Thread.new do
+        ActiveRecord::Base.connection.reconnect!
+        begin
+          victim = nodes_to_delete.shift
+          puts "- #{victim}"
+          victim.destroy if victim
+        end while !nodes_to_delete.empty?
+      end
+    end
+    destroyer_threads.each { |ea| ea.join }
+    User.all.should be_empty
   end
 
 end unless parallelism_is_broken
