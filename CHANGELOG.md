@@ -1,5 +1,10 @@
 # Changelog
 
+### 4.2.5
+
+* Fix for potential deadlock from ```delete_hierarchy_references``` not being called within an
+  advisory lock. Thanks, [Armando Guereca](https://github.com/aguereca), for finding that!
+
 ### 4.2.4
 
 * Support for ```root?```, ```child?```, and proper parent-child associations
