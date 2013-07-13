@@ -3,8 +3,8 @@ require 'spec_helper'
 parallelism_is_broken = begin
   # Rails < 3.2 has known bugs with parallelism
   (ActiveRecord::VERSION::MAJOR <= 3 && ActiveRecord::VERSION::MINOR < 2) ||
-  # SQLite doesn't support parallel writes
-  ENV["DB"] =~ /sqlite/
+    # SQLite doesn't support parallel writes
+    ENV["DB"] =~ /sqlite/
 end
 
 describe "threadhot" do
@@ -35,7 +35,6 @@ describe "threadhot" do
     @threads.each { |ea| ea.join }
   end
 
-
   it "class method will not create dupes" do
     run_workers
     Tag.roots.collect { |ea| ea.name.to_i }.should =~ @times
@@ -60,6 +59,51 @@ describe "threadhot" do
     Tag.should_receive(:with_advisory_lock).any_number_of_times { |lock_name, &block| block.call }
     run_workers
     Tag.where(:name => @names).size.should > @iterations
+  end
+
+  it "fails to deadlock from parallel sibling churn" do
+    # target should be non-trivially long to maximize time spent in hierarchy maintenance
+    target = Tag.find_or_create_by_path ('a'..'z').to_a + ('A'..'Z').to_a
+    expected_children = (1..500).to_a.map { |ea| "child ##{ea}" }
+    children_to_add = expected_children.dup
+    added_children = []
+    children_to_delete = []
+    deleted_children = []
+    creator_threads = @workers.times.map do
+      Thread.new do
+        ActiveRecord::Base.connection.reconnect!
+        begin
+          name = children_to_add.shift
+          if name
+            target.children.create!(:name => name)
+            children_to_delete << name
+            added_children << name
+          end
+        end while !children_to_add.empty?
+      end
+    end
+
+    run_destruction = true
+    destroyer_threads = @workers.times.map do
+      Thread.new do
+        ActiveRecord::Base.connection.reconnect!
+        begin
+          victim = children_to_delete.shift
+          if victim
+            target.children.where(:name => victim).first.destroy
+            deleted_children << victim
+          else
+            sleep 0.1
+          end
+        end while run_destruction || !children_to_delete.empty?
+      end
+    end
+    creator_threads.each { |ea| ea.join }
+    run_destruction = false
+    destroyer_threads.each { |ea| ea.join }
+
+    added_children.should =~ expected_children
+    deleted_children.should =~ expected_children
   end
 
 end unless parallelism_is_broken
