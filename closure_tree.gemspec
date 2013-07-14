@@ -10,6 +10,7 @@ Gem::Specification.new do |gem|
 
   gem.summary = %q{Easily and efficiently make your ActiveRecord model support hierarchies}
   gem.description = gem.summary
+  gem.license = 'MIT'
 
   gem.files = Dir["lib/**/*"] + ["MIT-LICENSE", "Rakefile", "README.md"]
   gem.test_files = `git ls-files -- {test,spec,features}/*`.split("\n")
