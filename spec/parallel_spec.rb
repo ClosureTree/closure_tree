@@ -10,22 +10,25 @@ end
 describe "threadhot" do
 
   before :each do
+    ActiveRecord::Base.connection.reconnect!
     TagHierarchy.delete_all
     Tag.delete_all
     @iterations = 5
     @workers = 6 # Travis CI workers can't reliably handle larger numbers
     @parent = nil
+    @time_between_runs = 1
   end
 
   def find_or_create_at_even_second(run_at)
     sleep(run_at - Time.now.to_f)
     ActiveRecord::Base.connection.reconnect!
-    (@parent || Tag).find_or_create_by_path([run_at.to_s, :a, :b, :c].compact)
+    (@parent || Tag).find_or_create_by_path([run_at.to_s, :a, :b, :c])
   end
 
   def run_workers
-    start_time = Time.now.to_i + 2
-    @times = @iterations.times.collect { |ea| start_time + (ea * 2) }
+    expected_thread_setup_time = 4
+    start_time = Time.now.to_i + expected_thread_setup_time
+    @times = @iterations.times.collect { |ea| start_time + (ea * @time_between_runs) }
     @names = @times.collect { |ea| ea.to_s }
     @threads = @workers.times.collect do
       Thread.new do
@@ -78,12 +81,10 @@ describe "threadhot" do
             target.find_or_create_by_path(name)
             children_to_delete << name
             added_children << name
-            puts "+ #{name}"
           end
         end while !children_to_add.empty?
       end
     end
-    sleep 0.5
     run_destruction = true
     destroyer_threads = @workers.times.map do
       Thread.new do
@@ -93,9 +94,8 @@ describe "threadhot" do
           if victim
             target.children.where(:name => victim).first.destroy
             deleted_children << victim
-            puts "- #{victim}"
           else
-            sleep 0.1
+            sleep rand # wait for moar victims
           end
         end while run_destruction || !children_to_delete.empty?
       end
