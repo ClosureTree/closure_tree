@@ -429,6 +429,14 @@ shared_examples_for "Tag (without fixtures)" do
       end
     end
 
+    describe 'very deep trees' do
+      it 'should find_or_create very deep nodes' do
+        expected_ancestry_path = (1..200).to_a.map { |ea| ea.to_s }
+        target = tag_class.find_or_create_by_path(expected_ancestry_path)
+        target.ancestry_path.should == expected_ancestry_path
+      end
+    end
+
     describe 'DOT rendering' do
       it 'should render for an empty scope' do
         tag_class.to_dot_digraph(tag_class.where("0=1")).should == "digraph G {\n}\n"

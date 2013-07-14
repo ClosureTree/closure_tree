@@ -1,7 +1,8 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env bundle exec ruby -I lib:spec
 
-# Benchmark for loading a tree, based on the topology of the current filesystem.
+# Simple benchmark utility to create a closure tree based on the topology of the current filesystem
 
+#ENV['NONUKES'] = '1'
 require 'spec_helper'
 require 'findler'
 require 'pathname'
@@ -16,11 +17,13 @@ class Pathname
   end
 end
 
+cnt = 0
 f = Findler.new '/'
 iter = f.iterator
 Tag.with_advisory_lock('closure_tree') do
-  while (nxt = iter.next_file)
-    Tag.find_or_create_by_path(nxt.path_array)
+  while (nxt = iter.next_file) && ((cnt += 1) < 1000)
+    t = Tag.find_or_create_by_path(nxt.path_array)
+    puts "created #{nxt.to_s}"
   end
 end
 

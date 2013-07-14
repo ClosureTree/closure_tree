@@ -11,8 +11,13 @@ module ClosureTree
       before_destroy :_ct_before_destroy
     end
 
+    def _ct_skip_cycle_detection!
+      @_ct_skip_cycle_detection = true
+    end
+
     def _ct_validate
-      if changes[_ct.parent_column_name] &&
+      if !@_ct_skip_cycle_detection &&
+        changes[_ct.parent_column_name] &&
         parent.present? &&
         parent.self_and_ancestors.include?(self)
         errors.add(_ct.parent_column_sym, "You cannot add an ancestor as a descendant")
@@ -31,12 +36,12 @@ module ClosureTree
     end
 
     def _ct_before_destroy
-      #_ct.with_advisory_lock do
+      _ct.with_advisory_lock do
         delete_hierarchy_references
         if _ct.options[:dependent] == :nullify
           self.class.find(self.id).children.each { |c| c.rebuild! }
         end
-      #end
+      end
       true # don't prevent destruction
     end
 
@@ -59,7 +64,7 @@ module ClosureTree
     end
 
     def delete_hierarchy_references
-      #_ct.with_advisory_lock do
+      _ct.with_advisory_lock do
         # The crazy double-wrapped sub-subselect works around MySQL's limitation of subselects on the same table that is being mutated.
         # It shouldn't affect performance of postgresql.
         # See http://dev.mysql.com/doc/refman/5.0/en/subquery-errors.html
@@ -74,7 +79,7 @@ module ClosureTree
             ) AS x )
             OR descendant_id = #{_ct.quote(id)}
         SQL
-      #end
+      end
     end
 
     module ClassMethods

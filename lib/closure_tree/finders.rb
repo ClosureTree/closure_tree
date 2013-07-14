@@ -11,20 +11,22 @@ module ClosureTree
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
     def find_or_create_by_path(path, attributes = {}, find_before_lock = true)
       attributes[:type] ||= self.type if _ct.subclass? && _ct.has_type?
+      # only bother trying to find_by_path on the first call:
       (find_before_lock && find_by_path(path, attributes)) || begin
+        subpath = path.is_a?(Enumerable) ? path.dup : [path]
+        return self if subpath.empty?
+        child_name = subpath.shift
+        attrs = attributes.merge(_ct.name_sym => child_name)
         _ct.with_advisory_lock do
-          subpath = path.is_a?(Enumerable) ? path.dup : [path]
-          child_name = subpath.shift
-          return self unless child_name
-          child = if ActiveRecord::VERSION::MAJOR <= 3 && ActiveRecord::VERSION::MINOR < 2
-            attrs = attributes.merge(_ct.name_sym => child_name)
-            # shenanigans because children.create is bound to the superclass
-            # (in the case of polymorphism):
-            self.children.where(attrs).first || begin
-              self.class.new(attrs).tap { |ea| self.children << ea }
+          # shenanigans because children.create is bound to the superclass
+          # (in the case of polymorphism):
+          child = self.children.where(attrs).first || begin
+            self.class.new(attrs).tap do |ea|
+              # We know that there isn't a cycle, because we just created it, and
+              # cycle detection is expensive when the node is deep.
+              ea._ct_skip_cycle_detection!
+              self.children << ea
             end
-          else
-            self.children.where(_ct.name_sym => child_name).first_or_create(attributes)
           end
           child.find_or_create_by_path(subpath, attributes, false)
         end
@@ -49,6 +51,11 @@ module ClosureTree
     end
 
     module ClassMethods
+
+      # Fix deprecation warning:
+      def _ct_all
+        (ActiveRecord::VERSION::MAJOR >= 4 ) ? all : scoped
+      end
 
       def without(instance)
         if instance.new_record?
@@ -81,7 +88,7 @@ module ClosureTree
 
       def with_ancestor(*ancestors)
         ancestor_ids = ancestors.map { |ea| ea.is_a?(ActiveRecord::Base) ? ea._ct_id : ea }
-        scope = ancestor_ids.blank? ? scoped : joins(:ancestor_hierarchies).
+        scope = ancestor_ids.blank? ? _ct_all : joins(:ancestor_hierarchies).
           where("#{_ct.hierarchy_table_name}.ancestor_id" => ancestor_ids).
           where("#{_ct.hierarchy_table_name}.generations > 0").
           readonly(false)
@@ -120,7 +127,8 @@ module ClosureTree
         scope = where(_ct.name_sym => path.pop).readonly(false)
         scope = ct_scoped_attributes(scope, attributes)
         last_joined_table = _ct.table_name
-        path.reverse.each_with_index do |ea, idx|
+        # MySQL doesn't support more than 61 joined tables (!!):
+        path.first(50).reverse.each_with_index do |ea, idx|
           next_joined_table = "p#{idx}"
           scope = scope.joins(<<-SQL)
             INNER JOIN #{_ct.quoted_table_name} AS #{next_joined_table}
@@ -131,8 +139,12 @@ module ClosureTree
           scope = ct_scoped_attributes(scope, attributes, next_joined_table)
           last_joined_table = next_joined_table
         end
-        scope = scope.where("#{last_joined_table}.#{_ct.parent_column_name}" => parent_id)
-        scope.first
+        result = scope.where("#{last_joined_table}.#{_ct.parent_column_name}" => parent_id).first
+        if path.size > 50 && result
+          find_by_path(path[50..-1], attributes, result.primary_key)
+        else
+          result
+        end
       end
 
       # Find or create nodes such that the +ancestry_path+ is +path+

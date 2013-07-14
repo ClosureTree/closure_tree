@@ -5,8 +5,10 @@
 * Fix for potential deadlock from ```delete_hierarchy_references``` not being called within an
   advisory lock. Thanks, [Armando Guereca](https://github.com/aguereca), for finding that!
 
-* For Rails 3.2 and later, changed ```find_or_create_by_path``` to use ```first_or_create```. The
-  parallel path destruction test now takes 13 seconds instead of 132 seconds from this one-line change.
+* Sped up find_or_create_by_path to skip cycle detection validation.
+  A node whose ancestry was 200-deep took 20 seconds to create (!!), and now takes < 1 second.
+
+* Fixed issue with MySQL that prevented nodes > 60 levels deep from being created
 
 ### 4.2.4
 

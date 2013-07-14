@@ -56,7 +56,7 @@ describe "threadhot" do
 
   it "creates dupe roots without advisory locks" do
     # disable with_advisory_lock:
-    Tag.should_receive(:with_advisory_lock).any_number_of_times { |lock_name, &block| block.call }
+    Tag.stub(:with_advisory_lock).and_return { |lock_name, &block| block.call }
     run_workers
     Tag.where(:name => @names).size.should > @iterations
   end
@@ -75,7 +75,7 @@ describe "threadhot" do
         begin
           name = children_to_add.shift
           if name
-            target.children.create!(:name => name)
+            target.children.where(:name => name).create!
             children_to_delete << name
             added_children << name
           end
@@ -118,7 +118,7 @@ describe "threadhot" do
   end
 
   it "fails to deadlock while simultaneously deleting items from the same hierarchy" do
-    target = User.find_or_create_by_path((1..500).to_a.map { |ea| ea.to_s })
+    target = User.find_or_create_by_path((1..200).to_a.map { |ea| ea.to_s })
     nodes_to_delete = bad_shuffle(target.self_and_ancestors.to_a)
     destroyer_threads = @workers.times.map do
       Thread.new do
