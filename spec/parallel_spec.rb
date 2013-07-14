@@ -13,10 +13,11 @@ describe "threadhot" do
     ActiveRecord::Base.connection.reconnect!
     TagHierarchy.delete_all
     Tag.delete_all
-    @iterations = 5
-    @workers = 6 # Travis CI workers can't reliably handle larger numbers
     @parent = nil
-    @time_between_runs = 1
+    # These values seem to allow Travis to reliably pass:
+    @iterations = 5
+    @workers = 6
+    @time_between_runs = 3
   end
 
   def find_or_create_at_even_second(run_at)
