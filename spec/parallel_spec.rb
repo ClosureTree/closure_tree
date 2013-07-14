@@ -74,10 +74,11 @@ describe "threadhot" do
         ActiveRecord::Base.connection.reconnect!
         begin
           name = children_to_add.shift
-          if name
-            target.children.where(:name => name).create!
+          unless name.nil?
+            target.find_or_create_by_path(name)
             children_to_delete << name
             added_children << name
+            puts "+ #{name}"
           end
         end while !children_to_add.empty?
       end
@@ -92,6 +93,7 @@ describe "threadhot" do
           if victim
             target.children.where(:name => victim).first.destroy
             deleted_children << victim
+            puts "- #{victim}"
           else
             sleep 0.1
           end
@@ -106,20 +108,21 @@ describe "threadhot" do
     deleted_children.should =~ expected_children
   end
 
-  def bad_shuffle(array, pairs_to_shuffle = nil)
-    pairs_to_shuffle ||= (array.size / 10)
-    s = array.dup
-    from_ix = (0..(array.size)).to_a.shuffle.first(pairs_to_shuffle)
-    to_idx = (0..(array.size)).to_a.shuffle.first(pairs_to_shuffle)
-    from_ix.zip(to_idx).each do |from, to|
-      s[from], s[to] = s[to], s[from]
+  # Oh, yeah, I'm totes monkey patching in a bad shuffle. I AM A NAUGHTY MONKAY
+  class Array
+    def bad_shuffle!(shuffle_count = nil)
+      shuffle_count ||= size / 10
+      pairs = Hash[*(0..(size)).to_a.shuffle.first(shuffle_count)]
+      pairs.each do |from, to|
+        self[from], self[to] = self[to], self[from]
+      end
+      self
     end
-    s
   end
 
   it "fails to deadlock while simultaneously deleting items from the same hierarchy" do
     target = User.find_or_create_by_path((1..200).to_a.map { |ea| ea.to_s })
-    nodes_to_delete = bad_shuffle(target.self_and_ancestors.to_a)
+    nodes_to_delete = target.self_and_ancestors.to_a.bad_shuffle!
     destroyer_threads = @workers.times.map do
       Thread.new do
         ActiveRecord::Base.connection.reconnect!
