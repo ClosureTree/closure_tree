@@ -27,4 +27,12 @@ describe CuisineType do
   it "sets the table_name of the hierarchy class properly" do
     CuisineTypeHierarchy.table_name.should == ActiveRecord::Base.table_name_prefix + "cuisine_type_hierarchies" + ActiveRecord::Base.table_name_suffix
   end
+
+  it 'fixes self_and_ancestors properly on reparenting' do
+    a = CuisineType.create! :name => 'a'
+    b = CuisineType.create! :name => 'b'
+    b.self_and_ancestors.to_a.should == [b]
+    a.children << b
+    b.self_and_ancestors.to_a.should == [b, a]
+  end
 end

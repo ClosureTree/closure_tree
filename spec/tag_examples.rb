@@ -99,10 +99,10 @@ shared_examples_for "Tag (without fixtures)" do
       end
 
       it 'fix self_and_ancestors properly on reparenting' do
-        t = tag_class.create! :name => 'fng'
+        t = tag_class.create! :name => 'moar leaf'
         t.self_and_ancestors.to_a.should == [t]
-        @leaf.children << t
-        t.self_and_ancestors.to_a.should == [t, @leaf, @mid, @root]
+        @mid.children << t
+        t.self_and_ancestors.to_a.should == [t, @mid, @root]
       end
     end
 

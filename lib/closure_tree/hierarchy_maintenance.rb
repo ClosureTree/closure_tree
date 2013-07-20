@@ -58,6 +58,9 @@ module ClosureTree
             WHERE x.descendant_id = #{_ct.quote(_ct_parent_id)}
           SQL
         end
+        # Resetting the ancestral collections addresses https://github.com/mceachen/closure_tree/issues/68
+        self.ancestor_hierarchies.reset
+        self.self_and_ancestors.reset
         children.each { |c| c.rebuild! }
         _ct_reorder_children if _ct.order_is_numeric?
       end
