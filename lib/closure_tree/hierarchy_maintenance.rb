@@ -99,13 +99,24 @@ module ClosureTree
   end
 end
 
-# Horrible monkeypatch to address https://github.com/mceachen/closure_tree/issues/68
-module ActiveRecord
-  module Associations
-    class CollectionProxy
-      def _ct_reset
-        @association.reset
-      end
-    end
+module RailsReset
+  def _ct_reset
+    reset
   end
+end
+
+module RailsAssociationReset
+  def _ct_reset
+    @association.reset
+  end
+end
+
+# Horrible monkeypatch to address https://github.com/mceachen/closure_tree/issues/68
+case [ActiveRecord::VERSION.MAJOR, ActiveRecord::VERSION.MINOR].join(".")
+  when "3.0", "4.0"
+    ActiveRecord::Associations::CollectionAssociation.send(:include, RailsReset)
+  when "3.1", "3.2"
+    ActiveRecord::Associations::CollectionProxy.send(:include, RailsAssociationReset)
+  else
+    raise "unsupported version of rails"
 end
