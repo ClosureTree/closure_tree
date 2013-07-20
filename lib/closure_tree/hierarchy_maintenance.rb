@@ -59,8 +59,8 @@ module ClosureTree
           SQL
         end
         # Resetting the ancestral collections addresses https://github.com/mceachen/closure_tree/issues/68
-        self.ancestor_hierarchies.reset
-        self.self_and_ancestors.reset
+        self.ancestor_hierarchies._ct_reset
+        self.self_and_ancestors._ct_reset
         children.each { |c| c.rebuild! }
         _ct_reorder_children if _ct.order_is_numeric?
       end
@@ -94,6 +94,17 @@ module ClosureTree
           roots.each { |n| n.send(:rebuild!) } # roots just uses the parent_id column, so this is safe.
         end
         nil
+      end
+    end
+  end
+end
+
+# Horrible monkeypatch to address https://github.com/mceachen/closure_tree/issues/68
+module ActiveRecord
+  module Associations
+    class CollectionProxy
+      def _ct_reset
+        @association.reset
       end
     end
   end
