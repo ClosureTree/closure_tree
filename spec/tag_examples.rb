@@ -97,6 +97,13 @@ shared_examples_for "Tag (without fixtures)" do
         tag_class.leaves.should be_empty
         DestroyedTag.all.map { |t| t.name }.should =~ %w{root mid leaf}
       end
+
+      it 'fix self_and_ancestors properly on reparenting' do
+        t = tag_class.create! :name => 'fng'
+        t.self_and_ancestors.to_a.should == [t]
+        @leaf.children << t
+        t.self_and_ancestors.to_a.should == [t, @leaf, @mid, @root]
+      end
     end
 
     context "3 tag explicit_create db" do
