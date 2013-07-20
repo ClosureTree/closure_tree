@@ -104,19 +104,28 @@ module ClosureTree
     end
   end
 
-  module RailsAssociationReset
+  module Rails3AssociationReset
     def _ct_reset
       @association.reset
+      @association.reset_scope
+    end
+  end
+
+  module Rails4AssociationReset
+    def _ct_reset
+      reset
     end
   end
 
   # Horrible monkeypatch to address https://github.com/mceachen/closure_tree/issues/68
   AR_MAJ_MIN_VER = [ActiveRecord::VERSION::MAJOR, ActiveRecord::VERSION::MINOR].join('.')
   case AR_MAJ_MIN_VER
-    when '3.0', '4.0'
-      ActiveRecord::Associations::CollectionAssociation.send(:include, ClosureTree::RailsReset)
+    when '3.0'
+      ActiveRecord::Associations::AssociationCollection.send(:include, ClosureTree::RailsReset)
     when '3.1', '3.2'
-      ActiveRecord::Associations::CollectionProxy.send(:include, ClosureTree::RailsAssociationReset)
+      ActiveRecord::Associations::CollectionProxy.send(:include, ClosureTree::Rails3AssociationReset)
+    when '4.0'
+      ActiveRecord::Associations::CollectionProxy.send(:include, ClosureTree::Rails4AssociationReset)
     else
       raise "#{AR_MAJ_MIN_VER} is not supported (yet?)"
   end
