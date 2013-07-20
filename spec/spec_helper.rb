@@ -32,7 +32,7 @@ ActiveRecord::Base.configurations = YAML::load(ERB.new(IO.read(plugin_test_dir +
 ActiveRecord::Base.establish_connection(ENV["DB"])
 ActiveRecord::Migration.verbose = false
 if ENV['NONUKES']
-  puts "skipping database creation"
+  puts 'skipping database creation'
 else
   require 'db/schema'
 end

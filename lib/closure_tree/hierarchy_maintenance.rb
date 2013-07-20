@@ -17,6 +17,7 @@ module ClosureTree
 
     def _ct_validate
       if !@_ct_skip_cycle_detection &&
+        !new_record? &&
         changes[_ct.parent_column_name] &&
         parent.present? &&
         parent.self_and_ancestors.include?(self)
@@ -30,7 +31,14 @@ module ClosureTree
     end
 
     def _ct_after_save
-      rebuild! if changes[_ct.parent_column_name] || @was_new_record
+      if changes[_ct.parent_column_name] || @was_new_record
+        rebuild!
+      end
+      if changes[_ct.parent_column_name] && !@was_new_record
+        # Resetting the ancestral collections addresses https://github.com/mceachen/closure_tree/issues/68
+        ancestor_hierarchies.reload
+        self_and_ancestors.reload
+      end
       @was_new_record = false # we aren't new anymore.
       true # don't cancel anything.
     end
@@ -58,9 +66,6 @@ module ClosureTree
             WHERE x.descendant_id = #{_ct.quote(_ct_parent_id)}
           SQL
         end
-        # Resetting the ancestral collections addresses https://github.com/mceachen/closure_tree/issues/68
-        self.ancestor_hierarchies._ct_reset
-        self.self_and_ancestors._ct_reset
         children.each { |c| c.rebuild! }
         _ct_reorder_children if _ct.order_is_numeric?
       end
@@ -96,37 +101,5 @@ module ClosureTree
         nil
       end
     end
-  end
-
-  module RailsReset
-    def _ct_reset
-      reset
-    end
-  end
-
-  module Rails3AssociationReset
-    def _ct_reset
-      @association.reset
-      @association.reset_scope
-    end
-  end
-
-  module Rails4AssociationReset
-    def _ct_reset
-      reset
-    end
-  end
-
-  # Horrible monkeypatch to address https://github.com/mceachen/closure_tree/issues/68
-  AR_MAJ_MIN_VER = [ActiveRecord::VERSION::MAJOR, ActiveRecord::VERSION::MINOR].join('.')
-  case AR_MAJ_MIN_VER
-    when '3.0'
-      ActiveRecord::Associations::AssociationCollection.send(:include, ClosureTree::RailsReset)
-    when '3.1', '3.2'
-      ActiveRecord::Associations::CollectionProxy.send(:include, ClosureTree::Rails3AssociationReset)
-    when '4.0'
-      ActiveRecord::Associations::CollectionProxy.send(:include, ClosureTree::Rails4AssociationReset)
-    else
-      raise "#{AR_MAJ_MIN_VER} is not supported (yet?)"
   end
 end
