@@ -97,26 +97,27 @@ module ClosureTree
       end
     end
   end
-end
 
-module RailsReset
-  def _ct_reset
-    reset
+  module RailsReset
+    def _ct_reset
+      reset
+    end
   end
-end
 
-module RailsAssociationReset
-  def _ct_reset
-    @association.reset
+  module RailsAssociationReset
+    def _ct_reset
+      @association.reset
+    end
   end
-end
 
-# Horrible monkeypatch to address https://github.com/mceachen/closure_tree/issues/68
-case [ActiveRecord::VERSION.MAJOR, ActiveRecord::VERSION.MINOR].join(".")
-  when "3.0", "4.0"
-    ActiveRecord::Associations::CollectionAssociation.send(:include, RailsReset)
-  when "3.1", "3.2"
-    ActiveRecord::Associations::CollectionProxy.send(:include, RailsAssociationReset)
-  else
-    raise "unsupported version of rails"
+  # Horrible monkeypatch to address https://github.com/mceachen/closure_tree/issues/68
+  AR_MAJ_MIN_VER = [ActiveRecord::VERSION::MAJOR, ActiveRecord::VERSION::MINOR].join('.')
+  case AR_MAJ_MIN_VER
+    when '3.0', '4.0'
+      ActiveRecord::Associations::CollectionAssociation.send(:include, ClosureTree::RailsReset)
+    when '3.1', '3.2'
+      ActiveRecord::Associations::CollectionProxy.send(:include, ClosureTree::RailsAssociationReset)
+    else
+      raise "#{AR_MAJ_MIN_VER} is not supported (yet?)"
+  end
 end
