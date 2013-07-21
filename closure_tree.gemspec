@@ -21,6 +21,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'yard'
   gem.add_development_dependency 'rspec'
+  gem.add_development_dependency 'rspec-instafail'
   # gem.add_development_dependency 'rspec', '~> 2.13.0' # <- Rubymine can't handle 2.14.x
   gem.add_development_dependency 'fuubar'
   gem.add_development_dependency 'rspec-rails' # FIXME: for rspec-rails and rspec fixture support

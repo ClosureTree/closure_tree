@@ -1,5 +1,11 @@
 # Changelog
 
+### 4.2.7
+
+* ```self_and_ancestors``` and ```ancestry_hierarchy``` are reloaded
+  when nodes are reparented. Addresses [issue 68](https://github.com/mceachen/closure_tree/issues/68).
+  Thanks for the assist, [Ivan Stana](https://github.com/istana).
+
 ### 4.2.6
 
 * Explicitly added MIT licensing to the gemspec.

@@ -17,10 +17,10 @@ module ClosureTree
 
     def _ct_validate
       if !@_ct_skip_cycle_detection &&
-        !new_record? &&
-        changes[_ct.parent_column_name] &&
-        parent.present? &&
-        parent.self_and_ancestors.include?(self)
+        !new_record? && # don't validate for cycles if we're a new record
+        changes[_ct.parent_column_name] && # don't validate for cycles if we didn't change our parent
+        parent.present? && # don't validate if we're root
+        parent.self_and_ancestors.include?(self) # < this is expensive :\
         errors.add(_ct.parent_column_sym, "You cannot add an ancestor as a descendant")
       end
     end
@@ -35,7 +35,8 @@ module ClosureTree
         rebuild!
       end
       if changes[_ct.parent_column_name] && !@was_new_record
-        # Resetting the ancestral collections addresses https://github.com/mceachen/closure_tree/issues/68
+        # Resetting the ancestral collections addresses
+        # https://github.com/mceachen/closure_tree/issues/68
         ancestor_hierarchies.reload
         self_and_ancestors.reload
       end
