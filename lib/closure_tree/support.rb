@@ -68,7 +68,11 @@ module ClosureTree
     end
 
     def scope_with_order(scope, additional_order_by = nil)
-      order_option? ? scope.order(*([additional_order_by, order_by].compact)) : scope
+      if order_option?
+        scope.order(*([additional_order_by, order_by].compact))
+      else
+        additional_order_by ? scope.order(additional_order_by) : scope
+      end
     end
 
     # lambda-ize the order, but don't apply the default order_option
