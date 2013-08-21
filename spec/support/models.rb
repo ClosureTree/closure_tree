@@ -95,8 +95,7 @@ module Namespace
 end
 
 class Metal < ActiveRecord::Base
-  acts_as_tree :order => 'sort_order'
-
   self.table_name = 'metal'
+  acts_as_tree :order => 'sort_order'
   self.inheritance_column = 'metal_type'
 end
