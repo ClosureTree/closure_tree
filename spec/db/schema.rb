@@ -106,4 +106,17 @@ ActiveRecord::Schema.define(:version => 0) do
     t.integer "descendant_id", :null => false
     t.integer "generations", :null => false
   end
+
+  create_table "metal", :force => true do |t|
+    t.integer "parent_id"
+    t.string "metal_type"
+    t.string "value"
+    t.integer "sort_order"
+  end
+
+  create_table "metal_hierarchies", :id => false, :force => true do |t|
+    t.integer "ancestor_id", :null => false
+    t.integer "descendant_id", :null => false
+    t.integer "generations", :null => false
+  end
 end

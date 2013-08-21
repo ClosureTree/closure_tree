@@ -93,3 +93,10 @@ module Namespace
     attr_accessible :name if _ct.use_attr_accessible?
   end
 end
+
+class Metal < ActiveRecord::Base
+  acts_as_tree :order => 'sort_order'
+
+  self.table_name = 'metal'
+  self.inheritance_column = 'metal_type'
+end
