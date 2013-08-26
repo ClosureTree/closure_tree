@@ -27,13 +27,11 @@ module ClosureTree
 
     def hierarchy_class_for_model
       hierarchy_class = model_class.parent.const_set(short_hierarchy_class_name, Class.new(ActiveRecord::Base))
-      use_attr_accessible = use_attr_accessible?
-      include_forbidden_attributes_protection = include_forbidden_attributes_protection?
       hierarchy_class.class_eval <<-RUBY, __FILE__, __LINE__ + 1
-        include ActiveModel::ForbiddenAttributesProtection if include_forbidden_attributes_protection
+        include ActiveModel::ForbiddenAttributesProtection if #{include_forbidden_attributes_protection?}
         belongs_to :ancestor, :class_name => "#{model_class}"
         belongs_to :descendant, :class_name => "#{model_class}"
-        attr_accessible :ancestor, :descendant, :generations if use_attr_accessible
+        attr_accessible :ancestor, :descendant, :generations if #{use_attr_accessible?}
         def ==(other)
           self.class == other.class && ancestor_id == other.ancestor_id && descendant_id == other.descendant_id
         end
