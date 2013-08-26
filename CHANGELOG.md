@@ -1,5 +1,9 @@
 # Changelog
 
+### 4.2.8
+
+* More massaging for Rails 4 and ```attr_accessible``` support
+
 ### 4.2.7
 
 * ```self_and_ancestors``` and ```ancestry_hierarchy``` are reloaded
