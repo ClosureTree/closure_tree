@@ -24,7 +24,6 @@ module ClosureTree
         extend NumericOrderSupport.adapter_for_connection(connection)
       end
     end
-
     def hierarchy_class_for_model
       hierarchy_class = model_class.parent.const_set(short_hierarchy_class_name, Class.new(ActiveRecord::Base))
       use_attr_accessible = use_attr_accessible?
