@@ -28,7 +28,7 @@ module ClosureTree
 
       include ClosureTree::DeterministicOrdering if _ct.order_option?
       include ClosureTree::NumericDeterministicOrdering if _ct.order_is_numeric?
-    rescue StandardError => e
+    rescue e
       # Horrible hack to support Heroku's database-less assets:precompile step:
       # raise e unless e.message =~ /Connection refused/
 
