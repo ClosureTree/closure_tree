@@ -1,5 +1,11 @@
 # Changelog
 
+### 4.2.9
+
+* Support for Heroku's cray assets:precompile hack for Rails 4.
+  Addresses [issue 78](https://github.com/mceachen/closure_tree/issues/78).
+  Thanks for the assist, [Alex Bowman](https://github.com/axlekb).
+
 ### 4.2.8
 
 * More massaging for Rails 4 and ```attr_accessible``` support

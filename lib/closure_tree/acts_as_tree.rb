@@ -29,11 +29,8 @@ module ClosureTree
       include ClosureTree::DeterministicOrdering if _ct.order_option?
       include ClosureTree::NumericDeterministicOrdering if _ct.order_is_numeric?
     rescue StandardError => e
-      # Horrible hack to support Heroku's database-less assets:precompile step:
-      raise e unless e.message =~ /Connection refused/
-
-      ActiveRecord::Base.logger.warn('Database connection could not be established. Are we doing an assets:precompile?')
-      ActiveRecord::Base.logger.warn(ENV.map { |k, v| "#{k} => #{v}" }.join("\n"))
+      # Support Heroku's database-less assets:precompile pre-deploy step:
+      raise e unless ENV['DATABASE_URL'].to_s.include?('//user:pass@127.0.0.1/') && ENV['RAILS_GROUPS'] == 'assets'
     end
   end
 end
