@@ -93,7 +93,7 @@ Note that closure_tree only supports Rails 3.0 and later, and has test coverage 
           :unique => true, :name => "tag_anc_desc_udx"
 
         # For "all ancestors of…" selects,
-        add_index :tag_hierarchies, [:descendant_id]
+        add_index :tag_hierarchies, [:descendant_id],
           :name => "tag_desc_idx"
       end
     end
