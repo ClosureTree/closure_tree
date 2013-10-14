@@ -8,7 +8,9 @@ module ClosureTree
       belongs_to :parent,
         :class_name => _ct.model_class.to_s,
         :foreign_key => _ct.parent_column_name,
-        :inverse_of => :children
+        :inverse_of => :children,
+        :touch =>   _ct.options[:touch]
+
 
       attr_accessible :parent if _ct.use_attr_accessible?
 
