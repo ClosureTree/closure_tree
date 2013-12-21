@@ -387,7 +387,7 @@ If your ```order``` column is an integer attribute, you'll also have these:
 ```ruby
 
 root = OrderedTag.create(:name => "root")
-a = OrderedTag.create(:name => "a", :parent => "root")
+a = OrderedTag.create(:name => "a", :parent => root)
 b = OrderedTag.create(:name => "b")
 c = OrderedTag.create(:name => "c")
 
