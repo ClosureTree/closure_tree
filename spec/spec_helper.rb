@@ -38,7 +38,7 @@ def recreate_db
   db_name = ActiveRecord::Base.configurations[ENV["DB"]]["database"]
   case ENV['DB'] || 'mysql'
     when 'sqlite'
-      File.delete "spec/sqlite3.db"
+      File.delete 'spec/sqlite3.db' if File.exist? 'spec/sqlite3.db'
     when 'postgresql'
       `psql -c 'DROP DATABASE #{db_name}' -U postgres`
       `psql -c 'CREATE DATABASE #{db_name}' -U postgres`
