@@ -5,7 +5,7 @@ shared_examples_for 'Tag (with fixtures)' do
 
   describe 'Tag (with fixtures)' do
     fixtures :tags
-    before :each do
+    before do
       tag_class.rebuild!
       DestroyedTag.delete_all
     end
