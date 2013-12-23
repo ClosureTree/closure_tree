@@ -11,8 +11,6 @@ describe "threadhot" do
 
   before :each do
     ActiveRecord::Base.connection.reconnect!
-    TagHierarchy.delete_all
-    Tag.delete_all
     @parent = nil
     # These values seem to allow Travis to reliably pass:
     @iterations = 5

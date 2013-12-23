@@ -1,10 +1,5 @@
 require 'spec_helper'
 
-def delete_all_labels
-  LabelHierarchy.delete_all
-  Label.delete_all
-end
-
 def create_label_tree
   @d1 = Label.find_or_create_by_path %w(a1 b1 c1 d1)
   @c1 = @d1.parent
@@ -19,7 +14,7 @@ def create_label_tree
   Label.update_all("sort_order = id")
 end
 
-def create_preorder_tree(suffix = "")
+def create_preorder_tree(suffix = "", &block)
   %w(
     a/l/n/r
     a/l/n/q
@@ -34,10 +29,12 @@ def create_preorder_tree(suffix = "")
 
   Label.roots.each_with_index do |root, root_idx|
     root.order_value = root_idx
+    yield(root) if block_given?
     root.save!
     root.self_and_descendants.each do |ea|
       ea.children.to_a.sort_by(&:name).each_with_index do |ea, idx|
         ea.order_value = idx
+        yield(ea) if block_given?
         ea.save!
       end
     end
@@ -59,9 +56,6 @@ describe Label do
   end
 
   context "roots" do
-    before :each do
-      delete_all_labels
-    end
     it "sorts alphabetically" do
       expected = (0..10).to_a
       expected.shuffle.each do |ea|
@@ -119,26 +113,28 @@ describe Label do
   end
 
   context "Mixed class tree" do
-    it "should support mixed type ancestors" do
-      [Label, DateLabel, DirectoryLabel, EventLabel].permutation do |classes|
-        delete_all_labels
-        classes.each { |c| c.all.should(be_empty, "class #{c} wasn't cleaned out") }
-        names = ('A'..'Z').to_a.first(classes.size)
-        instances = classes.collect { |clazz| clazz.new(:name => names.shift) }
-        a = instances.first
-        a.save!
-        a.name.should == "A"
-        instances[1..-1].each_with_index do |ea, idx|
-          instances[idx].children << ea
+    context "preorder tree" do
+      before do
+        classes = [Label, DateLabel, DirectoryLabel, EventLabel]
+        create_preorder_tree do |ea|
+          ea.type = classes[ea.sort_order % 4].to_s
         end
-        roots = classes.first.roots
-        i = instances.shift
-        roots.to_a.should =~ [i]
-        while (!instances.empty?) do
-          child = instances.shift
-          i.children.to_a.should =~ [child]
-          i = child
-        end
+      end
+      it "finds roots with specific classes" do
+        Label.roots.should == Label.where(:name => 'a').to_a
+        DirectoryLabel.roots.should be_empty
+        EventLabel.roots.should be_empty
+      end
+
+      it "all is limited to subclasses" do
+        DateLabel.all.map(&:name).should =~ %w(f h l n p)
+        DirectoryLabel.all.map(&:name).should =~ %w(g q)
+        EventLabel.all.map(&:name).should == %w(r)
+      end
+
+      it "returns descendents regardless of subclass" do
+        Label.root.descendants.map{|ea|ea.class.to_s}.uniq.should =~
+          %w(Label DateLabel DirectoryLabel EventLabel)
       end
     end
 
@@ -160,8 +156,7 @@ describe Label do
   end
 
   context "find_all_by_generation" do
-    before :all do
-      delete_all_labels
+    before :each do
       create_label_tree
     end
 
@@ -201,8 +196,7 @@ describe Label do
   end
 
   context "loading through self_and_ scopes" do
-    before :all do
-      delete_all_labels
+    before :each do
       create_label_tree
     end
 
@@ -286,10 +280,6 @@ describe Label do
   end
 
   context "#add_sibling" do
-    before :each do
-      Label.delete_all
-    end
-
     it "should move a node before another node which has an uninitialized sort_order" do
       f = Label.find_or_create_by_path %w(a b c d e fa)
       f0 = f.prepend_sibling(Label.new(:name => "fb")) # < not alpha sort, so name shouldn't matter
@@ -325,7 +315,6 @@ describe Label do
 
   context "destructive reordering" do
     before :each do
-      Label.delete_all
       # to make sure sort_order isn't affected by additional nodes:
       create_preorder_tree
       @root = Label.create(:name => "root")
@@ -359,7 +348,6 @@ describe Label do
 
   context "preorder" do
     it "returns descendants in proper order" do
-      delete_all_labels
       create_preorder_tree
       a = Label.root
       a.name.should == "a"

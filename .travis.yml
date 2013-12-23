@@ -21,10 +21,6 @@ env:
   - DB=postgresql
 script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rake --trace all_spec_flavors
 
-before_script:
-  - mysql -e 'create database closure_tree_test'
-  - psql -c 'create database closure_tree_test' -U postgres
-
 matrix:
   exclude:
     - rvm: 1.8.7

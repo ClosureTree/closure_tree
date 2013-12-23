@@ -2,11 +2,6 @@ require 'spec_helper'
 
 describe "empty db" do
 
-  before :each do
-    ReferralHierarchy.delete_all
-    User.delete_all
-  end
-
   context "empty db" do
     it "should return no entities" do
       User.roots.should be_empty

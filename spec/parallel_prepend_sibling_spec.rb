@@ -4,8 +4,6 @@ require 'securerandom'
 describe "threadhot" do
 
   before :each do
-    LabelHierarchy.delete_all
-    Label.delete_all
     @iterations = 5
     @workers = 8
   end

@@ -1,5 +1,10 @@
 # Changelog
 
+### 4.3.0
+
+* Use [foreigner](https://github.com/matthuhiggins/foreigner) to prove that
+  things are inserted and deleted without violating foreign key constraints
+
 ### 4.2.9
 
 * Support for Heroku's cray assets:precompile hack for Rails 4.

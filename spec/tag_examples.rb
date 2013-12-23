@@ -26,14 +26,6 @@ shared_examples_for "Tag (without fixtures)" do
   end
 
   describe "from empty db" do
-    def nuke_db
-      tag_hierarchy_class.delete_all
-      tag_class.delete_all
-    end
-
-    before :each do
-      nuke_db
-    end
 
     context "with no tags" do
       it "should return no entities" do

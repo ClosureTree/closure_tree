@@ -7,15 +7,19 @@ require 'bundler/setup' if File.exists?(ENV['BUNDLE_GEMFILE'])
 require 'rspec'
 require 'rails'
 require 'active_record'
+require 'foreigner'
+require 'database_cleaner'
 require 'active_record/fixtures'
 require 'rspec/rails/adapters'
 require 'rspec/rails/fixture_support'
 require 'closure_tree'
 require 'tmpdir'
 
-#log = Logger.new(STDOUT)
-#log.sev_threshold = Logger::DEBUG
-#ActiveRecord::Base.logger = log
+if ENV['STDOUT_LOGGING']
+  log = Logger.new(STDOUT)
+  log.sev_threshold = Logger::DEBUG
+  ActiveRecord::Base.logger = log
+end
 
 require 'yaml'
 require 'erb'
@@ -29,11 +33,30 @@ if ENV['ATTR_ACCESSIBLE'] == '1'
 end
 
 ActiveRecord::Base.configurations = YAML::load(ERB.new(IO.read(plugin_test_dir + "/db/database.yml")).result)
+
+def recreate_db
+  db_name = ActiveRecord::Base.configurations[ENV["DB"]]["database"]
+  case ENV['DB'] || 'mysql'
+    when 'sqlite'
+      File.delete "spec/sqlite3.db"
+    when 'postgresql'
+      `psql -c 'DROP DATABASE #{db_name}' -U postgres`
+      `psql -c 'CREATE DATABASE #{db_name}' -U postgres`
+    when 'mysql'
+      `mysql -e 'DROP DATABASE IF EXISTS #{db_name}'`
+      `mysql -e 'CREATE DATABASE #{db_name}'`
+  end
+  ActiveRecord::Base.connection.reconnect!
+end
+
 ActiveRecord::Base.establish_connection(ENV["DB"])
+
 ActiveRecord::Migration.verbose = false
 if ENV['NONUKES']
   puts 'skipping database creation'
 else
+  Foreigner.load
+  recreate_db
   require 'db/schema'
 end
 require 'support/models'
@@ -65,12 +88,17 @@ end
 
 Thread.abort_on_exception = true
 
+DatabaseCleaner.strategy = :truncation
+
 RSpec.configure do |config|
   config.fixture_path = "#{plugin_test_dir}/fixtures"
-  # true runs the tests 1 second faster, but then you can't
-  # see what's going on while debuggering with different db connections.
+  # disable rspec-rails' transaction wrapping:
   config.use_transactional_fixtures = false
+  config.before(:each) do
+    DatabaseCleaner.start
+  end
   config.after(:each) do
+    DatabaseCleaner.clean
     DB_QUERIES.clear
   end
   config.before(:all) do
