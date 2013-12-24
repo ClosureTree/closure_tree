@@ -9,7 +9,8 @@ end
 
 describe "threadhot" do
 
-  before :each do
+  before do
+    DatabaseCleaner.clean
     ActiveRecord::Base.connection.reconnect!
     @parent = nil
     # These values seem to allow Travis to reliably pass:
