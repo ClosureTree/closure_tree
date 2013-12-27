@@ -18,7 +18,7 @@ class DbThread
           block.call
         end
       ensure
-        ActiveRecord::Base.connection.disconnect!
+        ActiveRecord::Base.connection.close
       end
     end
   end
