@@ -7,40 +7,66 @@ parallelism_is_broken = begin
     ENV["DB"] =~ /sqlite/
 end
 
-describe "threadhot" do
-
-  before do
-    DatabaseCleaner.clean
-    ActiveRecord::Base.connection.reconnect!
-    @parent = nil
-    # These values seem to allow Travis to reliably pass:
-    @iterations = 5
-    @workers = 6
-    @time_between_runs = 3
+class DbThread
+  def initialize(wrap_with_transaction = true, &block)
+    @thread = Thread.new do
+      begin
+        ActiveRecord::Base.connection.reconnect!
+        if wrap_with_transaction
+          ActiveRecord::Base.connection.transaction { block.call }
+        else
+          block.call
+        end
+      ensure
+        ActiveRecord::Base.connection.disconnect!
+      end
+    end
   end
 
-  def find_or_create_at_even_second(run_at)
-    sleep(run_at - Time.now.to_f)
-    ActiveRecord::Base.connection.reconnect!
-    (@parent || Tag).find_or_create_by_path([run_at.to_s, :a, :b, :c])
+  def join
+    @thread.join
+  end
+end
+
+describe "threadhot" do
+
+  before :each do
+    @parent = nil
+    @iterations = 1
+    @workers = 10
+    @min_sleep_time = 0.5
+    @lock = Mutex.new
+    @wake_times = []
+    DatabaseCleaner.clean
+  end
+
+  def find_or_create_at_same_time
+    @lock.synchronize { @wake_times << Time.now.to_f + @min_sleep_time }
+    while @wake_times.size < @workers
+      sleep(0.1)
+    end
+    max_wait_time = @lock.synchronize { @wake_times.max }
+    sleep_time = max_wait_time - Time.now.to_f
+    $stderr.puts "sleeping for #{sleep_time}"
+    sleep(sleep_time)
+    (@parent || Tag).find_or_create_by_path([max_wait_time.to_i.to_s, :a, :b, :c])
   end
 
   def run_workers
-    expected_thread_setup_time = 4
-    start_time = Time.now.to_i + expected_thread_setup_time
-    @times = @iterations.times.collect { |ea| start_time + (ea * @time_between_runs) }
-    @names = @times.collect { |ea| ea.to_s }
-    @threads = @workers.times.collect do
-      Thread.new do
-        @times.each { |ea| find_or_create_at_even_second(ea) }
+    @names = []
+    @iterations.times.each do
+      threads = @workers.times.map do
+        DbThread.new { find_or_create_at_same_time }
       end
+      threads.each { |ea| ea.join }
+      @names << @wake_times.max.to_i.to_s
+      @wake_times.clear
     end
-    @threads.each { |ea| ea.join }
   end
 
   it "class method will not create dupes" do
     run_workers
-    Tag.roots.collect { |ea| ea.name.to_i }.should =~ @times
+    Tag.roots.collect { |ea| ea.name }.should =~ @names
     # No dupe children:
     %w(a b c).each do |ea|
       Tag.where(:name => ea).size.should == @iterations
@@ -50,7 +76,7 @@ describe "threadhot" do
   it "instance method will not create dupes" do
     @parent = Tag.create!(:name => "root")
     run_workers
-    @parent.reload.children.collect { |ea| ea.name.to_i }.should =~ @times
+    @parent.reload.children.collect { |ea| ea.name }.should =~ @names
     Tag.where(:name => @names).size.should == @iterations
     %w(a b c).each do |ea|
       Tag.where(:name => ea).size.should == @iterations
@@ -64,7 +90,7 @@ describe "threadhot" do
     Tag.where(:name => @names).size.should > @iterations
   end
 
-  it "fails to deadlock from parallel sibling churn" do
+  it 'fails to deadlock from parallel sibling churn' do
     # target should be non-trivially long to maximize time spent in hierarchy maintenance
     target = Tag.find_or_create_by_path(('a'..'z').to_a + ('A'..'Z').to_a)
     expected_children = (1..100).to_a.map { |ea| "root ##{ea}" }
@@ -73,29 +99,30 @@ describe "threadhot" do
     children_to_delete = []
     deleted_children = []
     creator_threads = @workers.times.map do
-      Thread.new do
-        ActiveRecord::Base.connection.reconnect!
-        begin
+      DbThread.new(false) do
+        while children_to_add.present?
           name = children_to_add.shift
           unless name.nil?
-            target.find_or_create_by_path(name)
+            Tag.transaction { target.find_or_create_by_path(name) }
             children_to_delete << name
             added_children << name
           end
-        end while !children_to_add.empty?
+        end
       end
     end
     run_destruction = true
     destroyer_threads = @workers.times.map do
-      Thread.new do
-        ActiveRecord::Base.connection.reconnect!
+      DbThread.new(false) do
         begin
-          victim = children_to_delete.shift
-          if victim
-            target.children.where(:name => victim).first.destroy
-            deleted_children << victim
+          victim_name = children_to_delete.shift
+          if victim_name
+            Tag.transaction do
+              victim = target.children.where(:name => victim_name).first
+              victim.destroy
+              deleted_children << victim_name
+            end
           else
-            sleep rand # wait for moar victims
+            sleep rand # wait for more victims
           end
         end while run_destruction || !children_to_delete.empty?
       end
@@ -103,33 +130,19 @@ describe "threadhot" do
     creator_threads.each { |ea| ea.join }
     run_destruction = false
     destroyer_threads.each { |ea| ea.join }
-
     added_children.should =~ expected_children
     deleted_children.should =~ expected_children
   end
 
-  # Oh, yeah, I'm totes monkey patching in a bad shuffle. I AM A NAUGHTY MONKAY
-  class Array
-    def bad_shuffle!(shuffle_count = nil)
-      shuffle_count ||= size / 10
-      pairs = Hash[*(0..(size)).to_a.shuffle.first(shuffle_count)]
-      pairs.each do |from, to|
-        self[from], self[to] = self[to], self[from]
-      end
-      self
-    end
-  end
-
   it "fails to deadlock while simultaneously deleting items from the same hierarchy" do
     target = User.find_or_create_by_path((1..200).to_a.map { |ea| ea.to_s })
-    nodes_to_delete = target.self_and_ancestors.to_a.bad_shuffle!
+    to_delete = target.self_and_ancestors.to_a.shuffle.map(&:email)
     destroyer_threads = @workers.times.map do
-      Thread.new do
-        ActiveRecord::Base.connection.reconnect!
-        begin
-          victim = nodes_to_delete.shift
-          victim.destroy if victim
-        end while !nodes_to_delete.empty?
+      DbThread.new(false) do
+        until to_delete.empty?
+          email = to_delete.shift
+          User.transaction { User.where(:email => email).first.destroy } if email
+        end
       end
     end
     destroyer_threads.each { |ea| ea.join }

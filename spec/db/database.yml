@@ -1,19 +1,21 @@
+common: &common
+  database: closure_tree_test
+  host: localhost
+  pool: 50
+  timeout: 5000
+  reaping_frequency: 1000
+  min_messages: ERROR
+
 sqlite:
   adapter: <%= "jdbc" if defined? JRUBY_VERSION %>sqlite3
   database: spec/sqlite3.db
-  pool: 50
-  timeout: 5000
 
 postgresql:
+  <<: *common
   adapter: postgresql
   username: postgres
-  database: closure_tree_test
-  min_messages: ERROR
-  pool: 50
 
 mysql:
+  <<: *common
   adapter: mysql2
-  host: localhost
   username: root
-  database: closure_tree_test
-  pool: 50
