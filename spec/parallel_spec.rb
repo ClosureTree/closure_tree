@@ -8,18 +8,9 @@ parallelism_is_broken = begin
 end
 
 class DbThread
-  def initialize(wrap_with_transaction = true, &block)
+  def initialize(&block)
     @thread = Thread.new do
-      begin
-        ActiveRecord::Base.connection.reconnect!
-        if wrap_with_transaction
-          ActiveRecord::Base.connection.transaction { block.call }
-        else
-          block.call
-        end
-      ensure
-        ActiveRecord::Base.connection.close
-      end
+      ActiveRecord::Base.connection_pool.with_connection(&block)
     end
   end
 
@@ -32,15 +23,19 @@ describe "threadhot" do
 
   before :each do
     @parent = nil
-    @iterations = 1
+    @iterations = 3
     @workers = 10
-    @min_sleep_time = 0.5
+    @min_sleep_time = 0.3
     @lock = Mutex.new
     @wake_times = []
     DatabaseCleaner.clean
   end
 
-  def find_or_create_at_same_time
+  after :each do
+    DatabaseCleaner.clean
+  end
+
+  def find_or_create_at_same_time(name)
     @lock.synchronize { @wake_times << Time.now.to_f + @min_sleep_time }
     while @wake_times.size < @workers
       sleep(0.1)
@@ -49,17 +44,18 @@ describe "threadhot" do
     sleep_time = max_wait_time - Time.now.to_f
     $stderr.puts "sleeping for #{sleep_time}"
     sleep(sleep_time)
-    (@parent || Tag).find_or_create_by_path([max_wait_time.to_i.to_s, :a, :b, :c])
+    (@parent || Tag).find_or_create_by_path([name.to_s, :a, :b, :c])
   end
 
   def run_workers
     @names = []
-    @iterations.times.each do
+    @iterations.times.each do |iter|
+      name = "iteration ##{iter}"
+      @names << name
       threads = @workers.times.map do
-        DbThread.new { find_or_create_at_same_time }
+        DbThread.new { find_or_create_at_same_time(name) }
       end
       threads.each { |ea| ea.join }
-      @names << @wake_times.max.to_i.to_s
       @wake_times.clear
     end
   end
@@ -99,7 +95,7 @@ describe "threadhot" do
     children_to_delete = []
     deleted_children = []
     creator_threads = @workers.times.map do
-      DbThread.new(false) do
+      DbThread.new do
         while children_to_add.present?
           name = children_to_add.shift
           unless name.nil?
@@ -112,7 +108,7 @@ describe "threadhot" do
     end
     run_destruction = true
     destroyer_threads = @workers.times.map do
-      DbThread.new(false) do
+      DbThread.new do
         begin
           victim_name = children_to_delete.shift
           if victim_name
@@ -138,7 +134,7 @@ describe "threadhot" do
     target = User.find_or_create_by_path((1..200).to_a.map { |ea| ea.to_s })
     to_delete = target.self_and_ancestors.to_a.shuffle.map(&:email)
     destroyer_threads = @workers.times.map do
-      DbThread.new(false) do
+      DbThread.new do
         until to_delete.empty?
           email = to_delete.shift
           User.transaction { User.where(:email => email).first.destroy } if email
