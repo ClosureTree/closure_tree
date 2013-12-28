@@ -6,8 +6,7 @@ shared_examples_for 'Tag (with fixtures)' do
   describe 'Tag (with fixtures)' do
     fixtures :tags
     before :each do
-      # We have to force-re-instantiate the fixtures because the parallel specs wipe the db:
-      instantiate_fixtures
+      setup_fixtures
       tag_class.rebuild!
       DestroyedTag.delete_all
     end
