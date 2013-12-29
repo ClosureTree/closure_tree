@@ -32,13 +32,65 @@ shared_examples_for "Tag (without fixtures)" do
         tag_class.roots.should be_empty
         tag_class.leaves.should be_empty
       end
+
+      it "#find_or_create_by_path" do
+        a = tag_class.create!(:name => 'a')
+        a.find_or_create_by_path(%w{b c}).ancestry_path.should == %w{a b c}
+      end
     end
 
     context "with 1 tag" do
+      before do
+        @tag = tag_class.create!(:name => "tag")
+      end
+
+      it "should be a leaf" do
+        @tag.leaf?.should be_true
+      end
+
+      it "should be a root" do
+        @tag.root?.should be_true
+      end
+
+      it 'has no parent' do
+        @tag.parent.should be_nil
+      end
+
       it "should return the only entity as a root and leaf" do
-        a = tag_class.create!(:name => "a")
-        tag_class.roots.should == [a]
-        tag_class.leaves.should == [a]
+        tag_class.all.should == [@tag]
+        tag_class.roots.should == [@tag]
+        tag_class.leaves.should == [@tag]
+      end
+
+      context "with child" do
+        before do
+          @child = Tag.create!(:name => 'tag 2')
+        end
+
+        def assert_roots_and_leaves
+          @tag.root?.should be_true
+          @tag.leaf?.should be_false
+
+          @child.root?.should be_false
+          @child.leaf?.should be_true
+        end
+
+        def assert_parent_and_children
+          @child.reload.parent.should == @tag
+          @tag.reload.children.to_a.should == [ @child ]
+        end
+
+        it "adds children through add_child" do
+          @tag.add_child @child
+          assert_roots_and_leaves
+          assert_parent_and_children
+        end
+
+        it "adds children through collection" do
+          @tag.children << @child
+          assert_roots_and_leaves
+          assert_parent_and_children
+        end
       end
     end
 
@@ -54,6 +106,7 @@ shared_examples_for "Tag (without fixtures)" do
       it "should return child_ids for root" do
         @root.child_ids.should == [@leaf.id]
       end
+
       it "should return an empty array for leaves" do
         @leaf.child_ids.should be_empty
       end
@@ -95,6 +148,28 @@ shared_examples_for "Tag (without fixtures)" do
         t.self_and_ancestors.to_a.should == [t]
         @mid.children << t
         t.self_and_ancestors.to_a.should == [t, @mid, @root]
+      end
+
+      it 'prevents ancestor loops' do
+        @leaf.add_child @root
+        @root.should_not be_valid
+        @root.reload.descendants.should include(@leaf)
+      end
+
+      it 'moves non-leaves' do
+        new_root = tag_class.create! :name => "new_root"
+        new_root.children << @mid
+        @root.reload.descendants.should be_empty
+        new_root.descendants.should == [@mid, @leaf]
+        @leaf.reload.ancestry_path.should == %w{new_root mid leaf}
+      end
+
+      it 'moves leaves' do
+        new_root = tag_class.create! :name => "new_root"
+        new_root.children << @leaf
+        new_root.descendants.should == [@leaf]
+        @root.reload.descendants.should == [@mid]
+        @leaf.reload.ancestry_path.should == %w{new_root leaf}
       end
     end
 
@@ -214,6 +289,19 @@ shared_examples_for "Tag (without fixtures)" do
       it 'should assemble global leaves' do
         tag_class.leaves.to_a.should =~ @expected_leaves
       end
+      it 'assembles siblings properly' do
+        expected_siblings = [[@a1, @a2, @a3], [@c1a, @c1b]]
+        expected_only_children = tag_class.all - expected_siblings.flatten
+        expected_siblings.each do |siblings|
+          siblings.each do |ea|
+            ea.self_and_siblings.to_a.should =~ siblings
+            ea.siblings.to_a.should =~ siblings - [ ea ]
+          end
+        end
+        expected_only_children.each do |ea|
+          ea.siblings.should == []
+        end
+      end
       it 'should assemble instance leaves' do
         {@a1 => [@c1a, @c1b], @b1 => [@c1a, @c1b], @a2 => [@b2]}.each do |node, leaves|
           node.leaves.to_a.should == leaves
@@ -222,6 +310,19 @@ shared_examples_for "Tag (without fixtures)" do
       end
       it 'should return leaf? for leaves' do
         @expected_leaves.each { |ea| ea.should be_leaf }
+      end
+
+      it 'can move roots' do
+        @c1a.children << @a2
+        @b2.reload.children << @a3
+        @a3.reload.ancestry_path.should ==%w(a1 b1 c1a a2 b2 a3)
+      end
+
+      it 'cascade-deletes from roots' do
+        victim_names = @a1.self_and_descendants.map(&:name)
+        survivor_names = tag_class.all.map(&:name) - victim_names
+        @a1.destroy
+        tag_class.all.map(&:name).should == survivor_names
       end
     end
 
@@ -303,17 +404,12 @@ shared_examples_for "Tag (without fixtures)" do
         tag_class.find_by_path(%w{grandparent parent missing child}).should be_nil
       end
 
-      it "should find or create by path" do
-        # class method:
+      it ".find_or_create_by_path" do
         grandparent = tag_class.find_or_create_by_path(%w{grandparent})
         grandparent.should == @grandparent
         child = tag_class.find_or_create_by_path(%w{grandparent parent child})
         child.should == @child
         tag_class.find_or_create_by_path(%w{events anniversary}).ancestry_path.should == %w{events anniversary}
-        a = tag_class.find_or_create_by_path(%w{a})
-        a.ancestry_path.should == %w{a}
-        # instance method:
-        a.find_or_create_by_path(%w{b c}).ancestry_path.should == %w{a b c}
       end
 
       it "should respect attribute hashes with both selection and creation" do

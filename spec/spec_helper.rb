@@ -5,13 +5,9 @@ require 'rubygems'
 ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../../Gemfile', __FILE__)
 require 'bundler/setup' if File.exists?(ENV['BUNDLE_GEMFILE'])
 require 'rspec'
-require 'rails'
 require 'active_record'
 require 'foreigner'
 require 'database_cleaner'
-require 'active_record/fixtures'
-require 'rspec/rails/adapters'
-require 'rspec/rails/fixture_support'
 require 'closure_tree'
 require 'tmpdir'
 
@@ -91,9 +87,6 @@ Thread.abort_on_exception = true
 DatabaseCleaner.strategy = :truncation
 
 RSpec.configure do |config|
-  config.fixture_path = "#{plugin_test_dir}/fixtures"
-  # disable rspec-rails' transaction wrapping:
-  config.use_transactional_fixtures = false
   config.before(:each) do
     DatabaseCleaner.start
   end
