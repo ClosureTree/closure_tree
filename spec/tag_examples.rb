@@ -351,12 +351,12 @@ shared_examples_for Tag do
 
     context 'with_ancestor' do
       it 'works with no rows' do
-        tag_class.with_ancestor().to_a.should be_empty
+        tag_class.with_ancestor.to_a.should be_empty
       end
       it 'finds only children' do
         c = tag_class.find_or_create_by_path %w(A B C)
         a, b = c.parent.parent, c.parent
-        e = tag_class.find_or_create_by_path %w(D E)
+        spurious_tags = tag_class.find_or_create_by_path %w(D E)
         tag_class.with_ancestor(a).to_a.should == [b, c]
       end
       it 'limits subsequent where clauses' do
@@ -382,6 +382,11 @@ shared_examples_for Tag do
         @child.ancestry_path.should == %w{grandparent parent child}
         @child.ancestry_path(:name).should == %w{grandparent parent child}
         @child.ancestry_path(:title).should == %w{Nonnie Mom Kid}
+      end
+
+      it 'assembles ancestors' do
+        @child.ancestors.should == [@parent, @grandparent]
+        @child.self_and_ancestors.should == [@child, @parent, @grandparent]
       end
 
       it "should find by path" do
