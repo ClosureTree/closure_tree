@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-shared_examples_for "Tag (without fixtures)" do
+shared_examples_for Tag do
 
   let (:tag_class) { described_class }
   let (:tag_hierarchy_class) { described_class.hierarchy_class }
@@ -64,7 +64,7 @@ shared_examples_for "Tag (without fixtures)" do
 
       context "with child" do
         before do
-          @child = Tag.create!(:name => 'tag 2')
+          @child = tag_class.create!(:name => 'tag 2')
         end
 
         def assert_roots_and_leaves
@@ -77,7 +77,7 @@ shared_examples_for "Tag (without fixtures)" do
 
         def assert_parent_and_children
           @child.reload.parent.should == @tag
-          @tag.reload.children.to_a.should == [ @child ]
+          @tag.reload.children.to_a.should == [@child]
         end
 
         it "adds children through add_child" do
@@ -264,13 +264,20 @@ shared_examples_for "Tag (without fixtures)" do
       before :each do
         tag_class.find_or_create_by_path %w(a1 b1 c1a)
         tag_class.find_or_create_by_path %w(a1 b1 c1b)
+        tag_class.find_or_create_by_path %w(a1 b1 c1c)
+        tag_class.find_or_create_by_path %w(a1 b1b)
         tag_class.find_or_create_by_path %w(a2 b2)
         tag_class.find_or_create_by_path %w(a3)
 
-        @a1, @a2, @a3, @b1, @b2, @c1a, @c1b = tag_class.where(:name => %w(a1 a2 a3 b1 b2 c1a c1b)).reorder(:name).to_a
+        @a1, @a2, @a3, @b1, @b1b, @b2, @c1a, @c1b, @c1c = tag_class.
+          where(:name => %w(a1 a2 a3 b1 b1b b2 c1a c1b c1c)).
+          reorder(:name).to_a
         @expected_roots = [@a1, @a2, @a3]
-        @expected_leaves = [@c1a, @c1b, @b2, @a3]
+        @expected_leaves = [@c1a, @c1b, @c1c, @b1b, @b2, @a3]
+        @expected_siblings = [[@a1, @a2, @a3], [@b1, @b1b], [@c1a, @c1b, @c1c]]
+        @expected_only_children = tag_class.all - @expected_siblings.flatten
       end
+
       it 'should find global roots' do
         tag_class.roots.to_a.should =~ @expected_roots
       end
@@ -290,20 +297,36 @@ shared_examples_for "Tag (without fixtures)" do
         tag_class.leaves.to_a.should =~ @expected_leaves
       end
       it 'assembles siblings properly' do
-        expected_siblings = [[@a1, @a2, @a3], [@c1a, @c1b]]
-        expected_only_children = tag_class.all - expected_siblings.flatten
-        expected_siblings.each do |siblings|
+        @expected_siblings.each do |siblings|
           siblings.each do |ea|
             ea.self_and_siblings.to_a.should =~ siblings
-            ea.siblings.to_a.should =~ siblings - [ ea ]
+            ea.siblings.to_a.should =~ siblings - [ea]
           end
         end
-        expected_only_children.each do |ea|
+        @expected_only_children.each do |ea|
           ea.siblings.should == []
         end
       end
+      it 'assembles before_siblings' do
+        @expected_siblings.each do |siblings|
+          (siblings.size - 1).times do |i|
+            target = siblings[i]
+            expected_before = siblings.first(i)
+            target.siblings_before.to_a.should == expected_before
+          end
+        end
+      end
+      it 'assembles after_siblings' do
+        @expected_siblings.each do |siblings|
+          (siblings.size - 1).times do |i|
+            target = siblings[i]
+            expected_after = siblings.last(siblings.size - 1 - i)
+            target.siblings_after.to_a.should == expected_after
+          end
+        end
+      end
       it 'should assemble instance leaves' do
-        {@a1 => [@c1a, @c1b], @b1 => [@c1a, @c1b], @a2 => [@b2]}.each do |node, leaves|
+        {@a1 => [@b1b, @c1a, @c1b, @c1c], @b1 => [@c1a, @c1b, @c1c], @a2 => [@b2]}.each do |node, leaves|
           node.leaves.to_a.should == leaves
         end
         @expected_leaves.each { |ea| ea.leaves.to_a.should == [ea] }

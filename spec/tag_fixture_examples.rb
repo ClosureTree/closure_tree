@@ -14,20 +14,6 @@ shared_examples_for 'Tag (with fixtures)' do
     context 'adding children' do
 
     context 'injected attributes' do
-
-      it 'assembles siblings before correctly' do
-        tags(:home).siblings_before.to_a.should == []
-        tags(:indoor).siblings_before.to_a.should == [tags(:home)]
-        tags(:outdoor).siblings_before.to_a.should == [tags(:home), tags(:indoor), tags(:museum)]
-        tags(:united_states).siblings_before.to_a.should == [tags(:home), tags(:indoor), tags(:museum), tags(:outdoor)]
-      end
-
-      it 'assembles siblings after correctly' do
-        tags(:indoor).siblings_after.to_a.should == [tags(:museum), tags(:outdoor), tags(:united_states)]
-        tags(:outdoor).siblings_after.to_a.should == [tags(:united_states)]
-        tags(:united_states).siblings_after.to_a.should == []
-      end
-
       it 'assembles ancestors' do
         tags(:child).ancestors.should == [tags(:parent), tags(:grandparent)]
         tags(:child).self_and_ancestors.should == [tags(:child), tags(:parent), tags(:grandparent)]
