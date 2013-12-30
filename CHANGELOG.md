@@ -5,6 +5,8 @@
 * Use [foreigner](https://github.com/matthuhiggins/foreigner) to prove that
   things are inserted and deleted without violating foreign key constraints
 
+* Added Rails 4.1.0.rc2 as a Travis CI build target
+
 ### 4.2.9
 
 * Support for Heroku's cray assets:precompile hack for Rails 4.
