@@ -9,6 +9,7 @@ and tracking user referrals.
 [![Gem Version](https://badge.fury.io/rb/closure_tree.png)](http://rubygems.org/gems/closure_tree)
 [![Code Climate](https://codeclimate.com/github/mceachen/closure_tree.png)](https://codeclimate.com/github/mceachen/closure_tree)
 [![Dependency Status](https://gemnasium.com/mceachen/closure_tree.png)](https://gemnasium.com/mceachen/closure_tree)
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/mceachen/closure_tree/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
 Substantially more efficient than
 [ancestry](https://github.com/stefankroes/ancestry) and
