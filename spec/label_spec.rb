@@ -249,16 +249,25 @@ describe Label do
 
   it "behaves like the readme" do
     root = Label.create(:name => "root")
+    root.sort_order.should == 0
     a = Label.create(:name => "a", :parent => root)
+    a.sort_order.should == 0
     b = Label.create(:name => "b")
+    # B *starts* as a second root, so sort_order == 1
+    b.sort_order.should == 1
     c = Label.create(:name => "c")
+    c.sort_order.should == 2
 
     a.append_sibling(b)
     a.self_and_siblings.collect(&:name).should == %w(a b)
     root.reload.children.collect(&:name).should == %w(a b)
     root.children.collect(&:sort_order).should == [0, 1]
 
+    a.sort_order.should == 0
+    b.sort_order.should == 1
     a.prepend_sibling(b)
+    b.reload.sort_order.should == 0
+    a.reload.sort_order.should == 1
     a.self_and_siblings.collect(&:name).should == %w(b a)
     root.reload.children.collect(&:name).should == %w(b a)
     root.children.collect(&:sort_order).should == [0, 1]
@@ -277,6 +286,28 @@ describe Label do
     d = a.reload.append_sibling(Label.new(:name => "d"))
     d.self_and_siblings.collect(&:name).should == %w(b c a d)
     d.self_and_siblings.collect(&:sort_order).should == [0, 1, 2, 3]
+  end
+
+  # https://github.com/mceachen/closure_tree/issues/84
+  it "properly appends children with <<" do
+    root = Label.create(:name => "root")
+    a = Label.create(:name => "a", :parent => root)
+    b = Label.create(:name => "b")
+    c = Label.create(:name => "c")
+
+    # should the sort_order for roots be set?
+    # root.sort_order.should_not be_nil
+    # root.sort_order.should == 0
+
+    # sort_order should never be nil on a child.
+    a.sort_order.should_not be_nil
+    a.sort_order.should == 0
+    # Add a child to root at end of children.
+    root.children << b
+    b.parent.should == root
+    a.self_and_siblings.collect(&:name).should == %w(a b)
+    root.reload.children.collect(&:name).should == %w(a b)
+    root.children.collect(&:sort_order).should == [0, 1]
   end
 
   context "#add_sibling" do

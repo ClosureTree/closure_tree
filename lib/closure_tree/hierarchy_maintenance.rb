@@ -33,6 +33,8 @@ module ClosureTree
     def _ct_after_save
       if changes[_ct.parent_column_name] || @was_new_record
         rebuild!
+        _ct_reorder_siblings if _ct.order_is_numeric?
+        reload # < because self.order_value changed
       end
       if changes[_ct.parent_column_name] && !@was_new_record
         # Resetting the ancestral collections addresses
