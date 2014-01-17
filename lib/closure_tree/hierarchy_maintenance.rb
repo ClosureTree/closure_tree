@@ -27,14 +27,29 @@ module ClosureTree
 
     def _ct_before_save
       @was_new_record = new_record?
+      # If order_is_numeric? then the order_value should be set to one
+      # greater than the maximum order_value of all siblings.
+      if new_record? and _ct.order_is_numeric? and self.order_value.nil?
+        # If this is a root, then find order of the roots, otherwise
+        # find the max order of our siblings (parent's *other* children)
+        if root?
+          max_order_value = self.class.roots.map{|root| root.order_value}.max
+        else
+          # We may have a stale parent so reload parent here to make sure we get all
+          # current children.  (Tests failed without this reload!)
+          parent.reload
+          max_order_value = parent.children.map{|sibling| sibling.order_value}.max
+        end
+        # If we don't have siblings then set order_value to 0, otherwise set to
+        # one more than max (adding this child to the end of the siblings).
+        self.order_value = max_order_value.nil? ? 0 : max_order_value + 1
+      end
       true # don't cancel the save
     end
 
     def _ct_after_save
       if changes[_ct.parent_column_name] || @was_new_record
         rebuild!
-        _ct_reorder_siblings if _ct.order_is_numeric?
-        reload # < because self.order_value changed
       end
       if changes[_ct.parent_column_name] && !@was_new_record
         # Resetting the ancestral collections addresses

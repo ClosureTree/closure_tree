@@ -292,12 +292,14 @@ describe Label do
   it "properly appends children with <<" do
     root = Label.create(:name => "root")
     a = Label.create(:name => "a", :parent => root)
-    b = Label.create(:name => "b")
-    c = Label.create(:name => "c")
+    b = Label.create(:name => "b", :parent => root)
+    a.sort_order.should == 0
+    b.sort_order.should == 1
+    #c = Label.create(:name => "c")
 
     # should the sort_order for roots be set?
-    # root.sort_order.should_not be_nil
-    # root.sort_order.should == 0
+    root.sort_order.should_not be_nil
+    root.sort_order.should == 0
 
     # sort_order should never be nil on a child.
     a.sort_order.should_not be_nil
@@ -328,7 +330,7 @@ describe Label do
       f2 = Label.find_or_create_by_path %w(a2 b2 c2 d2 e2 f2)
       f1.add_sibling(f2)
       f2.ancestry_path.should == %w(a1 b1 c1 d1 e1 f2)
-      f1.parent.children.should == [f1, f2]
+      f1.parent.reload.children.should == [f1, f2]
     end
 
     it "should reorder old-parent siblings when a node moves to another tree" do
