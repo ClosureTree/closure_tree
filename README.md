@@ -11,6 +11,8 @@ and tracking user referrals.
 [![Dependency Status](https://gemnasium.com/mceachen/closure_tree.png)](https://gemnasium.com/mceachen/closure_tree)
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/mceachen/closure_tree/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
+[![Build Status](https://secure.travis-ci.org/inetdavid/closure_tree.png?branch=master)](http://travis-ci.org/inetdavid/closure_tree)
+
 Substantially more efficient than
 [ancestry](https://github.com/stefankroes/ancestry) and
 [acts_as_tree](https://github.com/amerine/acts_as_tree), and even more
