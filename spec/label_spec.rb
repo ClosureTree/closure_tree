@@ -44,10 +44,34 @@ end
 describe Label do
 
   context "destruction" do
-    it "properly destroys descendents" do
+    it "properly destroys descendents created with find_or_create_by_path" do
       c = Label.find_or_create_by_path %w(a b c)
       b = c.parent
       a = c.root
+      a.destroy
+      Label.exists?(a).should be_false
+      Label.exists?(b).should be_false
+      Label.exists?(c).should be_false
+    end
+
+    it "properly destroys descendents created with add_child" do
+      a = Label.create(name: 'a')
+      b = Label.new(name: 'b')
+      a.add_child b
+      c = Label.new(name: 'c')
+      b.add_child c
+      a.destroy
+      Label.exists?(a).should be_false
+      Label.exists?(b).should be_false
+      Label.exists?(c).should be_false
+    end
+
+    it "properly destroys descendents created with <<" do
+      a = Label.create(name: 'a')
+      b = Label.new(name: 'b')
+      a.children << b
+      c = Label.new(name: 'c')
+      b.children << c
       a.destroy
       Label.exists?(a).should be_false
       Label.exists?(b).should be_false
@@ -343,6 +367,27 @@ describe Label do
       f3.self_and_siblings.collect(&:sort_order).should == [0, 1]
       f1.self_and_siblings.collect(&:name).should == %w(f1 f2)
       f3.self_and_siblings.collect(&:name).should == %w(f3 f4)
+    end
+
+    it 'should reset sort_order when a node is moved to another location' do
+      root = Label.create(name: 'root')
+      # Create as a second root
+      a = Label.create(name: 'a')
+      a.sort_order.should == 1
+      # Create b as third root
+      b = Label.create(name: 'b')
+      b.sort_order.should == 2
+      # Move a to first child of root
+      root.add_child a
+      # a should be first child
+#      a.sort_order.should == 0
+      # b should now be second root
+      b.sort_order.should == 1
+
+      # Add b to root's children
+      root.add_child b
+      a.sort_order.should == 0
+      b.sort_order.should == 1
     end
   end
 
