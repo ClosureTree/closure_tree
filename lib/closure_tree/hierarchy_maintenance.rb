@@ -27,23 +27,6 @@ module ClosureTree
 
     def _ct_before_save
       @was_new_record = new_record?
-      # If order_is_numeric? then the order_value should be set to one
-      # greater than the maximum order_value of all siblings.
-      if new_record? and _ct.order_is_numeric? and self.order_value.nil?
-        # If this is a root, then find order of the roots, otherwise
-        # find the max order of our siblings (parent's *other* children)
-        if root?
-          max_order_value = self.class.roots.map{|root| root.order_value}.max
-        else
-          # We may have a stale parent so reload parent here to make sure we get all
-          # current children.  (Tests failed without this reload!)
-          parent.reload
-          max_order_value = parent.children.map{|sibling| sibling.order_value}.max
-        end
-        # If we don't have siblings then set order_value to 0, otherwise set to
-        # one more than max (adding this child to the end of the siblings).
-        self.order_value = max_order_value.nil? ? 0 : max_order_value + 1
-      end
       true # don't cancel the save
     end
 
@@ -71,7 +54,7 @@ module ClosureTree
       true # don't prevent destruction
     end
 
-    def rebuild!
+    def rebuild!(called_by_rebuild = false)
       _ct.with_advisory_lock do
         delete_hierarchy_references unless @was_new_record
         hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
@@ -84,8 +67,16 @@ module ClosureTree
             WHERE x.descendant_id = #{_ct.quote(_ct_parent_id)}
           SQL
         end
-        children.each { |c| c.rebuild! }
-        _ct_reorder_children if _ct.order_is_numeric?
+
+        if _ct.order_is_numeric?
+          _ct_reorder_prior_siblings_if_parent_changed
+          # Prevent double-reordering of siblings:
+          _ct_reorder_siblings if !called_by_rebuild
+        end
+
+        children.each { |c| c.rebuild!(true) }
+
+        _ct_reorder_children if _ct.order_is_numeric? && children.present?
       end
     end
 

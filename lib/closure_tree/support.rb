@@ -107,6 +107,14 @@ module ClosureTree
       end
     end
 
+    def where_eq(column_name, value)
+      if value.nil?
+        "#{connection.quote_column_name(column_name)} IS NULL"
+      else
+        "#{connection.quote_column_name(column_name)} = #{quoted_value(value)}"
+      end
+    end
+
     def with_advisory_lock(&block)
       if options[:with_advisory_lock]
         model_class.with_advisory_lock("closure_tree") do

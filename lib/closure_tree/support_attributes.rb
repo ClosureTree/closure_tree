@@ -73,6 +73,16 @@ module ClosureTree
       options[:order]
     end
 
+    def nulls_last_order_by
+      "-#{quoted_order_column} #{order_by_order(reverse = true)}"
+    end
+
+    def order_by_order(reverse = false)
+      desc = !!(order_by.to_s =~ /DESC\z/)
+      desc = !desc if reverse
+      desc ? 'DESC' : 'ASC'
+    end
+
     def order_column
       o = order_by
       if o.nil?

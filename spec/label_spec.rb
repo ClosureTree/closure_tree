@@ -274,11 +274,14 @@ describe Label do
   it "behaves like the readme" do
     root = Label.create(:name => "root")
     root.sort_order.should == 0
+
     a = Label.create(:name => "a", :parent => root)
     a.sort_order.should == 0
+
     b = Label.create(:name => "b")
     # B *starts* as a second root, so sort_order == 1
     b.sort_order.should == 1
+
     c = Label.create(:name => "c")
     c.sort_order.should == 2
 
@@ -286,9 +289,9 @@ describe Label do
     a.self_and_siblings.collect(&:name).should == %w(a b)
     root.reload.children.collect(&:name).should == %w(a b)
     root.children.collect(&:sort_order).should == [0, 1]
-
     a.sort_order.should == 0
     b.sort_order.should == 1
+
     a.prepend_sibling(b)
     b.reload.sort_order.should == 0
     a.reload.sort_order.should == 1
@@ -371,6 +374,7 @@ describe Label do
 
     it 'should reset sort_order when a node is moved to another location' do
       root = Label.create(name: 'root')
+      root.sort_order.should == 0
       # Create as a second root
       a = Label.create(name: 'a')
       a.sort_order.should == 1
@@ -379,8 +383,8 @@ describe Label do
       b.sort_order.should == 2
       # Move a to first child of root
       root.add_child a
+      a.sort_order.should == 0
       # a should be first child
-#      a.sort_order.should == 0
       # b should now be second root
       b.sort_order.should == 1
 
