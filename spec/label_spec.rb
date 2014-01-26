@@ -273,17 +273,9 @@ describe Label do
 
   it "behaves like the readme" do
     root = Label.create(:name => "root")
-    root.sort_order.should == 0
-
     a = Label.create(:name => "a", :parent => root)
-    a.sort_order.should == 0
-
     b = Label.create(:name => "b")
-    # B *starts* as a second root, so sort_order == 1
-    b.sort_order.should == 1
-
     c = Label.create(:name => "c")
-    c.sort_order.should == 2
 
     a.append_sibling(b)
     a.self_and_siblings.collect(&:name).should == %w(a b)
@@ -352,8 +344,9 @@ describe Label do
       f.self_and_siblings.should == [f0, f]
     end
 
+    let(:f1) { Label.find_or_create_by_path %w(a1 b1 c1 d1 e1 f1) }
+
     it "should move a node to another tree" do
-      f1 = Label.find_or_create_by_path %w(a1 b1 c1 d1 e1 f1)
       f2 = Label.find_or_create_by_path %w(a2 b2 c2 d2 e2 f2)
       f1.add_sibling(f2)
       f2.ancestry_path.should == %w(a1 b1 c1 d1 e1 f2)
@@ -361,7 +354,6 @@ describe Label do
     end
 
     it "should reorder old-parent siblings when a node moves to another tree" do
-      f1 = Label.find_or_create_by_path %w(a1 b1 c1 d1 e1 f1)
       f2 = Label.find_or_create_by_path %w(a2 b2 c2 d2 e2 f2)
       f3 = f2.prepend_sibling(Label.new(:name => "f3"))
       f4 = f2.append_sibling(Label.new(:name => "f4"))
@@ -371,27 +363,31 @@ describe Label do
       f1.self_and_siblings.collect(&:name).should == %w(f1 f2)
       f3.self_and_siblings.collect(&:name).should == %w(f3 f4)
     end
+  end
+
+  context "sort_order must be set" do
+
+    before do
+      @root = Label.create(name: 'root')
+      @a, @b, @c = %w(a b c).map {|n| @root.children.create(name: n) }
+    end
+
+    it 'should set sort_order on roots' do
+      @root.sort_order.should == 0
+    end
+
+    it 'should set sort_order with siblings' do
+      @a.sort_order.should == 0
+      @b.sort_order.should == 1
+      @c.sort_order.should == 2
+    end
 
     it 'should reset sort_order when a node is moved to another location' do
-      root = Label.create(name: 'root')
-      root.sort_order.should == 0
-      # Create as a second root
-      a = Label.create(name: 'a')
-      a.sort_order.should == 1
-      # Create b as third root
-      b = Label.create(name: 'b')
-      b.sort_order.should == 2
-      # Move a to first child of root
-      root.add_child a
-      a.sort_order.should == 0
-      # a should be first child
-      # b should now be second root
-      b.sort_order.should == 1
-
-      # Add b to root's children
-      root.add_child b
-      a.sort_order.should == 0
-      b.sort_order.should == 1
+      root2 = Label.create(name: 'root2')
+      root2.add_child @b
+      @a.sort_order.should == 0
+      @b.sort_order.should == 0
+      @c.reload.sort_order.should == 1
     end
   end
 
