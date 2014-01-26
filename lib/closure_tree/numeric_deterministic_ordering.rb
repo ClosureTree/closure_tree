@@ -17,8 +17,6 @@ module ClosureTree
       if attribute_changed?(_ct.parent_column_name) && !@was_new_record
         was_parent_id = attribute_was(_ct.parent_column_name)
         _ct.reorder_with_parent_id(was_parent_id)
-      else
-        puts "#{self.to_s} didn't have parents change"
       end
     end
 

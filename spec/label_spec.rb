@@ -253,7 +253,7 @@ describe Label do
     end
 
     def children_name_and_order
-      @parent.reload.children.map { |ea| [ea.name, ea.sort_order] }
+      @parent.children(reload = true).map { |ea| [ea.name, ea.sort_order] }
     end
 
     it "sort_orders properly" do
@@ -281,12 +281,8 @@ describe Label do
     a.self_and_siblings.collect(&:name).should == %w(a b)
     root.reload.children.collect(&:name).should == %w(a b)
     root.children.collect(&:sort_order).should == [0, 1]
-    a.sort_order.should == 0
-    b.sort_order.should == 1
 
     a.prepend_sibling(b)
-    b.reload.sort_order.should == 0
-    a.reload.sort_order.should == 1
     a.self_and_siblings.collect(&:name).should == %w(b a)
     root.reload.children.collect(&:name).should == %w(b a)
     root.children.collect(&:sort_order).should == [0, 1]
