@@ -84,8 +84,10 @@ describe "empty db" do
     u = User.find_or_create_by_path(%w(a@t.co b@t.co c@t.co))
     u.descendant_ids.should == []
     u.ancestor_ids.should == [u.parent.id, u.root.id]
+    u.self_and_ancestor_ids.should == [u.parent.id, u.root.id] + [u.id]
     u.root.descendant_ids.should == [u.parent.id, u.id]
     u.root.ancestor_ids.should == []
+    u.root.self_and_ancestor_ids.should == [u.root.id]
     c1 = u.contracts.create!
     c2 = u.parent.contracts.create!
     u.root.indirect_contracts.to_a.should =~ [c1, c2]

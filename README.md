@@ -280,6 +280,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```tag.ancestors``` is a ordered scope of [ parent, grandparent, great grandparent, … ]. Note that the size of this array will always equal ```tag.depth```.
 * ```tag.ancestor_ids``` is an array of the IDs of the ancestors.
 * ```tag.self_and_ancestors``` returns a scope containing self, parent, grandparent, great grandparent, etc.
+* ```tag.self_and_ancestors_ids``` returns IDS containing self, parent, grandparent, great grandparent, etc.
 * ```tag.siblings``` returns a scope containing all nodes with the same parent as ```tag```, excluding self.
 * ```tag.sibling_ids``` returns an array of the IDs of the siblings.
 * ```tag.self_and_siblings``` returns a scope containing all nodes with the same parent as ```tag```, including self.
