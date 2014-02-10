@@ -42,7 +42,6 @@ describe "threadhot" do
     end
     max_wait_time = @lock.synchronize { @wake_times.max }
     sleep_time = max_wait_time - Time.now.to_f
-    $stderr.puts "sleeping for #{sleep_time}"
     sleep(sleep_time)
     (@parent || Tag).find_or_create_by_path([name.to_s, :a, :b, :c])
   end
