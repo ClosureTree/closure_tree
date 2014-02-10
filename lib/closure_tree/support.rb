@@ -94,9 +94,12 @@ module ClosureTree
     end
 
     def remove_prefix_and_suffix(table_name)
-      prefix = Regexp.escape(ActiveRecord::Base.table_name_prefix)
-      suffix = Regexp.escape(ActiveRecord::Base.table_name_suffix)
-      table_name.gsub(/^#{prefix}(.+)#{suffix}$/, "\\1")
+      pre, suff = ActiveRecord::Base.table_name_prefix, ActiveRecord::Base.table_name_suffix
+      if table_name.start_with?(pre) && table_name.end_with?(suff)
+        table_name[pre.size..-(suff.size + 1)]
+      else
+        table_name
+      end
     end
 
     def ids_from(scope)

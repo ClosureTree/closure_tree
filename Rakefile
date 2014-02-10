@@ -18,11 +18,11 @@ task :default => :spec
 
 task :all_spec_flavors do
   [["", ""], ["db_prefix_", ""], ["", "_db_suffix"], ["abc_", "_123"]].each do |prefix, suffix|
-    fail unless system("rake spec DB_PREFIX=#{prefix} DB_SUFFIX=#{suffix}")
+    fail unless system("bundle exec rake spec DB_PREFIX=#{prefix} DB_SUFFIX=#{suffix}")
   end
   require 'active_record/version'
   if ActiveRecord::VERSION::MAJOR == 3
-    system("rake spec ATTR_ACCESSIBLE=1")
+    fail unless system("rake spec ATTR_ACCESSIBLE=1")
   end
 end
 
