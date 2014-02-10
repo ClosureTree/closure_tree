@@ -29,7 +29,6 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'pg'
   gem.add_development_dependency 'sqlite3'
   gem.add_development_dependency 'uuidtools'
-  gem.add_development_dependency 'foreigner'
   gem.add_development_dependency 'database_cleaner'
 
   # gem.add_development_dependency 'ruby-prof' # <- don't need this normally.
