@@ -87,7 +87,7 @@ module ClosureTree
     end
 
     def self_and_ancestors_ids
-      _ct.ids_from(ancestors) + [id]
+      _ct.ids_from(self_and_ancestors)
     end
 
     # Returns an array, root first, of self_and_ancestors' values of the +to_s_column+, which defaults
@@ -103,6 +103,10 @@ module ClosureTree
 
     def descendants
       without_self(self_and_descendants)
+    end
+
+    def self_and_descendant_ids
+      _ct.ids_from(self_and_descendants)
     end
 
     def descendant_ids

@@ -1,5 +1,10 @@
 # Changelog
 
+### 4.4.0
+
+* Added ```.self_and_descendant_ids``` and ```.self_and_ancestors_ids``` from [PR92](https://github.com/mceachen/closure_tree/pull/92).
+  Thanks, [Kir Shatrov](https://github.com/kirs)!
+
 ### 4.3.0
 
 * Use [foreigner](https://github.com/matthuhiggins/foreigner) to prove that

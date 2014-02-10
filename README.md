@@ -9,7 +9,6 @@ and tracking user referrals.
 [![Gem Version](https://badge.fury.io/rb/closure_tree.png)](http://rubygems.org/gems/closure_tree)
 [![Code Climate](https://codeclimate.com/github/mceachen/closure_tree.png)](https://codeclimate.com/github/mceachen/closure_tree)
 [![Dependency Status](https://gemnasium.com/mceachen/closure_tree.png)](https://gemnasium.com/mceachen/closure_tree)
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/mceachen/closure_tree/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
 Substantially more efficient than
 [ancestry](https://github.com/stefankroes/ancestry) and
@@ -280,13 +279,14 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```tag.ancestors``` is a ordered scope of [ parent, grandparent, great grandparent, … ]. Note that the size of this array will always equal ```tag.depth```.
 * ```tag.ancestor_ids``` is an array of the IDs of the ancestors.
 * ```tag.self_and_ancestors``` returns a scope containing self, parent, grandparent, great grandparent, etc.
-* ```tag.self_and_ancestors_ids``` returns IDS containing self, parent, grandparent, great grandparent, etc.
+* ```tag.self_and_ancestors_ids``` returns IDs containing self, parent, grandparent, great grandparent, etc.
 * ```tag.siblings``` returns a scope containing all nodes with the same parent as ```tag```, excluding self.
 * ```tag.sibling_ids``` returns an array of the IDs of the siblings.
 * ```tag.self_and_siblings``` returns a scope containing all nodes with the same parent as ```tag```, including self.
 * ```tag.descendants``` returns a scope of all children, childrens' children, etc., excluding self ordered by depth.
 * ```tag.descendant_ids``` returns an array of the IDs of the descendants.
-* ```tag.self_and_descendants``` returns a scope of all children, childrens' children, etc., including self, ordered by depth.
+* ```tag.self_and_descendants``` returns a scope of self, all children, childrens' children, etc., ordered by depth.
+* ```tag.self_and_descendant_ids``` returns IDs of self, all children, childrens' children, etc., ordered by depth.
 * ```tag.hash_tree``` returns an [ordered, nested hash](#nested-hashes) that can be depth-limited.
 * ```tag.find_by_path(path)``` returns the node whose name path *from ```tag```* is ```path```. See (#find_or_create_by_path).
 * ```tag.find_or_create_by_path(path)``` returns the node whose name path *from ```tag```* is ```path```, and will create the node if it doesn't exist already.See (#find_or_create_by_path).
