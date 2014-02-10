@@ -480,21 +480,18 @@ after do
 end
 ```
 
-
 ## Testing
 
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
 
 * Ruby 1.9.3 and Ruby 2.0.0
-* The latest Rails 3.0, 3.1, 3.2, and 4.0 branches, and
+* The latest Rails 3.1, 3.2, 4.0, and 4.1 branches, and
 * MySQL and PostgreSQL. SQLite works in a single-threaded environment.
 
 Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
 run the test matrix locally.
 
-Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
-[known issue](https://github.com/rails/rails/issues/7538).
-
+Parallelism is not tested with Rails 3.1.x due to this [known issue](https://github.com/rails/rails/issues/7538).
 
 ## Change log
 
