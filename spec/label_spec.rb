@@ -346,6 +346,32 @@ describe Label do
     end
   end
 
+  context "descendent destruction" do
+    it "properly destroys descendents created with add_child" do
+      a = Label.create(name: 'a')
+      b = Label.new(name: 'b')
+      a.add_child b
+      c = Label.new(name: 'c')
+      b.add_child c
+      a.destroy
+      Label.exists?(a).should be_false
+      Label.exists?(b).should be_false
+      Label.exists?(c).should be_false
+    end
+
+    it "properly destroys descendents created with <<" do
+      a = Label.create(name: 'a')
+      b = Label.new(name: 'b')
+      a.children << b
+      c = Label.new(name: 'c')
+      b.children << c
+      a.destroy
+      Label.exists?(a).should be_false
+      Label.exists?(b).should be_false
+      Label.exists?(c).should be_false
+    end
+  end
+
   context "preorder" do
     it "returns descendants in proper order" do
       create_preorder_tree
