@@ -437,6 +437,10 @@ database with multiple threads, and don't provide an alternative mutex.
 
 ## FAQ
 
+### Does this work well with ```#default_scope```?
+
+No. Please see [issue 86](https://github.com/mceachen/closure_tree/issues/86) for details.
+
 ### Does this gem support multiple parents?
 
 No. This gem's API is based on the assumption that each node has either 0 or 1 parent.
@@ -484,14 +488,12 @@ end
 
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
 
-* Ruby 1.9.3 and Ruby 2.0.0
-* The latest Rails 3.1, 3.2, 4.0, and 4.1 branches, and
+* Ruby 1.9.3 and Ruby 2.1.2
+* The latest Rails 3.2, 4.0, and 4.1 branches, and
 * MySQL and PostgreSQL. SQLite works in a single-threaded environment.
 
 Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
 run the test matrix locally.
-
-Parallelism is not tested with Rails 3.1.x due to this [known issue](https://github.com/rails/rails/issues/7538).
 
 ## Change log
 

@@ -103,11 +103,7 @@ module ClosureTree
     end
 
     def ids_from(scope)
-      if scope.respond_to? :pluck
-        scope.pluck(model_class.primary_key)
-      else
-        scope.select(model_class.primary_key).map { |ea| ea._ct_id }
-      end
+      scope.pluck(model_class.primary_key)
     end
 
     def with_advisory_lock(&block)
