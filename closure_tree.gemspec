@@ -23,13 +23,13 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'rspec'
   gem.add_development_dependency 'rspec-instafail'
   # gem.add_development_dependency 'rspec', '~> 2.13.0' # <- Rubymine can't handle 2.14.x
-  gem.add_development_dependency 'fuubar'
   gem.add_development_dependency 'rspec-rails' # FIXME: for rspec-rails and rspec fixture support
   gem.add_development_dependency 'mysql2'
   gem.add_development_dependency 'pg'
   gem.add_development_dependency 'sqlite3'
   gem.add_development_dependency 'uuidtools'
   gem.add_development_dependency 'database_cleaner'
+  gem.add_development_dependency 'foreigner'
 
   # gem.add_development_dependency 'ruby-prof' # <- don't need this normally.
   # TODO: gem 'activerecord-jdbcsqlite3-adapter', :platform => :jruby

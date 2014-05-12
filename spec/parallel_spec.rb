@@ -1,11 +1,5 @@
 require 'spec_helper'
 
-parallelism_is_broken = begin
-  # Rails < 3.2 has known bugs with parallelism
-  (ActiveRecord::VERSION::MAJOR <= 3 && ActiveRecord::VERSION::MINOR < 2) ||
-    # SQLite doesn't support parallel writes
-    ENV["DB"] =~ /sqlite/
-end
 
 class DbThread
   def initialize(&block)

@@ -1,5 +1,11 @@
 # Changelog
 
+### 4.5.0
+
+* Added Travis builds for Rails 4.1.1 and Ruby 2.1.2
+* Dropped support for Rails 3.1.
+* [PR94]
+
 ### 4.4.0
 
 * Added ```.self_and_descendant_ids``` and ```.self_and_ancestors_ids``` from [PR92](https://github.com/mceachen/closure_tree/pull/92).
