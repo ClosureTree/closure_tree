@@ -102,7 +102,7 @@ RSpec.configure do |config|
   end
 end
 
-parallelism_is_broken = begin
+def parallelism_is_broken
   # SQLite doesn't support parallel writes
   ENV["DB"] =~ /sqlite/
 end
