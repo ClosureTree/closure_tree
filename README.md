@@ -9,7 +9,6 @@ and tracking user referrals.
 [![Gem Version](https://badge.fury.io/rb/closure_tree.png)](http://rubygems.org/gems/closure_tree)
 [![Code Climate](https://codeclimate.com/github/mceachen/closure_tree.png)](https://codeclimate.com/github/mceachen/closure_tree)
 [![Dependency Status](https://gemnasium.com/mceachen/closure_tree.png)](https://gemnasium.com/mceachen/closure_tree)
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/mceachen/closure_tree/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
 inetdavid/closure_tree
 
@@ -30,7 +29,7 @@ closure_tree has some great features:
 * __Best-in-class mutation performance__:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
-* __Support for Rails 3.0, 3.1, 3.2, 4.0, and 4.1__
+* __Support for Rails 3.1, 3.2, 4.0, and 4.1__
 * Support for reparenting children (and all their descendants)
 * Support for [concurrency](#concurrency) (using [with_advisory_lock](https://github.com/mceachen/with_advisory_lock))
 * Support for polymorphism [STI](#sti) within the hierarchy
@@ -284,12 +283,14 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
 * ```tag.ancestors``` is a ordered scope of [ parent, grandparent, great grandparent, … ]. Note that the size of this array will always equal ```tag.depth```.
 * ```tag.ancestor_ids``` is an array of the IDs of the ancestors.
 * ```tag.self_and_ancestors``` returns a scope containing self, parent, grandparent, great grandparent, etc.
+* ```tag.self_and_ancestors_ids``` returns IDs containing self, parent, grandparent, great grandparent, etc.
 * ```tag.siblings``` returns a scope containing all nodes with the same parent as ```tag```, excluding self.
 * ```tag.sibling_ids``` returns an array of the IDs of the siblings.
 * ```tag.self_and_siblings``` returns a scope containing all nodes with the same parent as ```tag```, including self.
 * ```tag.descendants``` returns a scope of all children, childrens' children, etc., excluding self ordered by depth.
 * ```tag.descendant_ids``` returns an array of the IDs of the descendants.
-* ```tag.self_and_descendants``` returns a scope of all children, childrens' children, etc., including self, ordered by depth.
+* ```tag.self_and_descendants``` returns a scope of self, all children, childrens' children, etc., ordered by depth.
+* ```tag.self_and_descendant_ids``` returns IDs of self, all children, childrens' children, etc., ordered by depth.
 * ```tag.hash_tree``` returns an [ordered, nested hash](#nested-hashes) that can be depth-limited.
 * ```tag.find_by_path(path)``` returns the node whose name path *from ```tag```* is ```path```. See (#find_or_create_by_path).
 * ```tag.find_or_create_by_path(path)``` returns the node whose name path *from ```tag```* is ```path```, and will create the node if it doesn't exist already.See (#find_or_create_by_path).
@@ -440,6 +441,10 @@ database with multiple threads, and don't provide an alternative mutex.
 
 ## FAQ
 
+### Does this work well with ```#default_scope```?
+
+No. Please see [issue 86](https://github.com/mceachen/closure_tree/issues/86) for details.
+
 ### Does this gem support multiple parents?
 
 No. This gem's API is based on the assumption that each node has either 0 or 1 parent.
@@ -483,21 +488,16 @@ after do
 end
 ```
 
-
 ## Testing
 
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
 
-* Ruby 1.9.3 and Ruby 2.0.0
-* The latest Rails 3.0, 3.1, 3.2, and 4.0 branches, and
+* Ruby 1.9.3 and Ruby 2.1.2
+* The latest Rails 3.2, 4.0, and 4.1 branches, and
 * MySQL and PostgreSQL. SQLite works in a single-threaded environment.
 
 Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
 run the test matrix locally.
-
-Parallelism is not tested with Rails 3.0.x nor 3.1.x due to this
-[known issue](https://github.com/rails/rails/issues/7538).
-
 
 ## Change log
 

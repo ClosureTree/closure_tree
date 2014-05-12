@@ -94,17 +94,16 @@ module ClosureTree
     end
 
     def remove_prefix_and_suffix(table_name)
-      prefix = Regexp.escape(ActiveRecord::Base.table_name_prefix)
-      suffix = Regexp.escape(ActiveRecord::Base.table_name_suffix)
-      table_name.gsub(/^#{prefix}(.+)#{suffix}$/, "\\1")
+      pre, suff = ActiveRecord::Base.table_name_prefix, ActiveRecord::Base.table_name_suffix
+      if table_name.start_with?(pre) && table_name.end_with?(suff)
+        table_name[pre.size..-(suff.size + 1)]
+      else
+        table_name
+      end
     end
 
     def ids_from(scope)
-      if scope.respond_to? :pluck
-        scope.pluck(model_class.primary_key)
-      else
-        scope.select(model_class.primary_key).map { |ea| ea._ct_id }
-      end
+      scope.pluck(model_class.primary_key)
     end
 
     def where_eq(column_name, value)

@@ -38,6 +38,14 @@ describe "empty db" do
       User.all.to_a.should =~ [@root, @mid, @leaf]
     end
 
+    it 'orders self_and_ancestor_ids nearest generation first' do
+      @leaf.self_and_ancestor_ids.should == [@leaf.id, @mid.id, @root.id]
+    end
+
+    it 'orders self_and_descendant_ids nearest generation first' do
+      @root.self_and_descendant_ids.should == [@root.id, @mid.id, @leaf.id]
+    end
+
     it "should have children" do
       @root.children.to_a.should == [@mid]
       @mid.children.to_a.should == [@leaf]
@@ -84,8 +92,10 @@ describe "empty db" do
     u = User.find_or_create_by_path(%w(a@t.co b@t.co c@t.co))
     u.descendant_ids.should == []
     u.ancestor_ids.should == [u.parent.id, u.root.id]
+    u.self_and_ancestor_ids.should == [u.id, u.parent.id, u.root.id]
     u.root.descendant_ids.should == [u.parent.id, u.id]
     u.root.ancestor_ids.should == []
+    u.root.self_and_ancestor_ids.should == [u.root.id]
     c1 = u.contracts.create!
     c2 = u.parent.contracts.create!
     u.root.indirect_contracts.to_a.should =~ [c1, c2]

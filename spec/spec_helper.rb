@@ -45,7 +45,7 @@ def recreate_db
   ActiveRecord::Base.connection.reconnect!
 end
 
-ActiveRecord::Base.establish_connection(ENV["DB"])
+ActiveRecord::Base.establish_connection(ENV["DB"].to_sym)
 
 ActiveRecord::Migration.verbose = false
 if ENV['NONUKES']
@@ -101,3 +101,9 @@ RSpec.configure do |config|
     FileUtils.remove_entry_secure ENV['FLOCK_DIR']
   end
 end
+
+def parallelism_is_broken
+  # SQLite doesn't support parallel writes
+  ENV["DB"] =~ /sqlite/
+end
+

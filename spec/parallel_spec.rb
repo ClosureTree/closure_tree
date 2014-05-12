@@ -1,12 +1,5 @@
 require 'spec_helper'
 
-parallelism_is_broken = begin
-  # Rails < 3.2 has known bugs with parallelism
-  (ActiveRecord::VERSION::MAJOR <= 3 && ActiveRecord::VERSION::MINOR < 2) ||
-    # SQLite doesn't support parallel writes
-    ENV["DB"] =~ /sqlite/
-end
-
 class DbThread
   def initialize(&block)
     @thread = Thread.new do
@@ -42,7 +35,6 @@ describe "threadhot" do
     end
     max_wait_time = @lock.synchronize { @wake_times.max }
     sleep_time = max_wait_time - Time.now.to_f
-    ActiveRecord::Base.logger.debug "sleeping for #{sleep_time}"
     sleep(sleep_time)
     (@parent || Tag).find_or_create_by_path([name.to_s, :a, :b, :c])
   end

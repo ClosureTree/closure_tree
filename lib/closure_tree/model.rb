@@ -86,6 +86,10 @@ module ClosureTree
       _ct.ids_from(ancestors)
     end
 
+    def self_and_ancestors_ids
+      _ct.ids_from(self_and_ancestors)
+    end
+
     # Returns an array, root first, of self_and_ancestors' values of the +to_s_column+, which defaults
     # to the +name_column+.
     # (so child.ancestry_path == +%w{grandparent parent child}+
@@ -99,6 +103,10 @@ module ClosureTree
 
     def descendants
       without_self(self_and_descendants)
+    end
+
+    def self_and_descendant_ids
+      _ct.ids_from(self_and_descendants)
     end
 
     def descendant_ids

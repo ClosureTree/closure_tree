@@ -1,6 +1,10 @@
 # Changelog
 
-### 4.4.0
+### 4.5.0
+
+* Added Travis builds for Rails 4.1.1 and Ruby 2.1.2
+* Dropped support for Rails 3.1.
+* [PR94]
 
 * Deterministically ordered trees are guaranteed to have a sort_order now.
 
@@ -8,6 +12,13 @@
 
   Many thanks to [David Schmidt](https://github.com/inetdavid) for raising and
   working on the issue!
+
+### 4.4.0
+
+* Added ```.self_and_descendant_ids``` and ```.self_and_ancestors_ids``` from [PR92](https://github.com/mceachen/closure_tree/pull/92).
+  Thanks, [Kir Shatrov](https://github.com/kirs)!
+
+* Dropped support for Rails 3.0.
 
 ### 4.3.0
 
