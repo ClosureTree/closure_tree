@@ -1,7 +1,7 @@
 $:.unshift(File.dirname(__FILE__) + '/../lib')
 plugin_test_dir = File.dirname(__FILE__)
 
-require 'rubygems'
+
 ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../../Gemfile', __FILE__)
 require 'bundler/setup' if File.exists?(ENV['BUNDLE_GEMFILE'])
 require 'rspec'
@@ -9,7 +9,6 @@ require 'active_record'
 require 'foreigner'
 require 'database_cleaner'
 require 'closure_tree'
-require 'tmpdir'
 
 if ENV['STDOUT_LOGGING']
   log = Logger.new(STDOUT)
@@ -17,8 +16,7 @@ if ENV['STDOUT_LOGGING']
   ActiveRecord::Base.logger = log
 end
 
-require 'yaml'
-require 'erb'
+
 ENV["DB"] ||= "mysql"
 ActiveRecord::Base.table_name_prefix = ENV['DB_PREFIX'].to_s
 ActiveRecord::Base.table_name_suffix = ENV['DB_SUFFIX'].to_s
