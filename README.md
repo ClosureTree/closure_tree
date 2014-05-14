@@ -25,7 +25,7 @@ closure_tree has some great features:
 * __Best-in-class mutation performance__:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
-* __Support for Rails 3.1, 3.2, 4.0, and 4.1__
+* __Support for Rails 3.2, 4.0, and 4.1__
 * Support for reparenting children (and all their descendants)
 * Support for [concurrency](#concurrency) (using [with_advisory_lock](https://github.com/mceachen/with_advisory_lock))
 * Support for polymorphism [STI](#sti) within the hierarchy
@@ -488,9 +488,10 @@ end
 
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
 
-* Ruby 1.9.3 and Ruby 2.1.2
-* The latest Rails 3.2, 4.0, and 4.1 branches, and
-* MySQL and PostgreSQL. SQLite works in a single-threaded environment.
+* Ruby 1.9.3 , 2.0.0 and 2.1.2
+* Rubinius 2.2.6
+* The latest Rails 3.2, 4.0, 4.1 and master branches
+* Concurrency tests for MySQL and PostgreSQL. SQLite works in a single-threaded environment.
 
 Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
 run the test matrix locally.
