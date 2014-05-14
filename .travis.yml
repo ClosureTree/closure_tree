@@ -8,9 +8,12 @@ gemfile:
   - ci/Gemfile.activerecord-4.1.x
   - ci/Gemfile.activerecord-4.0.x
   - ci/Gemfile.activerecord-3.2.x
+  - ci/Gemfile.activerecord-edge
 
 env:
   - DB=sqlite
   - DB=mysql
   - DB=postgresql
 script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rake --trace all_spec_flavors
+allow_failures:
+      - gemfile: ci/Gemfile.activerecord-edge
