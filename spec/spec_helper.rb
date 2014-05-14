@@ -9,6 +9,7 @@ require 'active_record'
 require 'foreigner'
 require 'database_cleaner'
 require 'closure_tree'
+require 'tmpdir'
 
 if ENV['STDOUT_LOGGING']
   log = Logger.new(STDOUT)
