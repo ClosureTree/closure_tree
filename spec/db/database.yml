@@ -8,7 +8,7 @@ common: &common
 
 sqlite:
   adapter: <%= "jdbc" if defined? JRUBY_VERSION %>sqlite3
-  database: spec/sqlite3.db
+  database: ':memory:'
 
 postgresql:
   <<: *common

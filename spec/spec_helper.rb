@@ -32,13 +32,12 @@ ActiveRecord::Base.configurations = YAML::load(ERB.new(IO.read(plugin_test_dir +
 
 def recreate_db
   db_name = ActiveRecord::Base.configurations[ENV["DB"]]["database"]
-  case ENV['DB'] || 'mysql'
+  case ENV['DB']
     when 'sqlite'
-      File.delete 'spec/sqlite3.db' if File.exist? 'spec/sqlite3.db'
     when 'postgresql'
       `psql -c 'DROP DATABASE #{db_name}' -U postgres`
       `psql -c 'CREATE DATABASE #{db_name}' -U postgres`
-    when 'mysql'
+    else
       `mysql -e 'DROP DATABASE IF EXISTS #{db_name}'`
       `mysql -e 'CREATE DATABASE #{db_name}'`
   end
