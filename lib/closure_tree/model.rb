@@ -6,45 +6,44 @@ module ClosureTree
 
     included do
       belongs_to :parent,
-        :class_name => _ct.model_class.to_s,
-        :foreign_key => _ct.parent_column_name,
-        :inverse_of => :children
+                 class_name: _ct.model_class.to_s,
+                 foreign_key: _ct.parent_column_name,
+                 inverse_of: :children
 
+      # TODO, remove when activerecord 3.2 support is dropped
       attr_accessible :parent if _ct.use_attr_accessible?
 
       order_by_generations = "#{_ct.quoted_hierarchy_table_name}.generations asc"
 
       has_many :children, *_ct.has_many_with_order_option(
-        :class_name => _ct.model_class.to_s,
-        :foreign_key => _ct.parent_column_name,
-        :dependent => _ct.options[:dependent],
-        :inverse_of => :parent)
+        class_name: _ct.model_class.to_s,
+        foreign_key: _ct.parent_column_name,
+        dependent: _ct.options[:dependent],
+        inverse_of: :parent)
 
       has_many :ancestor_hierarchies, *_ct.has_many_without_order_option(
-        :class_name => _ct.hierarchy_class_name,
-        :foreign_key => "descendant_id",
-        :order => order_by_generations)
+        class_name: _ct.hierarchy_class_name,
+        foreign_key: 'descendant_id',
+        order: order_by_generations)
 
       has_many :self_and_ancestors, *_ct.has_many_without_order_option(
-        :through => :ancestor_hierarchies,
-        :source => :ancestor,
-        :order => order_by_generations)
+        through: :ancestor_hierarchies,
+        source: :ancestor,
+        order: order_by_generations)
 
       has_many :descendant_hierarchies, *_ct.has_many_without_order_option(
-        :class_name => _ct.hierarchy_class_name,
-        :foreign_key => "ancestor_id",
-        :order => order_by_generations)
+        class_name: _ct.hierarchy_class_name,
+        foreign_key: 'ancestor_id',
+        order: order_by_generations)
 
       has_many :self_and_descendants, *_ct.has_many_with_order_option(
-        :through => :descendant_hierarchies,
-        :source => :descendant,
-        :order => order_by_generations)
+        through: :descendant_hierarchies,
+        source: :descendant,
+        order: order_by_generations)
     end
 
     # Delegate to the Support instance on the class:
-    def _ct
-      self.class._ct
-    end
+    delegate :_ct, to: :class
 
     # Returns true if this node has no parents.
     def root?
@@ -76,7 +75,7 @@ module ClosureTree
       ancestors.size
     end
 
-    alias :level :depth
+    alias_method :level, :depth
 
     def ancestors
       without_self(self_and_ancestors)
@@ -94,7 +93,7 @@ module ClosureTree
     # to the +name_column+.
     # (so child.ancestry_path == +%w{grandparent parent child}+
     def ancestry_path(to_s_column = _ct.name_column)
-      self_and_ancestors.reverse.collect { |n| n.send to_s_column.to_sym }
+      self_and_ancestors.reverse.map { |n| n.send to_s_column.to_sym }
     end
 
     def child_ids
