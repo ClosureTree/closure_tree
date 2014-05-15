@@ -243,7 +243,7 @@ Just for kicks, this is the test tree I used for proving that preordered tree tr
 When you include ```acts_as_tree``` in your model, you can provide a hash to override the following defaults:
 
 * ```:parent_column_name``` to override the column name of the parent foreign key in the model's table. This defaults to "parent_id".
-* ```:hierarchy_table_name``` to override the hierarchy class name. This defaults to the singular name of the model + "Hierarchy", like ```TagHierarchy```.
+* ```:hierarchy_class_name``` to override the hierarchy class name. This defaults to the singular name of the model + "Hierarchy", like ```TagHierarchy```.
 * ```:hierarchy_table_name``` to override the hierarchy table name. This defaults to the singular name of the model + "_hierarchies", like ```tag_hierarchies```.
 * ```:dependent``` determines what happens when a node is destroyed. Defaults to ```nullify```.
     * ```:nullify``` will simply set the parent column to null. Each child node will be considered a "root" node. This is the default.
