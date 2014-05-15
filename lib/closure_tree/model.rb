@@ -43,7 +43,9 @@ module ClosureTree
     end
 
     # Delegate to the Support instance on the class:
-    delegate :_ct, to: :class
+    def _ct
+      self.class._ct
+    end
 
     # Returns true if this node has no parents.
     def root?
