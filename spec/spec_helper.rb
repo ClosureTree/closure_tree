@@ -84,6 +84,12 @@ Thread.abort_on_exception = true
 
 DatabaseCleaner.strategy = :truncation
 
+
+def support_concurrency
+  # SQLite doesn't support parallel writes
+  !(ENV['DB'] =~ /sqlite/)
+end
+
 RSpec.configure do |config|
   config.before(:each) do
     DatabaseCleaner.start
@@ -98,10 +104,7 @@ RSpec.configure do |config|
   config.after(:all) do
     FileUtils.remove_entry_secure ENV['FLOCK_DIR']
   end
+  config.filter_run_excluding :concurrency => !support_concurrency
 end
 
-def parallelism_is_broken
-  # SQLite doesn't support parallel writes
-  ENV["DB"] =~ /sqlite/
-end
 

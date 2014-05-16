@@ -13,7 +13,7 @@ class DbThread
   end
 end
 
-describe "threadhot" do
+describe "threadhot", concurrency: true  do
 
   before :each do
     @parent = nil
@@ -138,4 +138,4 @@ describe "threadhot" do
     User.all.should be_empty
   end
 
-end unless parallelism_is_broken
+end
