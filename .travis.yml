@@ -32,6 +32,8 @@ matrix:
       gemfile: ci/Gemfile.activerecord-4.1.x
     - rvm: 1.9.3
       gemfile: ci/Gemfile.activerecord-edge
+    - rvm: rbx-2
+      gemfile: ci/Gemfile.activerecord-3.2.x
     - rvm: ruby-head
       gemfile: ci/Gemfile.activerecord-3.2.x
     - rvm: ruby-head
