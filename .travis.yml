@@ -14,13 +14,28 @@ gemfile:
 
 env:
   - DB=sqlite
+      - rvm: ruby-head
   - DB=mysql
   - DB=postgresql
 
 script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rake --trace all_spec_flavors
 
 matrix:
+  fast_finish: true
   allow_failures:
     - gemfile: ci/Gemfile.activerecord-edge
     - rvm: rbx-2
     - rvm: ruby-head
+  exclude:
+    - rvm: 1.9.3
+      gemfile: ci/Gemfile.activerecord-4.0.x
+    - rvm: 1.9.3
+      gemfile: ci/Gemfile.activerecord-4.1.x
+    - rvm: 1.9.3
+      gemfile: ci/Gemfile.activerecord-edge
+    - rvm: ruby-head
+      gemfile: ci/Gemfile.activerecord-3.2.x
+    - rvm: ruby-head
+      gemfile: ci/Gemfile.activerecord-4.0.x
+    - rvm: ruby-head
+      gemfile: ci/Gemfile.activerecord-4.1.x
