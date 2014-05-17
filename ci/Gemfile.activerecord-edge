@@ -1,6 +1,0 @@
-source 'https://rubygems.org'
-gemspec :path => '..'
-
-gem "activerecord", :github => "rails/rails"
-gem "arel", :github => "rails/arel"
-gem 'foreigner', :git => 'https://github.com/mceachen/foreigner.git'
