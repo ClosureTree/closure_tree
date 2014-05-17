@@ -14,11 +14,11 @@ module ClosureTree
     module ClassMethods
       # Renders the given scope as a DOT digraph, suitable for rendering by Graphviz
       def to_dot_digraph(tree_scope)
-        id_to_instance = tree_scope.inject({}) { |h, ea| h[ea.id] = ea; h }
+        id_to_instance = tree_scope.reduce({}) { |h, ea| h[ea.id] = ea; h }
         output = StringIO.new
         output << "digraph G {\n"
         tree_scope.each do |ea|
-          if id_to_instance.has_key? ea._ct_parent_id
+          if id_to_instance.key? ea._ct_parent_id
             output << "  #{ea._ct_parent_id} -> #{ea._ct_id}\n"
           end
           output << "  #{ea._ct_id} [label=\"#{ea.to_digraph_label}\"]\n"
