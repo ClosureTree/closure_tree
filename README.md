@@ -488,8 +488,9 @@ end
 
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
 
-* Ruby 1.9.3 , 2.0.0 and 2.1.2
-* Rubinius 2.2.6
+* Ruby 1.9.3 , 2.0.0 and 2.1.2 and head
+* Rubinius 2.2.1+ and head
+* jRuby 1.9mode and head
 * The latest Rails 3.2, 4.0, 4.1 and master branches
 * Concurrency tests for MySQL and PostgreSQL. SQLite works in a single-threaded environment.
 
