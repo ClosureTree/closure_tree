@@ -2,8 +2,11 @@ language: ruby
 rvm:
   - 1.9.3
   - 2.1.2
-  - ruby-head
 #  - rbx-2
+  - jruby-19mode
+  - ruby-head
+#  - rbx-head
+  - jruby-head
 
 gemfile:
   - gemfiles/activerecord_3.2.gemfile

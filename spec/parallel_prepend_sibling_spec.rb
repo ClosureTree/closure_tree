@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'securerandom'
 
-describe "threadhot", concurrency: true do
+describe 'threadhot', if: support_concurrency,  concurrency: true do
 
   before :each do
     @iterations = 5
@@ -10,7 +10,7 @@ describe "threadhot", concurrency: true do
 
   def prepend_sibling_at_even_second(run_at)
     ActiveRecord::Base.connection.reconnect!
-    sibling = Label.new(:name => SecureRandom.hex(10))
+    sibling = Label.new(name: SecureRandom.hex(10))
     target = Label.find(@target.id)
     sleep(run_at - Time.now.to_f)
     target.prepend_sibling sibling

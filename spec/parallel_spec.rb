@@ -1,6 +1,5 @@
 require 'spec_helper'
 
-
 class DbThread
   def initialize(&block)
     @thread = Thread.new do
@@ -13,7 +12,7 @@ class DbThread
   end
 end
 
-describe "threadhot", concurrency: true  do
+describe 'threadhot', if: support_concurrency, concurrency: true  do
 
   before :each do
     @parent = nil
@@ -53,30 +52,30 @@ describe "threadhot", concurrency: true  do
     end
   end
 
-  it "class method will not create dupes" do
+  it 'class method will not create dupes' do
     run_workers
     Tag.roots.collect { |ea| ea.name }.should =~ @names
     # No dupe children:
     %w(a b c).each do |ea|
-      Tag.where(:name => ea).size.should == @iterations
+      Tag.where(name: ea).size.should == @iterations
     end
   end
 
-  it "instance method will not create dupes" do
-    @parent = Tag.create!(:name => "root")
+  it 'instance method will not create dupes' do
+    @parent = Tag.create!(name: 'root')
     run_workers
     @parent.reload.children.collect { |ea| ea.name }.should =~ @names
-    Tag.where(:name => @names).size.should == @iterations
+    Tag.where(name: @names).size.should == @iterations
     %w(a b c).each do |ea|
-      Tag.where(:name => ea).size.should == @iterations
+      Tag.where(name: ea).size.should == @iterations
     end
   end
 
-  it "creates dupe roots without advisory locks" do
+  it 'creates dupe roots without advisory locks' do
     # disable with_advisory_lock:
-    Tag.stub(:with_advisory_lock).and_return { |lock_name, &block| block.call }
+    Tag.stub(:with_advisory_lock).and_return { |_lock_name, &block| block.call }
     run_workers
-    Tag.where(:name => @names).size.should > @iterations
+    Tag.where(name: @names).size.should > @iterations
   end
 
   it 'fails to deadlock from parallel sibling churn' do
@@ -106,7 +105,7 @@ describe "threadhot", concurrency: true  do
           victim_name = children_to_delete.shift
           if victim_name
             Tag.transaction do
-              victim = target.children.where(:name => victim_name).first
+              victim = target.children.where(name: victim_name).first
               victim.destroy
               deleted_children << victim_name
             end
@@ -123,14 +122,14 @@ describe "threadhot", concurrency: true  do
     deleted_children.should =~ expected_children
   end
 
-  it "fails to deadlock while simultaneously deleting items from the same hierarchy" do
+  it 'fails to deadlock while simultaneously deleting items from the same hierarchy' do
     target = User.find_or_create_by_path((1..200).to_a.map { |ea| ea.to_s })
     to_delete = target.self_and_ancestors.to_a.shuffle.map(&:email)
     destroyer_threads = @workers.times.map do
       DbThread.new do
         until to_delete.empty?
           email = to_delete.shift
-          User.transaction { User.where(:email => email).first.destroy } if email
+          User.transaction { User.where(email: email).first.destroy } if email
         end
       end
     end
