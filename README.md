@@ -484,6 +484,38 @@ after do
 end
 ```
 
+## Testing with Closure Tree
+
+Closure tree comes with some RSpec2/3 matchers which you may use for your tests:
+
+```ruby
+require 'spec_helper'
+require 'closure_tree/test/matcher'
+
+describe Category do
+ # Should syntax
+ it { should be_a_closure_tree }
+ # Expect syntax
+ it { is_expected.to be_a_closure_tree }
+end
+
+describe Label do
+ # Should syntax
+ it { should be_a_closure_tree.ordered }
+ # Expect syntax
+ it { is_expected.to be_a_closure_tree.ordered }
+end
+
+describe TodoList::Item do
+ # Should syntax
+ it { should be_a_closure_tree.ordered(:priority_order) }
+ # Expect syntax
+ it { is_expected.to be_a_closure_tree.ordered(:priority_order) }
+end
+
+```
+
+
 ## Testing
 
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
