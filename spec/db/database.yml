@@ -1,5 +1,5 @@
 common: &common
-  database: closure_tree_test<%= ENV['TRAVIS_JOB_NUMBER'].to_s.gsub(/\W/, '_') %>
+  database: closure_tree_test
   host: localhost
   pool: 50
   timeout: 5000
@@ -7,7 +7,7 @@ common: &common
   min_messages: ERROR
 
 sqlite:
-  adapter: <%= "jdbc" if defined? JRUBY_VERSION %>sqlite3
+  adapter: sqlite3
   database: ':memory:'
 
 postgresql:

@@ -18,7 +18,7 @@ if ENV['STDOUT_LOGGING']
 end
 
 
-ENV["DB"] ||= "mysql"
+ENV['DB'] ||= 'mysql'
 ActiveRecord::Base.table_name_prefix = ENV['DB_PREFIX'].to_s
 ActiveRecord::Base.table_name_suffix = ENV['DB_SUFFIX'].to_s
 
@@ -27,18 +27,29 @@ if ENV['ATTR_ACCESSIBLE'] == '1'
   ActiveRecord::Base.send(:include, ActiveModel::MassAssignmentSecurity)
 end
 
-ActiveRecord::Base.configurations = YAML::load(ERB.new(IO.read(plugin_test_dir + "/db/database.yml")).result)
+ActiveRecord::Base.configurations = YAML::load_file("#{plugin_test_dir}/db/database.yml")
+
+db_config = ActiveRecord::Base.configurations[ENV['DB']]
+@db_name = db_config['database']
+if @db_name != ':memory:'
+  # Postgresql or Mysql
+  @db_name.concat ENV['TRAVIS_JOB_NUMBER'].to_s.gsub(/\W/, '_')
+elsif defined? JRUBY_VERSION
+  #check if we are using jruby
+  db_config['adapter'].prepend('jdbc')
+end
 
 def recreate_db
-  db_name = ActiveRecord::Base.configurations[ENV["DB"]]["database"]
+  # FIXME, this function is buggy : it don't take into account
+  # the configuration from the yaml file
   case ENV['DB']
     when 'sqlite'
     when 'postgresql'
-      `psql -c 'DROP DATABASE #{db_name}' -U postgres`
-      `psql -c 'CREATE DATABASE #{db_name}' -U postgres`
+      `psql -c 'DROP DATABASE #{@db_name}' -U postgres`
+      `psql -c 'CREATE DATABASE #{@db_name}' -U postgres`
     else
-      `mysql -e 'DROP DATABASE IF EXISTS #{db_name}'`
-      `mysql -e 'CREATE DATABASE #{db_name}'`
+      `mysql -e 'DROP DATABASE IF EXISTS #{@db_name}'`
+      `mysql -e 'CREATE DATABASE #{@db_name}'`
   end
   ActiveRecord::Base.connection.reconnect!
 end
@@ -60,10 +71,10 @@ class Hash
     inject({}) do |h, entry|
       k, v = entry
       h[block.call(k)] = if v.is_a?(Hash) then
-        v.render_from_yield(&block)
-      else
-        block.call(v)
-      end
+                           v.render_from_yield(&block)
+                         else
+                           block.call(v)
+                         end
       h
     end
   end
