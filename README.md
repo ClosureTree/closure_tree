@@ -53,7 +53,7 @@ for a description of different tree storage algorithms.
 
 ## Installation
 
-Note that closure_tree only supports Rails 3.0 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
+Note that closure_tree only supports Rails 3.2 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
 
 1.  Add this to your Gemfile: ```gem 'closure_tree'```
 

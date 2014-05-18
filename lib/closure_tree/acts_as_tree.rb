@@ -11,10 +11,17 @@ require 'closure_tree/numeric_deterministic_ordering'
 module ClosureTree
   module ActsAsTree
     def acts_as_tree(options = {})
-      options.assert_valid_keys(:name, :dependent, :order,
-                                :parent_column_name, :name_column,
-                                :hierarchy_class_name, :hierarchy_table_name,
-                                :with_advisory_lock, :base_class)
+      options.assert_valid_keys(
+        :base_class,
+        :dependent,
+        :hierarchy_class_name,
+        :hierarchy_table_name,
+        :name,
+        :name_column,
+        :order,
+        :parent_column_name,
+        :with_advisory_lock
+      )
 
       class_attribute :_ct
       self._ct = ClosureTree::Support.new(self, options)
