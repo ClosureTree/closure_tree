@@ -29,7 +29,7 @@ closure_tree has some great features:
 * __Best-in-class mutation performance__:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
-* __Support for Rails 3.1, 3.2, 4.0, and 4.1__
+* __Support for Rails 3.2, 4.0, and 4.1__
 * Support for reparenting children (and all their descendants)
 * Support for [concurrency](#concurrency) (using [with_advisory_lock](https://github.com/mceachen/with_advisory_lock))
 * Support for polymorphism [STI](#sti) within the hierarchy
@@ -57,7 +57,7 @@ for a description of different tree storage algorithms.
 
 ## Installation
 
-Note that closure_tree only supports Rails 3.0 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
+Note that closure_tree only supports Rails 3.2 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
 
 1.  Add this to your Gemfile: ```gem 'closure_tree'```
 
@@ -247,7 +247,7 @@ Just for kicks, this is the test tree I used for proving that preordered tree tr
 When you include ```acts_as_tree``` in your model, you can provide a hash to override the following defaults:
 
 * ```:parent_column_name``` to override the column name of the parent foreign key in the model's table. This defaults to "parent_id".
-* ```:hierarchy_table_name``` to override the hierarchy class name. This defaults to the singular name of the model + "Hierarchy", like ```TagHierarchy```.
+* ```:hierarchy_class_name``` to override the hierarchy class name. This defaults to the singular name of the model + "Hierarchy", like ```TagHierarchy```.
 * ```:hierarchy_table_name``` to override the hierarchy table name. This defaults to the singular name of the model + "_hierarchies", like ```tag_hierarchies```.
 * ```:dependent``` determines what happens when a node is destroyed. Defaults to ```nullify```.
     * ```:nullify``` will simply set the parent column to null. Each child node will be considered a "root" node. This is the default.
@@ -492,9 +492,10 @@ end
 
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
 
-* Ruby 1.9.3 and Ruby 2.1.2
-* The latest Rails 3.2, 4.0, and 4.1 branches, and
-* MySQL and PostgreSQL. SQLite works in a single-threaded environment.
+* Ruby 1.9.3 , 2.0.0 and 2.1.2
+* Rubinius 2.2.6
+* The latest Rails 3.2, 4.0, 4.1 and master branches
+* Concurrency tests for MySQL and PostgreSQL. SQLite works in a single-threaded environment.
 
 Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
 run the test matrix locally.

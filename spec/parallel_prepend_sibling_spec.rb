@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'securerandom'
 
-describe "threadhot" do
+describe "threadhot", concurrency: true do
 
   before :each do
     @iterations = 5
@@ -39,4 +39,4 @@ describe "threadhot" do
     Label.all.select { |ea| ea.root? }.should == [@target.parent]
   end
 
-end unless parallelism_is_broken
+end

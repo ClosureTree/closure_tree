@@ -1,7 +1,7 @@
 $:.unshift(File.dirname(__FILE__) + '/../lib')
 plugin_test_dir = File.dirname(__FILE__)
 
-require 'rubygems'
+
 ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../../Gemfile', __FILE__)
 require 'bundler/setup' if File.exists?(ENV['BUNDLE_GEMFILE'])
 require 'rspec'
@@ -17,8 +17,7 @@ if ENV['STDOUT_LOGGING']
   ActiveRecord::Base.logger = log
 end
 
-require 'yaml'
-require 'erb'
+
 ENV["DB"] ||= "mysql"
 ActiveRecord::Base.table_name_prefix = ENV['DB_PREFIX'].to_s
 ActiveRecord::Base.table_name_suffix = ENV['DB_SUFFIX'].to_s
@@ -32,13 +31,12 @@ ActiveRecord::Base.configurations = YAML::load(ERB.new(IO.read(plugin_test_dir +
 
 def recreate_db
   db_name = ActiveRecord::Base.configurations[ENV["DB"]]["database"]
-  case ENV['DB'] || 'mysql'
+  case ENV['DB']
     when 'sqlite'
-      File.delete 'spec/sqlite3.db' if File.exist? 'spec/sqlite3.db'
     when 'postgresql'
       `psql -c 'DROP DATABASE #{db_name}' -U postgres`
       `psql -c 'CREATE DATABASE #{db_name}' -U postgres`
-    when 'mysql'
+    else
       `mysql -e 'DROP DATABASE IF EXISTS #{db_name}'`
       `mysql -e 'CREATE DATABASE #{db_name}'`
   end
@@ -86,6 +84,12 @@ Thread.abort_on_exception = true
 
 DatabaseCleaner.strategy = :truncation
 
+
+def support_concurrency
+  # SQLite doesn't support parallel writes
+  !(ENV['DB'] =~ /sqlite/)
+end
+
 RSpec.configure do |config|
   config.before(:each) do
     DatabaseCleaner.start
@@ -100,10 +104,7 @@ RSpec.configure do |config|
   config.after(:all) do
     FileUtils.remove_entry_secure ENV['FLOCK_DIR']
   end
+  config.filter_run_excluding :concurrency => !support_concurrency
 end
 
-def parallelism_is_broken
-  # SQLite doesn't support parallel writes
-  ENV["DB"] =~ /sqlite/
-end
 

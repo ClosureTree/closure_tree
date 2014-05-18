@@ -49,9 +49,7 @@ describe Label do
       b = c.parent
       a = c.root
       a.destroy
-      Label.exists?(a).should be_false
-      Label.exists?(b).should be_false
-      Label.exists?(c).should be_false
+      Label.exists?(id: [a.id,b.id,c.id]).should be_false
     end
 
     it "properly destroys descendents created with add_child" do
@@ -428,9 +426,7 @@ describe Label do
       c = Label.new(name: 'c')
       b.add_child c
       a.destroy
-      Label.exists?(a).should be_false
-      Label.exists?(b).should be_false
-      Label.exists?(c).should be_false
+      Label.exists?(id: [a.id,b.id,c.id]).should be_false
     end
 
     it "properly destroys descendents created with <<" do
@@ -440,9 +436,7 @@ describe Label do
       c = Label.new(name: 'c')
       b.children << c
       a.destroy
-      Label.exists?(a).should be_false
-      Label.exists?(b).should be_false
-      Label.exists?(c).should be_false
+      Label.exists?(id: [a.id,b.id,c.id]).should be_false
     end
   end
 
