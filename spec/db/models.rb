@@ -4,9 +4,11 @@ class Tag < ActiveRecord::Base
   acts_as_tree :dependent => :destroy, :order => :name
   before_destroy :add_destroyed_tag
   attr_accessible :name, :title if _ct.use_attr_accessible?
+
   def to_s
     name
   end
+
   def add_destroyed_tag
     # Proof for the tests that the destroy rather than the delete method was called:
     DestroyedTag.create(:name => name)
@@ -40,9 +42,9 @@ end
 
 class User < ActiveRecord::Base
   acts_as_tree :parent_column_name => "referrer_id",
-    :name_column => 'email',
-    :hierarchy_class_name => 'ReferralHierarchy',
-    :hierarchy_table_name => 'referral_hierarchies'
+               :name_column => 'email',
+               :hierarchy_class_name => 'ReferralHierarchy',
+               :hierarchy_table_name => 'referral_hierarchies'
 
   has_many :contracts
 
@@ -64,8 +66,8 @@ end
 class Label < ActiveRecord::Base
   # make sure order doesn't matter
   acts_as_tree :order => :sort_order, # <- LOOK IT IS A SYMBOL OMG
-    :parent_column_name => "mother_id",
-    :dependent => :destroy
+               :parent_column_name => "mother_id",
+               :dependent => :destroy
 
   attr_accessible :name if _ct.use_attr_accessible?
 
@@ -98,4 +100,8 @@ class Metal < ActiveRecord::Base
   self.table_name = "#{table_name_prefix}metal#{table_name_suffix}"
   acts_as_tree :order => 'sort_order'
   self.inheritance_column = 'metal_type'
+end
+
+class MenuItem < ActiveRecord::Base
+  acts_as_tree(touch: true)
 end
