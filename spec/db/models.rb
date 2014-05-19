@@ -42,9 +42,9 @@ end
 
 class User < ActiveRecord::Base
   acts_as_tree :parent_column_name => "referrer_id",
-               :name_column => 'email',
-               :hierarchy_class_name => 'ReferralHierarchy',
-               :hierarchy_table_name => 'referral_hierarchies'
+    :name_column => 'email',
+    :hierarchy_class_name => 'ReferralHierarchy',
+    :hierarchy_table_name => 'referral_hierarchies'
 
   has_many :contracts
 
@@ -66,8 +66,8 @@ end
 class Label < ActiveRecord::Base
   # make sure order doesn't matter
   acts_as_tree :order => :sort_order, # <- LOOK IT IS A SYMBOL OMG
-               :parent_column_name => "mother_id",
-               :dependent => :destroy
+    :parent_column_name => "mother_id",
+    :dependent => :destroy
 
   attr_accessible :name if _ct.use_attr_accessible?
 
