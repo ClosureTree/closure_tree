@@ -112,7 +112,8 @@ module ClosureTree
         self.order_value += 1
         self.save!
       end
-      parent.add_child(sibling) # <- this causes sibling to be saved.
+      sibling.parent = self.parent
+      sibling.save!
     end
   end
 end
