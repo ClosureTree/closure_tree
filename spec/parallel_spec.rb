@@ -12,7 +12,7 @@ class DbThread
   end
 end
 
-describe 'threadhot', if: support_concurrency, concurrency: true  do
+describe 'threadhot', if: support_concurrency do
 
   before :each do
     @parent = nil

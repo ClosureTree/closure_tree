@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'securerandom'
 
-describe 'threadhot', if: support_concurrency,  concurrency: true do
+describe 'threadhot', if: support_concurrency do
 
   before :each do
     @iterations = 5

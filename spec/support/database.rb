@@ -12,8 +12,7 @@ end
 ActiveRecord::Migration.verbose = false
 ActiveRecord::Base.table_name_prefix = ENV['DB_PREFIX'].to_s
 ActiveRecord::Base.table_name_suffix = ENV['DB_SUFFIX'].to_s
-
-ActiveRecord::Base.configurations = YAML.load_file("#{database_folder}/database.yml")
+ActiveRecord::Base.configurations = YAML::load(ERB.new(IO.read("#{database_folder}/database.yml")).result)
 
 config = ActiveRecord::Base.configurations[database_adapter]
 

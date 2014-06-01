@@ -27,6 +27,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'uuidtools'
   gem.add_development_dependency 'database_cleaner'
   gem.add_development_dependency 'appraisal'
+  gem.add_development_dependency 'timecop'
 
   # gem.add_development_dependency 'ruby-prof' # <- don't need this normally.
 

@@ -9,6 +9,7 @@ require 'database_cleaner'
 require 'closure_tree'
 require 'closure_tree/test/matcher'
 require 'tmpdir'
+require 'timecop'
 
 Thread.abort_on_exception = true
 
@@ -16,5 +17,4 @@ Dir['./spec/support/**/*.rb'].sort.each { |f| require f }
 
 RSpec.configure do |config|
   config.include ClosureTree::Test::Matcher
-  config.filter_run_excluding concurrency: true
 end
