@@ -125,7 +125,6 @@ ActiveRecord::Schema.define(:version => 0) do
   add_foreign_key(:metal_hierarchies, :metal, :column => 'ancestor_id')
   add_foreign_key(:metal_hierarchies, :metal, :column => 'descendant_id')
 
-
   create_table 'menu_items' do |t|
     t.string 'name'
     t.integer 'parent_id'
@@ -142,6 +141,5 @@ ActiveRecord::Schema.define(:version => 0) do
 
   add_foreign_key(:menu_item_hierarchies, :menu_items, :column => 'ancestor_id')
   add_foreign_key(:menu_item_hierarchies, :menu_items, :column => 'descendant_id')
-
 
 end

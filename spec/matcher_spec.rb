@@ -8,10 +8,8 @@ describe 'ClosureTree::Test::Matcher' do
     it { Label.should be_a_closure_tree.ordered }
     it { Metal.should be_a_closure_tree.ordered(:sort_order) }
     it { MenuItem.should be_a_closure_tree }
-
     it { Contract.should_not be_a_closure_tree }
   end
-
 
   describe 'ordered' do
     it { Label.should be_a_closure_tree.ordered }
