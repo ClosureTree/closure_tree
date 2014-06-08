@@ -10,10 +10,6 @@ and tracking user referrals.
 [![Code Climate](https://codeclimate.com/github/mceachen/closure_tree.png)](https://codeclimate.com/github/mceachen/closure_tree)
 [![Dependency Status](https://gemnasium.com/mceachen/closure_tree.png)](https://gemnasium.com/mceachen/closure_tree)
 
-inetdavid/closure_tree
-
-[![Build Status](https://secure.travis-ci.org/inetdavid/closure_tree.png?branch=master)](http://travis-ci.org/inetdavid/closure_tree)
-
 Substantially more efficient than
 [ancestry](https://github.com/stefankroes/ancestry) and
 [acts_as_tree](https://github.com/amerine/acts_as_tree), and even more

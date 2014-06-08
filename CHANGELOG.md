@@ -1,5 +1,14 @@
 # Changelog
 
+### 4.6.0
+ 
+ * Deterministically ordered trees are guaranteed to have a sort_order now.
+ 
+   This may be a breaking change if you're expecting sort_order to be NULLable.
+ 
+   Many thanks to [David Schmidt](https://github.com/inetdavid) for raising and
+   working on the issue!
+
 ### 4.5.0
 
 * Merged a bunch of great changes from [Abdelkader Boudih](https://github.com/seuros), 
@@ -7,13 +16,6 @@
 * Added Travis builds for Rails 4.1.1 and Ruby 2.1.2
 * Dropped support for Rails 3.1, as it is no longer receiving security patches.
   See http://rubyonrails.org/security/ for more information.
-
-* Deterministically ordered trees are guaranteed to have a sort_order now.
-
-  This may be a breaking change if you're expecting sort_order to be NULLable.
-
-  Many thanks to [David Schmidt](https://github.com/inetdavid) for raising and
-  working on the issue!
 
 ### 4.4.0
 
