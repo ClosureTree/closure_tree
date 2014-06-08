@@ -438,6 +438,10 @@ database with multiple threads, and don't provide an alternative mutex.
 
 ## FAQ
 
+### Are there any how-to articles on how to use this gem?
+
+Yup! [Ilya Bodrov](https://github.com/bodrovis) wrote [Nested Comments with Rails](http://www.sitepoint.com/nested-comments-rails/).
+
 ### Does this work well with ```#default_scope```?
 
 No. Please see [issue 86](https://github.com/mceachen/closure_tree/issues/86) for details.
@@ -536,6 +540,8 @@ See https://github.com/mceachen/closure_tree/blob/master/CHANGELOG.md
 
 ## Thanks to
 
+* The more than 20 engineers around the world that have contributed their time and code to this gem
+  (see the [changelog](https://github.com/mceachen/closure_tree/blob/master/CHANGELOG.md)!)
 * https://github.com/collectiveidea/awesome_nested_set
 * https://github.com/patshaughnessy/class_factory
 * JetBrains, which provides an [open-source license](http://www.jetbrains.com/ruby/buy/buy.jsp#openSource) to
