@@ -2,14 +2,17 @@ language: ruby
 rvm:
   - 1.9.3
   - 2.1.2
-  - ruby-head
-#  - rbx-2
+  - rbx-2
+  - jruby-19mode
+#  - ruby-head
+#  - rbx-head
+#  - jruby-head
 
 gemfile:
   - gemfiles/activerecord_3.2.gemfile
   - gemfiles/activerecord_4.0.gemfile
   - gemfiles/activerecord_4.1.gemfile
-  - gemfiles/activerecord_edge.gemfile
+#  - gemfiles/activerecord_edge.gemfile
 
 env:
   - DB=sqlite
@@ -22,7 +25,12 @@ matrix:
   fast_finish: true
   allow_failures:
     - gemfile: gemfiles/activerecord_edge.gemfile
+    - rvm: rbx-2
+    - rvm: jruby-19mode
     - rvm: ruby-head
+    - rvm: rbx-head
+    - rvm: jruby-head
+
   exclude:
     - rvm: ruby-head
       gemfile: gemfiles/activerecord_3.2.gemfile

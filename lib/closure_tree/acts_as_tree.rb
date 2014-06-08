@@ -1,12 +1,4 @@
 require 'with_advisory_lock'
-require 'closure_tree/support'
-require 'closure_tree/hierarchy_maintenance'
-require 'closure_tree/model'
-require 'closure_tree/finders'
-require 'closure_tree/hash_tree'
-require 'closure_tree/digraphs'
-require 'closure_tree/deterministic_ordering'
-require 'closure_tree/numeric_deterministic_ordering'
 
 module ClosureTree
   module ActsAsTree
@@ -20,7 +12,8 @@ module ClosureTree
         :name_column,
         :order,
         :parent_column_name,
-        :with_advisory_lock
+        :with_advisory_lock,
+        :touch
       )
 
       class_attribute :_ct

@@ -1,6 +1,19 @@
 require 'active_support'
 
+module ClosureTree
+  extend ActiveSupport::Autoload
+
+  autoload :ActsAsTree
+  autoload :Support
+  autoload :HierarchyMaintenance
+  autoload :Model
+  autoload :Finders
+  autoload :HashTree
+  autoload :Digraphs
+  autoload :DeterministicOrdering
+  autoload :NumericDeterministicOrdering
+end
+
 ActiveSupport.on_load :active_record do
-  require 'closure_tree/acts_as_tree'
   ActiveRecord::Base.send :extend, ClosureTree::ActsAsTree
 end

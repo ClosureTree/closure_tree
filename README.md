@@ -30,6 +30,7 @@ closure_tree has some great features:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
 * __Support for Rails 3.2, 4.0, and 4.1__
+* __Support for Ruby 1.9, 2.1, jRuby, and Rubinius__
 * Support for reparenting children (and all their descendants)
 * Support for [concurrency](#concurrency) (using [with_advisory_lock](https://github.com/mceachen/with_advisory_lock))
 * Support for polymorphism [STI](#sti) within the hierarchy
@@ -441,6 +442,10 @@ database with multiple threads, and don't provide an alternative mutex.
 
 ## FAQ
 
+### Are there any how-to articles on how to use this gem?
+
+Yup! [Ilya Bodrov](https://github.com/bodrovis) wrote [Nested Comments with Rails](http://www.sitepoint.com/nested-comments-rails/).
+
 ### Does this work well with ```#default_scope```?
 
 No. Please see [issue 86](https://github.com/mceachen/closure_tree/issues/86) for details.
@@ -488,12 +493,45 @@ after do
 end
 ```
 
+## Testing with Closure Tree
+
+Closure tree comes with some RSpec2/3 matchers which you may use for your tests:
+
+```ruby
+require 'spec_helper'
+require 'closure_tree/test/matcher'
+
+describe Category do
+ # Should syntax
+ it { should be_a_closure_tree }
+ # Expect syntax
+ it { is_expected.to be_a_closure_tree }
+end
+
+describe Label do
+ # Should syntax
+ it { should be_a_closure_tree.ordered }
+ # Expect syntax
+ it { is_expected.to be_a_closure_tree.ordered }
+end
+
+describe TodoList::Item do
+ # Should syntax
+ it { should be_a_closure_tree.ordered(:priority_order) }
+ # Expect syntax
+ it { is_expected.to be_a_closure_tree.ordered(:priority_order) }
+end
+
+```
+
+
 ## Testing
 
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
 
-* Ruby 1.9.3 , 2.0.0 and 2.1.2
-* Rubinius 2.2.6
+* Ruby 1.9.3 , 2.0.0 and 2.1.2 and head
+* Rubinius 2.2.1+ and head
+* jRuby 1.9mode and head
 * The latest Rails 3.2, 4.0, 4.1 and master branches
 * Concurrency tests for MySQL and PostgreSQL. SQLite works in a single-threaded environment.
 
@@ -506,6 +544,8 @@ See https://github.com/mceachen/closure_tree/blob/master/CHANGELOG.md
 
 ## Thanks to
 
+* The more than 20 engineers around the world that have contributed their time and code to this gem
+  (see the [changelog](https://github.com/mceachen/closure_tree/blob/master/CHANGELOG.md)!)
 * https://github.com/collectiveidea/awesome_nested_set
 * https://github.com/patshaughnessy/class_factory
 * JetBrains, which provides an [open-source license](http://www.jetbrains.com/ruby/buy/buy.jsp#openSource) to
