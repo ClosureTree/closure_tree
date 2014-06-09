@@ -149,14 +149,5 @@ module ClosureTree
     def _ct_quoted_id
       _ct.quoted_value(_ct_id)
     end
-
-    def _ct_update_column(column, value)
-      if respond_to?(:update_column)
-        update_column(column, value)
-      else
-        # This will run callbacks, but it's better than failing outright:
-        update_attribute(column, value)
-      end
-    end
   end
 end

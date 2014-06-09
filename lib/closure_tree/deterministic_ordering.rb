@@ -4,6 +4,10 @@ module ClosureTree
       read_attribute(_ct.order_column_sym)
     end
 
+    def update_order_value(order_value)
+      update_column(_ct.order_column_sym, order_value)
+    end
+
     def order_value=(new_order_value)
       write_attribute(_ct.order_column_sym, new_order_value)
     end

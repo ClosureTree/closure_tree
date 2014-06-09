@@ -6,11 +6,7 @@ module ClosureTree
     extend ActiveSupport::Concern
 
     included do
-      after_destroy :_ct_reorder_after_destroy
-    end
-
-    def _ct_reorder_after_destroy
-      _ct_reorder_siblings
+      after_destroy :_ct_reorder_siblings
     end
 
     def _ct_reorder_prior_siblings_if_parent_changed
@@ -20,13 +16,13 @@ module ClosureTree
       end
     end
 
-    def _ct_reorder_siblings(minimum_sort_order_value = nil, delta = 0)
-      _ct.reorder_with_parent_id(_ct_parent_id, minimum_sort_order_value, delta)
+    def _ct_reorder_siblings(minimum_sort_order_value = nil)
+      _ct.reorder_with_parent_id(_ct_parent_id, minimum_sort_order_value)
       reload unless destroyed?
     end
 
-    def _ct_reorder_children(minimum_sort_order_value = nil, delta = 0)
-      _ct.reorder_with_parent_id(_ct_id, minimum_sort_order_value, delta)
+    def _ct_reorder_children(minimum_sort_order_value = nil)
+      _ct.reorder_with_parent_id(_ct_id, minimum_sort_order_value)
     end
 
     def self_and_descendants_preordered
@@ -88,39 +84,39 @@ module ClosureTree
 
     def add_sibling(sibling, add_after = true)
       fail "can't add self as sibling" if self == sibling
+
+      # Make sure self or sibling isn't dirty, because we're going to call reload:
+      save
+      sibling.save
+
       _ct.with_advisory_lock do
-        if self.order_value.nil?
-          # ergh, we don't know where we stand within the siblings, so establish that first:
-          _ct_reorder_siblings
-          reload # < because self.order_value changed
-        end
         prior_sibling_parent = sibling.parent
-        if prior_sibling_parent == self.parent
-          # We have to adjust the prior siblings by moving sibling out of the way:
-          sibling._ct_update_column(_ct.parent_column_sym, nil)
-          if sibling.order_value && sibling.order_value < self.order_value
-            _ct_reorder_siblings(sibling.order_value, 0)
-            reload # < because self.order_value changed
-          end
+        reorder_from_value = if prior_sibling_parent == self.parent
+          [self.order_value, sibling.order_value].compact.min
+        else
+          self.order_value
         end
-        _ct_move_new_sibling(sibling, add_after)
-        if prior_sibling_parent && prior_sibling_parent != self.parent
-          prior_sibling_parent._ct_reorder_children
+
+        sibling.update_order_value(self.order_value)
+        sibling.parent = self.parent
+        sibling.save # may be a no-op
+
+        _ct_reorder_siblings(reorder_from_value)
+
+        # The sort order should be correct now except for self and sibling, which may need to flip:
+        sibling_is_after = self.reload.sort_order < sibling.reload.sort_order
+        if add_after != sibling_is_after
+          # We need to flip the sort orders:
+          self_so, sib_so = self.sort_order, sibling.sort_order
+          update_order_value(sib_so)
+          sibling.update_order_value(self_so)
+        end
+
+        if prior_sibling_parent != self.parent
+          prior_sibling_parent.try(:_ct_reorder_children)
         end
         sibling
       end
-    end
-
-    def _ct_move_new_sibling(sibling, add_after)
-      _ct_reorder_siblings(self.order_value + 1, 1)
-      if add_after
-        sibling.order_value = self.order_value + 1
-      else
-        sibling.order_value = self.order_value
-        self.order_value += 1
-        self.save!
-      end
-      parent.add_child(sibling) # <- this causes sibling to be saved.
     end
   end
 end

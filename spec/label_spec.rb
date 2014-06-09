@@ -49,7 +49,7 @@ describe Label do
       b = c.parent
       a = c.root
       a.destroy
-      Label.exists?(id: [a.id,b.id,c.id]).should be_false
+      Label.exists?(id: [a.id, b.id, c.id]).should be_false
     end
 
     it "properly destroys descendents created with add_child" do
@@ -155,7 +155,7 @@ describe Label do
       end
 
       it "returns descendents regardless of subclass" do
-        Label.root.descendants.map{|ea|ea.class.to_s}.uniq.should =~
+        Label.root.descendants.map { |ea| ea.class.to_s }.uniq.should =~
           %w(Label DateLabel DirectoryLabel EventLabel)
       end
     end
@@ -239,33 +239,55 @@ describe Label do
 
   context "deterministically orders with polymorphic siblings" do
     before :each do
-      @parent = Label.create!(:name => "parent")
-      @a = EventLabel.new(:name => "a")
-      @b = DirectoryLabel.new(:name => "b")
-      @c = DateLabel.new(:name => "c")
-      @d = Label.new(:name => "d")
+      @parent = Label.create!(:name => 'parent')
+      @a, @b, @c, @d, @e, @f = ('a'..'f').map { |ea| EventLabel.new(:name => ea) }
       @parent.children << @a
       @a.append_sibling(@b)
       @b.append_sibling(@c)
       @c.append_sibling(@d)
+      @parent.append_sibling(@e)
+      @e.append_sibling(@f)
+    end
+
+    def name_and_order(enum)
+      enum.map { |ea| [ea.name, ea.sort_order] }
     end
 
     def children_name_and_order
-      @parent.children(reload = true).map { |ea| [ea.name, ea.sort_order] }
+      name_and_order(@parent.children(reload = true))
     end
 
-    it "sort_orders properly" do
+    def roots_name_and_order
+      name_and_order(Label.roots)
+    end
+
+    it 'sort_orders properly' do
       children_name_and_order.should == [['a', 0], ['b', 1], ['c', 2], ['d', 3]]
     end
 
-    it "when inserted before" do
+    it 'when inserted before' do
       @b.append_sibling(@a)
       children_name_and_order.should == [['b', 0], ['a', 1], ['c', 2], ['d', 3]]
     end
 
-    it "when inserted after" do
+    it 'when inserted after' do
       @a.append_sibling(@c)
       children_name_and_order.should == [['a', 0], ['c', 1], ['b', 2], ['d', 3]]
+    end
+
+    it 'when inserted before the first' do
+      @a.prepend_sibling(@d)
+      children_name_and_order.should == [['d', 0], ['a', 1], ['b', 2], ['c', 3]]
+    end
+
+    it 'when inserted after the last' do
+      @d.append_sibling(@b)
+      children_name_and_order.should == [['a', 0], ['c', 1], ['d', 2], ['b', 3]]
+    end
+
+    it 'prepends to root nodes' do
+      @parent.prepend_sibling(@f)
+      roots_name_and_order.should == [['f', 0], ['parent', 1], ['e', 2]]
     end
   end
 
@@ -363,7 +385,7 @@ describe Label do
 
     before do
       @root = Label.create(name: 'root')
-      @a, @b, @c = %w(a b c).map {|n| @root.children.create(name: n) }
+      @a, @b, @c = %w(a b c).map { |n| @root.children.create(name: n) }
     end
 
     it 'should set sort_order on roots' do
@@ -389,23 +411,23 @@ describe Label do
     before :each do
       # to make sure sort_order isn't affected by additional nodes:
       create_preorder_tree
-      @root = Label.create(:name => "root")
-      @a = @root.children.create!(:name => "a")
-      @b = @a.append_sibling(Label.new(:name => "b"))
-      @c = @b.append_sibling(Label.new(:name => "c"))
+      @root = Label.create(:name => 'root')
+      @a = @root.children.create!(:name => 'a')
+      @b = @a.append_sibling(Label.new(:name => 'b'))
+      @c = @b.append_sibling(Label.new(:name => 'c'))
     end
-    context "doesn't create sort order gaps from" do
-      it "from head" do
+    context "doesn't create sort order gaps" do
+      it 'from head' do
         @a.destroy
         @root.reload.children.should == [@b, @c]
         @root.children.map { |ea| ea.sort_order }.should == [0, 1]
       end
-      it "from mid" do
+      it 'from mid' do
         @b.destroy
         @root.reload.children.should == [@a, @c]
         @root.children.map { |ea| ea.sort_order }.should == [0, 1]
       end
-      it "from tail" do
+      it 'from tail' do
         @c.destroy
         @root.reload.children.should == [@a, @b]
         @root.children.map { |ea| ea.sort_order }.should == [0, 1]
@@ -418,33 +440,33 @@ describe Label do
     end
   end
 
-  context "descendent destruction" do
-    it "properly destroys descendents created with add_child" do
+  context 'descendent destruction' do
+    it 'properly destroys descendents created with add_child' do
       a = Label.create(name: 'a')
       b = Label.new(name: 'b')
       a.add_child b
       c = Label.new(name: 'c')
       b.add_child c
       a.destroy
-      Label.exists?(id: [a.id,b.id,c.id]).should be_false
+      Label.exists?(id: [a.id, b.id, c.id]).should be_false
     end
 
-    it "properly destroys descendents created with <<" do
+    it 'properly destroys descendents created with <<' do
       a = Label.create(name: 'a')
       b = Label.new(name: 'b')
       a.children << b
       c = Label.new(name: 'c')
       b.children << c
       a.destroy
-      Label.exists?(id: [a.id,b.id,c.id]).should be_false
+      Label.exists?(id: [a.id, b.id, c.id]).should be_false
     end
   end
 
-  context "preorder" do
-    it "returns descendants in proper order" do
+  context 'preorder' do
+    it 'returns descendants in proper order' do
       create_preorder_tree
       a = Label.root
-      a.name.should == "a"
+      a.name.should == 'a'
       expected = ('a'..'r').to_a
       a.self_and_descendants_preordered.collect { |ea| ea.name }.should == expected
       Label.roots_and_descendants_preordered.collect { |ea| ea.name }.should == expected
@@ -453,11 +475,11 @@ describe Label do
         l.name = "a1"
         l.sort_order = a.sort_order + 1
       end
-      create_preorder_tree("1")
+      create_preorder_tree('1')
       # Should be no change:
       a.reload.self_and_descendants_preordered.collect { |ea| ea.name }.should == expected
       expected += ('a'..'r').collect { |ea| "#{ea}1" }
       Label.roots_and_descendants_preordered.collect { |ea| ea.name }.should == expected
     end
-  end unless ENV["DB"] == "sqlite"
+  end unless ENV['DB'] == 'sqlite' # sqlite doesn't have a power function.
 end
