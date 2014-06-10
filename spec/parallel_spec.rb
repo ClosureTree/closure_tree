@@ -20,30 +20,22 @@ describe 'threadhot', if: support_concurrency do
     @workers = 10
     @min_sleep_time = 0.3
     @lock = Mutex.new
-    @wake_times = []
   end
 
-  def find_or_create_at_same_time(name)
-    @lock.synchronize { @wake_times << Time.now.to_f + @min_sleep_time }
-    while @wake_times.size < @workers
-      sleep(0.1)
-    end
-    max_wait_time = @lock.synchronize { @wake_times.max }
-    sleep_time = max_wait_time - Time.now.to_f
-    sleep(sleep_time)
+  def find_or_create_at(time, name)
+    sleep((time - Time.now).to_f)
     (@parent || Tag).find_or_create_by_path([name.to_s, :a, :b, :c])
   end
 
   def run_workers
-    @names = []
-    @iterations.times.each do |iter|
-      name = "iteration ##{iter}"
-      @names << name
+    @names = @iterations.times.map { |iter| "iteration ##{iter}" }
+    @names.each do |name|
+      wake_time = 3.seconds.from_now
       threads = @workers.times.map do
-        DbThread.new { find_or_create_at_same_time(name) }
+        DbThread.new { find_or_create_at(wake_time, name) }
       end
       threads.each { |ea| ea.join }
-      @wake_times.clear
+      puts name
     end
   end
 
