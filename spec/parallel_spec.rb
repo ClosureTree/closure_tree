@@ -21,11 +21,6 @@ describe 'threadhot', if: support_concurrency do
     @min_sleep_time = 0.3
     @lock = Mutex.new
     @wake_times = []
-    DatabaseCleaner.clean
-  end
-
-  after :each do
-    DatabaseCleaner.clean
   end
 
   def find_or_create_at_same_time(name)

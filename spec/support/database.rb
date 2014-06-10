@@ -1,13 +1,11 @@
 database_folder = "#{File.dirname(__FILE__)}/../db"
 database_adapter = ENV['DB'] ||= 'mysql'
 
-
 if ENV['STDOUT_LOGGING']
   log = Logger.new(STDOUT)
   log.sev_threshold = Logger::DEBUG
   ActiveRecord::Base.logger = log
 end
-
 
 ActiveRecord::Migration.verbose = false
 ActiveRecord::Base.table_name_prefix = ENV['DB_PREFIX'].to_s
@@ -37,6 +35,15 @@ end unless ENV['NONUKES']
 ActiveRecord::Base.establish_connection(config)
 Foreigner.load
 
-
 require "#{database_folder}/schema"
 require "#{database_folder}/models"
+
+# See http://stackoverflow.com/a/22388177/1268016
+def count_queries(&block)
+  count = 0
+  counter_fn = ->(name, started, finished, unique_id, payload) do
+    count += 1 unless payload[:name].in? %w[ CACHE SCHEMA ]
+  end
+  ActiveSupport::Notifications.subscribed(counter_fn, "sql.active_record", &block)
+  count
+end

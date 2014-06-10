@@ -223,17 +223,17 @@ describe Label do
     end
 
     it "self_and_descendants should result in one select" do
-      DB_QUERIES.clear
-      a1_array = @a1.self_and_descendants
-      a1_array.collect { |ea| ea.name }.should == %w(a1 b1 c1 c2 d1 d2)
-      DB_QUERIES.size.should == 1
+      count_queries do
+        a1_array = @a1.self_and_descendants
+        a1_array.collect { |ea| ea.name }.should == %w(a1 b1 c1 c2 d1 d2)
+      end.should == 1
     end
 
     it "self_and_ancestors should result in one select" do
-      DB_QUERIES.clear
-      d1_array = @d1.self_and_ancestors
-      d1_array.collect { |ea| ea.name }.should == %w(d1 c1 b1 a1)
-      DB_QUERIES.size.should == 1
+      count_queries do
+        d1_array = @d1.self_and_ancestors
+        d1_array.collect { |ea| ea.name }.should == %w(d1 c1 b1 a1)
+      end.should == 1
     end
   end
 
