@@ -98,7 +98,7 @@ module ClosureTree
 
         sibling.order_value = self.order_value
         sibling.parent = self.parent
-        sibling._ct_skip_hierarchy_maintenance!
+        sibling._ct_skip_sort_order_maintenance!
         sibling.save # may be a no-op
 
         _ct_reorder_siblings(reorder_from_value)

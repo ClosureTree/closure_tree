@@ -15,8 +15,8 @@ module ClosureTree
       @_ct_skip_cycle_detection = true
     end
 
-    def _ct_skip_hierarchy_maintenance!
-      @_ct_skip_hierarchy_maintenance = true
+    def _ct_skip_sort_order_maintenance!
+      @_ct_skip_sort_order_maintenance = true
     end
 
     def _ct_validate
@@ -45,7 +45,7 @@ module ClosureTree
         self_and_ancestors.reload
       end
       @was_new_record = false # we aren't new anymore.
-      @_ct_skip_hierarchy_maintenance = false # only skip once.
+      @_ct_skip_sort_order_maintenance = false # only skip once.
       true # don't cancel anything.
     end
 
@@ -73,7 +73,7 @@ module ClosureTree
           SQL
         end
 
-        if _ct.order_is_numeric?
+        if _ct.order_is_numeric? && !@_ct_skip_sort_order_maintenance
           _ct_reorder_prior_siblings_if_parent_changed
           # Prevent double-reordering of siblings:
           _ct_reorder_siblings if !called_by_rebuild

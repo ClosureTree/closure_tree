@@ -433,6 +433,12 @@ describe Label do
         @root.children.map { |ea| ea.sort_order }.should == [0, 1]
       end
     end
+
+    context 'add_sibling moves descendant nodes' do
+      it 'should retain sort orders of descendants when moving to a new parent'
+      it 'should retain sort orders of descendants when moving within the same new parent'
+    end
+
     it "shouldn't fail if all children are destroyed" do
       roots = Label.roots.to_a
       roots.each { |ea| ea.children.destroy_all }
