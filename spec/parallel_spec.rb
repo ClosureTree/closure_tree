@@ -16,9 +16,8 @@ describe 'threadhot', if: support_concurrency do
 
   before :each do
     @parent = nil
-    @iterations = 3
+    @iterations = 5
     @workers = 10
-    @min_sleep_time = 0.3
     @lock = Mutex.new
   end
 
@@ -30,13 +29,14 @@ describe 'threadhot', if: support_concurrency do
   def run_workers
     @names = @iterations.times.map { |iter| "iteration ##{iter}" }
     @names.each do |name|
-      wake_time = 3.seconds.from_now
+      wake_time = 2.seconds.from_now
       threads = @workers.times.map do
         DbThread.new { find_or_create_at(wake_time, name) }
       end
       threads.each { |ea| ea.join }
-      puts name
     end
+    # Ensure we're still connected:
+    ActiveRecord::Base.connection_pool.connection
   end
 
   it 'class method will not create dupes' do
