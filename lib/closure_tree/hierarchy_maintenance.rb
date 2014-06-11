@@ -15,6 +15,10 @@ module ClosureTree
       @_ct_skip_cycle_detection = true
     end
 
+    def _ct_skip_hierarchy_maintenance!
+      @_ct_skip_hierarchy_maintenance = true
+    end
+
     def _ct_validate
       if !@_ct_skip_cycle_detection &&
         !new_record? && # don't validate for cycles if we're a new record
@@ -32,7 +36,7 @@ module ClosureTree
 
     def _ct_after_save
       if changes[_ct.parent_column_name] || @was_new_record
-        rebuild!
+        rebuild! unless @_ct_skip_hierarchy_maintenance
       end
       if changes[_ct.parent_column_name] && !@was_new_record
         # Resetting the ancestral collections addresses
@@ -41,6 +45,7 @@ module ClosureTree
         self_and_ancestors.reload
       end
       @was_new_record = false # we aren't new anymore.
+      @_ct_skip_hierarchy_maintenance = false # only skip once.
       true # don't cancel anything.
     end
 

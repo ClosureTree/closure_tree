@@ -85,9 +85,8 @@ module ClosureTree
     def add_sibling(sibling, add_after = true)
       fail "can't add self as sibling" if self == sibling
 
-      # Make sure self or sibling isn't dirty, because we're going to call reload:
+      # Make sure self isn't dirty, because we're going to call reload:
       save
-      sibling.save
 
       _ct.with_advisory_lock do
         prior_sibling_parent = sibling.parent
@@ -97,8 +96,9 @@ module ClosureTree
           self.order_value
         end
 
-        sibling.update_order_value(self.order_value)
+        sibling.order_value = self.order_value
         sibling.parent = self.parent
+        sibling._ct_skip_hierarchy_maintenance!
         sibling.save # may be a no-op
 
         _ct_reorder_siblings(reorder_from_value)
