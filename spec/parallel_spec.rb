@@ -1,10 +1,23 @@
 require 'spec_helper'
+require 'securerandom'
 
-class DbThread
-  def initialize(&block)
+class WorkerBase
+  def initialize(target, run_at, name)
+    @target = target
     @thread = Thread.new do
-      ActiveRecord::Base.connection_pool.with_connection(&block)
+      ActiveRecord::Base.connection_pool.with_connection do
+        before_work
+        sleep((run_at - Time.now).to_f)
+        do_work(name)
+      end
     end
+  end
+
+  def before_work
+  end
+
+  def work(name)
+    raise
   end
 
   def join
@@ -12,34 +25,38 @@ class DbThread
   end
 end
 
-describe 'threadhot', if: support_concurrency do
+class FindOrCreateWorker < WorkerBase
+  def do_work(name)
+    (@target || Tag).find_or_create_by_path([name.to_s, :a, :b, :c])
+  end
+end
+
+describe 'Concurrent creation', if: support_concurrency do
 
   before :each do
-    @parent = nil
+    @target = nil
     @iterations = 5
-    @workers = 10
-    @lock = Mutex.new
+    @threads = 10
   end
 
-  def find_or_create_at(time, name)
-    sleep((time - Time.now).to_f)
-    (@parent || Tag).find_or_create_by_path([name.to_s, :a, :b, :c])
-  end
-
-  def run_workers
+  def run_workers(worker_class = FindOrCreateWorker)
+    all_workers = []
     @names = @iterations.times.map { |iter| "iteration ##{iter}" }
     @names.each do |name|
-      wake_time = 2.seconds.from_now
-      threads = @workers.times.map do
-        DbThread.new { find_or_create_at(wake_time, name) }
+      wake_time = 1.second.from_now
+      workers = @threads.times.map do
+        worker_class.new(@target, wake_time, name)
       end
-      threads.each { |ea| ea.join }
+      workers.each(&:join)
+      all_workers += workers
+      puts name
     end
     # Ensure we're still connected:
     ActiveRecord::Base.connection_pool.connection
+    all_workers
   end
 
-  it 'class method will not create dupes' do
+  it 'will not create dupes from class methods' do
     run_workers
     Tag.roots.collect { |ea| ea.name }.should =~ @names
     # No dupe children:
@@ -48,10 +65,10 @@ describe 'threadhot', if: support_concurrency do
     end
   end
 
-  it 'instance method will not create dupes' do
-    @parent = Tag.create!(name: 'root')
+  it 'will not create dupes from instance methods' do
+    @target = Tag.create!(name: 'root')
     run_workers
-    @parent.reload.children.collect { |ea| ea.name }.should =~ @names
+    @target.reload.children.collect { |ea| ea.name }.should =~ @names
     Tag.where(name: @names).size.should == @iterations
     %w(a b c).each do |ea|
       Tag.where(name: ea).size.should == @iterations
@@ -65,7 +82,18 @@ describe 'threadhot', if: support_concurrency do
     Tag.where(name: @names).size.should > @iterations
   end
 
-  it 'fails to deadlock from parallel sibling churn' do
+  class SiblingPrependerWorker < WorkerBase
+    def before_work
+      @target.reload
+      @sibling = Label.new(name: SecureRandom.hex(10))
+    end
+
+    def do_work(name)
+      @target.prepend_sibling @sibling
+    end
+  end
+
+  xit 'fails to deadlock from parallel sibling churn' do
     # target should be non-trivially long to maximize time spent in hierarchy maintenance
     target = Tag.find_or_create_by_path(('a'..'z').to_a + ('A'..'Z').to_a)
     expected_children = (1..100).to_a.map { |ea| "root ##{ea}" }
@@ -109,7 +137,7 @@ describe 'threadhot', if: support_concurrency do
     deleted_children.should =~ expected_children
   end
 
-  it 'fails to deadlock while simultaneously deleting items from the same hierarchy' do
+  xit 'fails to deadlock while simultaneously deleting items from the same hierarchy' do
     target = User.find_or_create_by_path((1..200).to_a.map { |ea| ea.to_s })
     to_delete = target.self_and_ancestors.to_a.shuffle.map(&:email)
     destroyer_threads = @workers.times.map do
@@ -122,6 +150,28 @@ describe 'threadhot', if: support_concurrency do
     end
     destroyer_threads.each { |ea| ea.join }
     User.all.should be_empty
+  end
+
+  class SiblingPrependerWorker < WorkerBase
+    def before_work
+      @target.reload
+      @sibling = Label.new(name: SecureRandom.hex(10))
+    end
+
+    def do_work(name)
+      @target.prepend_sibling @sibling
+    end
+  end
+
+  it 'fails to deadlock from prepending siblings' do
+    @target = Label.find_or_create_by_path %w(root parent)
+    run_workers(SiblingPrependerWorker)
+    children = Label.roots
+    uniq_sort_orders = children.collect { |ea| ea.sort_order }.uniq
+    children.size.should == uniq_sort_orders.size
+
+    # The only non-root node should be "root":
+    Label.all.select { |ea| ea.root? }.should == [@target.parent]
   end
 
 end
