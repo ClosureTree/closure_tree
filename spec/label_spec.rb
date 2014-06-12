@@ -291,11 +291,11 @@ describe Label do
     end
   end
 
-  it "behaves like the readme" do
-    root = Label.create(:name => "root")
-    a = Label.create(:name => "a", :parent => root)
-    b = Label.create(:name => "b")
-    c = Label.create(:name => "c")
+  it 'behaves like the readme' do
+    root = Label.create(name: 'root')
+    a = root.append_child(Label.new(name: 'a'))
+    b = Label.create(name: 'b')
+    c = Label.create(name: 'c')
 
     a.append_sibling(b)
     a.self_and_siblings.collect(&:name).should == %w(a b)

@@ -398,27 +398,27 @@ If your ```order``` column is an integer attribute, you'll also have these:
 
 ```ruby
 
-root = OrderedTag.create(:name => "root")
-a = OrderedTag.create(:name => "a", :parent => root)
-b = OrderedTag.create(:name => "b")
-c = OrderedTag.create(:name => "c")
+root = OrderedTag.create(name: 'root')
+a = root.append_child(Label.new(name: 'a'))
+b = OrderedTag.create(name: 'b')
+c = OrderedTag.create(name: 'c')
 
 # We have to call 'root.reload.children' because root won't be in sync with the database otherwise:
 
 a.append_sibling(b)
-root.reload.children.collect(&:name)
+root.reload.children.pluck(:name)
 => ["a", "b"]
 
 a.prepend_sibling(b)
-root.reload.children.collect(&:name)
+root.reload.children.pluck(:name)
 => ["b", "a"]
 
 a.append_sibling(c)
-root.reload.children.collect(&:name)
+root.reload.children.pluck(:name)
 => ["b", "a", "c"]
 
 b.append_sibling(c)
-root.reload.children.collect(&:name)
+root.reload.children.pluck(:name)
 => ["b", "c", "a"]
 ```
 
