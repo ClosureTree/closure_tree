@@ -1,14 +1,14 @@
 # Changelog
 
 ### 4.6.0
- 
+
  * Deterministically ordered trees are guaranteed to have a sort_order now.
- 
+
    **This may be a breaking change if you're expecting sort_order to be nullable.**
- 
+
    Many thanks to [David Schmidt](https://github.com/inetdavid) for raising and
    working on the issue!
- 
+
  * Added ```append_child``` and ```prepend_child```
 
 ### 4.5.0
