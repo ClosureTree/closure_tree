@@ -34,7 +34,7 @@ module ClosureTree
     end
 
     def find_all_by_generation(generation_level)
-      s = _ct.base_class.joins(<<-SQL)
+      s = _ct.base_class.joins(<<-SQL.strip_heredoc)
         INNER JOIN (
           SELECT descendant_id
           FROM #{_ct.quoted_hierarchy_table_name}
@@ -75,7 +75,7 @@ module ClosureTree
       end
 
       def leaves
-        s = joins(<<-SQL)
+        s = joins(<<-SQL.strip_heredoc)
           INNER JOIN (
             SELECT ancestor_id
             FROM #{_ct.quoted_hierarchy_table_name}
@@ -96,7 +96,7 @@ module ClosureTree
       end
 
       def find_all_by_generation(generation_level)
-        s = joins(<<-SQL)
+        s = joins(<<-SQL.strip_heredoc)
           INNER JOIN (
             SELECT #{primary_key} as root_id
             FROM #{_ct.quoted_table_name}
@@ -130,7 +130,7 @@ module ClosureTree
         # MySQL doesn't support more than 61 joined tables (!!):
         path.first(50).reverse.each_with_index do |ea, idx|
           next_joined_table = "p#{idx}"
-          scope = scope.joins(<<-SQL)
+          scope = scope.joins(<<-SQL.strip_heredoc)
             INNER JOIN #{_ct.quoted_table_name} AS #{next_joined_table}
               ON #{next_joined_table}.#{_ct.quoted_id_column_name} =
                 #{connection.quote_table_name(last_joined_table)}.#{_ct.quoted_parent_column_name}

@@ -10,6 +10,8 @@
    working on the issue!
 
  * Added ```append_child``` and ```prepend_child```
+ 
+ * All raw SQL is now ```strip_heredoc```'ed
 
 ### 4.5.0
 

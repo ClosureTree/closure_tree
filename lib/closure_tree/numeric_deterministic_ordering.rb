@@ -50,13 +50,13 @@ module ClosureTree
 
     module ClassMethods
       def roots_and_descendants_preordered
-        h = _ct.connection.select_one(<<-SQL)
+        h = _ct.connection.select_one(<<-SQL.strip_heredoc)
           SELECT
             count(*) as total_descendants,
             max(generations) as max_depth
           FROM #{_ct.quoted_hierarchy_table_name}
         SQL
-        join_sql = <<-SQL
+        join_sql = <<-SQL.strip_heredoc
           JOIN #{_ct.quoted_hierarchy_table_name} anc_hier
             ON anc_hier.descendant_id = #{_ct.quoted_table_name}.id
           JOIN #{_ct.quoted_table_name} anc

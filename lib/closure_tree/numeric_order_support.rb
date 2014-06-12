@@ -20,7 +20,7 @@ module ClosureTree
           ""
         end
         connection.execute 'SET @i = 0'
-        connection.execute <<-SQL
+        connection.execute <<-SQL.strip_heredoc
           UPDATE #{quoted_table_name}
             SET #{quoted_order_column} = (@i := @i + 1) + #{minimum_sort_order_value.to_i - 1}
           WHERE #{where_eq(parent_column_name, parent_id)} #{min_where}
@@ -36,7 +36,7 @@ module ClosureTree
         else
           ""
         end
-        connection.execute <<-SQL
+        connection.execute <<-SQL.strip_heredoc
           UPDATE #{quoted_table_name}
           SET #{quoted_order_column(false)} = t.seq + #{minimum_sort_order_value.to_i - 1}
           FROM (
