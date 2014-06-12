@@ -379,12 +379,12 @@ If your ```order``` column is an integer attribute, you'll also have these:
 
 * ```node1.append_child(node2)``` (which is an alias to ```add_child```), which will
   1. set ```node2```'s parent to ```node1```
-  2. set ```node2```'s sort order to place node2 last in the ```children``` array 
+  2. set ```node2```'s sort order to place node2 last in the ```children``` array
 
 * ```node1.prepend_child(node2)``` which will
   1. set ```node2```'s parent to ```node1```
-  2. set ```node2```'s sort order to place node2 first in the ```children``` array.
-     Note that all of ```node1```'s children's sort_orders will be incremented. 
+  2. set ```node2```'s sort order to place node2 first in the ```children``` array
+     Note that all of ```node1```'s children's sort_orders will be incremented
 
 * ```node1.prepend_sibling(node2)``` which will
   1. set ```node2``` to the same parent as ```node1```,
