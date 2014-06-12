@@ -435,8 +435,31 @@ describe Label do
     end
 
     context 'add_sibling moves descendant nodes' do
-      it 'should retain sort orders of descendants when moving to a new parent'
-      it 'should retain sort orders of descendants when moving within the same new parent'
+      let(:roots) { (0..10).map { |ea| Label.create(name: ea) } }
+      let(:first_root) { roots.first }
+      let(:last_root) { roots.last }
+      it 'should retain sort orders of descendants when moving to a new parent' do
+        expected_order = ('a'..'z').to_a.shuffle
+        expected_order.map { |ea| first_root.add_child(Label.new(name: ea)) }
+        actual_order = first_root.children(reload = true).pluck(:name)
+        actual_order.should == expected_order
+        last_root.append_child(first_root)
+        last_root.self_and_descendants.pluck(:name).should == %w(10 0) + expected_order
+      end
+
+      it 'should retain sort orders of descendants when moving within the same new parent' do
+        path = ('a'..'z').to_a
+        z = first_root.find_or_create_by_path(path)
+        z_children_names = (100..150).to_a.shuffle.map { |ea| ea.to_s }
+        z_children_names.reverse.each { |ea| z.prepend_child(Label.new(name: ea)) }
+        z.children(reload = true).pluck(:name).should == z_children_names
+        a = first_root.find_by_path(['a'])
+        # move b up to a's level:
+        b = a.children.first
+        a.add_sibling(b)
+        b.parent.should == first_root
+        z.children(reload = true).pluck(:name).should == z_children_names
+      end
     end
 
     it "shouldn't fail if all children are destroyed" do

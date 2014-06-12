@@ -26,7 +26,7 @@ closure_tree has some great features:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
 * __Support for Rails 3.2, 4.0, and 4.1__
-* __Support for Ruby 1.9, 2.1, jRuby, and Rubinius__
+* __Support for Ruby 1.9 and 2.1 (jRuby and Rubinius are still in development)__
 * Support for reparenting children (and all their descendants)
 * Support for [concurrency](#concurrency) (using [with_advisory_lock](https://github.com/mceachen/with_advisory_lock))
 * Support for polymorphism [STI](#sti) within the hierarchy
@@ -376,6 +376,15 @@ If your ```order``` column is an integer attribute, you'll also have these:
 
 * ```node1.self_and_descendants_preordered``` which will return descendants,
   [pre-ordered](http://en.wikipedia.org/wiki/Tree_traversal#Pre-order).
+  
+* ```node1.append_child(node2)``` (which is an alias to ```add_child```), which will
+  1. set ```node2```'s parent to ```node1```
+  2. set ```node2```'s sort order to place node2 last in the ```children``` array 
+
+* ```node1.prepend_child(node2)``` which will
+  1. set ```node2```'s parent to ```node1```
+  2. set ```node2```'s sort order to place node2 first in the ```children``` array.
+     Note that all of ```node1```'s children's sort_orders will be incremented. 
 
 * ```node1.prepend_sibling(node2)``` which will
   1. set ```node2``` to the same parent as ```node1```,
@@ -525,18 +534,18 @@ end
 
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
 
-* Ruby 1.9.3 , 2.0.0 and 2.1.2 and head
-* Rubinius 2.2.1+ and head
-* jRuby 1.9mode and head
+* Ruby 1.9.3, 2.1.2 (and sometimes head)
+* Rubinius 2.2.1+ (and sometimes head)
+* jRuby 1.9mode (and sometimes head)
 * The latest Rails 3.2, 4.0, 4.1 and master branches
-* Concurrency tests for MySQL and PostgreSQL. SQLite works in a single-threaded environment.
+* Concurrency tests for MySQL and PostgreSQL. SQLite is tested in a single-threaded environment.
 
 Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
 run the test matrix locally.
 
 ## Change log
 
-See https://github.com/mceachen/closure_tree/blob/master/CHANGELOG.md
+See the [change log](https://github.com/mceachen/closure_tree/blob/master/CHANGELOG.md).
 
 ## Thanks to
 
