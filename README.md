@@ -376,7 +376,7 @@ If your ```order``` column is an integer attribute, you'll also have these:
 
 * ```node1.self_and_descendants_preordered``` which will return descendants,
   [pre-ordered](http://en.wikipedia.org/wiki/Tree_traversal#Pre-order).
-  
+
 * ```node1.append_child(node2)``` (which is an alias to ```add_child```), which will
   1. set ```node2```'s parent to ```node1```
   2. set ```node2```'s sort order to place node2 last in the ```children``` array 
