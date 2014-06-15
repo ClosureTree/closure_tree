@@ -4,7 +4,7 @@ module ClosureTree
     def use_attr_accessible?
       defined?(ActiveModel::MassAssignmentSecurity) &&
         model_class.respond_to?(:accessible_attributes) &&
-        ! model_class.accessible_attributes.nil?
+        ! model_class.accessible_attributes.empty?
     end
 
     def include_forbidden_attributes_protection?
