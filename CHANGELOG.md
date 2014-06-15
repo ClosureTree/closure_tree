@@ -1,5 +1,11 @@
 # Changelog
 
+### 4.6.1
+
+ * Address [issue 60](https://github.com/mceachen/closure_tree/issues/60) (use `.empty?` rather 
+   than `.nil?`—thanks for the suggestion, [Doug Mayer](https://github.com/doxavore) and 
+   [Samnang Chhun](https://github.com/samnang)!
+
 ### 4.6.0
 
  * Deterministically ordered trees are guaranteed to have a sort_order now.
