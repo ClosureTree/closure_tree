@@ -117,12 +117,12 @@ module ClosureTree
         _ct_reorder_siblings(reorder_from_value)
 
         # The sort order should be correct now except for self and sibling, which may need to flip:
-        sibling_is_after = self.reload.sort_order < sibling.reload.sort_order
+        sibling_is_after = self.reload.order_value < sibling.reload.order_value
         if add_after != sibling_is_after
           # We need to flip the sort orders:
-          self_so, sib_so = self.sort_order, sibling.sort_order
-          update_order_value(sib_so)
-          sibling.update_order_value(self_so)
+          self_ov, sib_ov = self.order_value, sibling.order_value
+          update_order_value(sib_ov)
+          sibling.update_order_value(self_ov)
         end
 
         if prior_sibling_parent != self.parent
