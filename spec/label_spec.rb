@@ -11,7 +11,7 @@ def create_label_tree
   @c3 = @d3.parent
   @b2 = @c3.parent
   @a2 = @b2.parent
-  Label.update_all("sort_order = id")
+  Label.update_all("#{Label._ct.order_column} = id")
 end
 
 def create_preorder_tree(suffix = "", &block)
@@ -83,10 +83,10 @@ describe Label do
       expected.shuffle.each do |ea|
         Label.create! do |l|
           l.name = "root #{ea}"
-          l.sort_order = ea
+          l.order_value = ea
         end
       end
-      Label.roots.collect { |ea| ea.sort_order }.should == expected
+      Label.roots.collect { |ea| ea.order_value }.should == expected
     end
   end
 
@@ -139,7 +139,7 @@ describe Label do
       before do
         classes = [Label, DateLabel, DirectoryLabel, EventLabel]
         create_preorder_tree do |ea|
-          ea.type = classes[ea.sort_order % 4].to_s
+          ea.type = classes[ea.order_value % 4].to_s
         end
       end
       it "finds roots with specific classes" do
@@ -250,7 +250,7 @@ describe Label do
     end
 
     def name_and_order(enum)
-      enum.map { |ea| [ea.name, ea.sort_order] }
+      enum.map { |ea| [ea.name, ea.order_value] }
     end
 
     def children_name_and_order
@@ -261,7 +261,7 @@ describe Label do
       name_and_order(Label.roots)
     end
 
-    it 'sort_orders properly' do
+    it 'order_values properly' do
       children_name_and_order.should == [['a', 0], ['b', 1], ['c', 2], ['d', 3]]
     end
 
@@ -300,27 +300,27 @@ describe Label do
     a.append_sibling(b)
     a.self_and_siblings.collect(&:name).should == %w(a b)
     root.reload.children.collect(&:name).should == %w(a b)
-    root.children.collect(&:sort_order).should == [0, 1]
+    root.children.collect(&:order_value).should == [0, 1]
 
     a.prepend_sibling(b)
     a.self_and_siblings.collect(&:name).should == %w(b a)
     root.reload.children.collect(&:name).should == %w(b a)
-    root.children.collect(&:sort_order).should == [0, 1]
+    root.children.collect(&:order_value).should == [0, 1]
 
     a.append_sibling(c)
     a.self_and_siblings.collect(&:name).should == %w(b a c)
     root.reload.children.collect(&:name).should == %w(b a c)
-    root.children.collect(&:sort_order).should == [0, 1, 2]
+    root.children.collect(&:order_value).should == [0, 1, 2]
 
     # We need to reload b because it was updated by a.append_sibling(c)
     b.reload.append_sibling(c)
     root.reload.children.collect(&:name).should == %w(b c a)
-    root.children.collect(&:sort_order).should == [0, 1, 2]
+    root.children.collect(&:order_value).should == [0, 1, 2]
 
     # We need to reload a because it was updated by b.append_sibling(c)
     d = a.reload.append_sibling(Label.new(:name => "d"))
     d.self_and_siblings.collect(&:name).should == %w(b c a d)
-    d.self_and_siblings.collect(&:sort_order).should == [0, 1, 2, 3]
+    d.self_and_siblings.collect(&:order_value).should == [0, 1, 2, 3]
   end
 
   # https://github.com/mceachen/closure_tree/issues/84
@@ -328,27 +328,27 @@ describe Label do
     root = Label.create(:name => "root")
     a = Label.create(:name => "a", :parent => root)
     b = Label.create(:name => "b", :parent => root)
-    a.sort_order.should == 0
-    b.sort_order.should == 1
+    a.order_value.should == 0
+    b.order_value.should == 1
     #c = Label.create(:name => "c")
 
-    # should the sort_order for roots be set?
-    root.sort_order.should_not be_nil
-    root.sort_order.should == 0
+    # should the order_value for roots be set?
+    root.order_value.should_not be_nil
+    root.order_value.should == 0
 
-    # sort_order should never be nil on a child.
-    a.sort_order.should_not be_nil
-    a.sort_order.should == 0
+    # order_value should never be nil on a child.
+    a.order_value.should_not be_nil
+    a.order_value.should == 0
     # Add a child to root at end of children.
     root.children << b
     b.parent.should == root
     a.self_and_siblings.collect(&:name).should == %w(a b)
     root.reload.children.collect(&:name).should == %w(a b)
-    root.children.collect(&:sort_order).should == [0, 1]
+    root.children.collect(&:order_value).should == [0, 1]
   end
 
   context "#add_sibling" do
-    it "should move a node before another node which has an uninitialized sort_order" do
+    it "should move a node before another node which has an uninitialized order_value" do
       f = Label.find_or_create_by_path %w(a b c d e fa)
       f0 = f.prepend_sibling(Label.new(:name => "fb")) # < not alpha sort, so name shouldn't matter
       f0.ancestry_path.should == %w(a b c d e fb)
@@ -374,42 +374,42 @@ describe Label do
       f3 = f2.prepend_sibling(Label.new(:name => "f3"))
       f4 = f2.append_sibling(Label.new(:name => "f4"))
       f1.add_sibling(f2)
-      f1.self_and_siblings.collect(&:sort_order).should == [0, 1]
-      f3.self_and_siblings.collect(&:sort_order).should == [0, 1]
+      f1.self_and_siblings.collect(&:order_value).should == [0, 1]
+      f3.self_and_siblings.collect(&:order_value).should == [0, 1]
       f1.self_and_siblings.collect(&:name).should == %w(f1 f2)
       f3.self_and_siblings.collect(&:name).should == %w(f3 f4)
     end
   end
 
-  context "sort_order must be set" do
+  context "order_value must be set" do
 
     before do
       @root = Label.create(name: 'root')
       @a, @b, @c = %w(a b c).map { |n| @root.children.create(name: n) }
     end
 
-    it 'should set sort_order on roots' do
-      @root.sort_order.should == 0
+    it 'should set order_value on roots' do
+      @root.order_value.should == 0
     end
 
-    it 'should set sort_order with siblings' do
-      @a.sort_order.should == 0
-      @b.sort_order.should == 1
-      @c.sort_order.should == 2
+    it 'should set order_value with siblings' do
+      @a.order_value.should == 0
+      @b.order_value.should == 1
+      @c.order_value.should == 2
     end
 
-    it 'should reset sort_order when a node is moved to another location' do
+    it 'should reset order_value when a node is moved to another location' do
       root2 = Label.create(name: 'root2')
       root2.add_child @b
-      @a.sort_order.should == 0
-      @b.sort_order.should == 0
-      @c.reload.sort_order.should == 1
+      @a.order_value.should == 0
+      @b.order_value.should == 0
+      @c.reload.order_value.should == 1
     end
   end
 
   context "destructive reordering" do
     before :each do
-      # to make sure sort_order isn't affected by additional nodes:
+      # to make sure order_value isn't affected by additional nodes:
       create_preorder_tree
       @root = Label.create(:name => 'root')
       @a = @root.children.create!(:name => 'a')
@@ -420,17 +420,17 @@ describe Label do
       it 'from head' do
         @a.destroy
         @root.reload.children.should == [@b, @c]
-        @root.children.map { |ea| ea.sort_order }.should == [0, 1]
+        @root.children.map { |ea| ea.order_value }.should == [0, 1]
       end
       it 'from mid' do
         @b.destroy
         @root.reload.children.should == [@a, @c]
-        @root.children.map { |ea| ea.sort_order }.should == [0, 1]
+        @root.children.map { |ea| ea.order_value }.should == [0, 1]
       end
       it 'from tail' do
         @c.destroy
         @root.reload.children.should == [@a, @b]
-        @root.children.map { |ea| ea.sort_order }.should == [0, 1]
+        @root.children.map { |ea| ea.order_value }.should == [0, 1]
       end
     end
 
@@ -502,7 +502,7 @@ describe Label do
       # Let's create the second root by hand so we can explicitly set the sort order
       Label.create! do |l|
         l.name = "a1"
-        l.sort_order = a.sort_order + 1
+        l.order_value = a.order_value + 1
       end
       create_preorder_tree('1')
       # Should be no change:

@@ -167,8 +167,8 @@ describe 'Concurrent creation', if: support_concurrency do
     @target = Label.find_or_create_by_path %w(root parent)
     run_workers(SiblingPrependerWorker)
     children = Label.roots
-    uniq_sort_orders = children.collect { |ea| ea.sort_order }.uniq
-    children.size.should == uniq_sort_orders.size
+    uniq_order_values = children.collect { |ea| ea.order_value }.uniq
+    children.size.should == uniq_order_values.size
 
     # The only non-root node should be "root":
     Label.all.select { |ea| ea.root? }.should == [@target.parent]
