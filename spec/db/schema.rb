@@ -70,7 +70,7 @@ ActiveRecord::Schema.define(:version => 0) do
   create_table "labels" do |t|
     t.string "name"
     t.string "type"
-    t.integer "sort_order"
+    t.integer "column_whereby_ordering_is_inferred"
     t.integer "mother_id"
   end
 

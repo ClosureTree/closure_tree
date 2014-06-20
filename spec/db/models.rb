@@ -65,7 +65,7 @@ end
 
 class Label < ActiveRecord::Base
   # make sure order doesn't matter
-  acts_as_tree :order => :sort_order, # <- LOOK IT IS A SYMBOL OMG
+  acts_as_tree :order => :column_whereby_ordering_is_inferred, # <- symbol, and not "sort_order"
     :parent_column_name => "mother_id",
     :dependent => :destroy
 
