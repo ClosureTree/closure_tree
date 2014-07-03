@@ -12,6 +12,7 @@ module ClosureTree
         :name_column,
         :order,
         :parent_column_name,
+        :primary_key,
         :with_advisory_lock,
         :touch
       )

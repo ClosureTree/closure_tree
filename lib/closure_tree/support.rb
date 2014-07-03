@@ -15,6 +15,7 @@ module ClosureTree
       @options = {
         :base_class => model_class,
         :parent_column_name => 'parent_id',
+        :primary_key => :id,
         :dependent => :nullify, # or :destroy or :delete_all -- see the README
         :name_column => 'name',
         :with_advisory_lock => true

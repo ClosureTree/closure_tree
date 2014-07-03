@@ -8,6 +8,7 @@ module ClosureTree
       belongs_to :parent,
                  class_name: _ct.model_class.to_s,
                  foreign_key: _ct.parent_column_name,
+                 primary_key: _ct.primary_key,
                  inverse_of: :children,
                  touch: _ct.options[:touch]
 
@@ -19,6 +20,7 @@ module ClosureTree
       has_many :children, *_ct.has_many_with_order_option(
         class_name: _ct.model_class.to_s,
         foreign_key: _ct.parent_column_name,
+        primary_key: _ct.primary_key,
         dependent: _ct.options[:dependent],
         inverse_of: :parent)
 

@@ -30,6 +30,10 @@ module ClosureTree
       options[:parent_column_name]
     end
 
+    def primary_key
+      options[:primary_key]
+    end
+
     def parent_column_sym
       parent_column_name.to_sym
     end
