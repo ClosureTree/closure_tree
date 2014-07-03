@@ -7,39 +7,39 @@ module ClosureTree
 
       class ClosureTree
         def matches?(subject)
-          @subject = subject
+          @subject = subject.is_a?(Class) ? subject : subject.class
           # OPTIMIZE
           if @subject.respond_to?(:_ct)
 
             unless @subject.column_names.include?(@subject._ct.parent_column_name)
-              @message = "expected #{@subject.class.name} to respond to #{@subject._ct.parent_column_name}"
+              @message = "expected #{@subject.name} to respond to #{@subject._ct.parent_column_name}"
               return false
             end
 
             # Checking if hierarchy table exists (common error)
             unless  @subject.hierarchy_class.table_exists?
-              @message = "expected #{@subject.class.name}'s hierarchy table '#{@subject.hierarchy_class.table_name}' to exist"
+              @message = "expected #{@subject.name}'s hierarchy table '#{@subject.hierarchy_class.table_name}' to exist"
               return false
             end
 
             if @ordered
               unless  @subject._ct.options.include?(:order)
-                @message = "expected #{@subject.class.name} to be an ordered closure tree"
+                @message = "expected #{@subject.name} to be an ordered closure tree"
                 return false
               end
               unless @subject.column_names.include?(@subject._ct.options[:order].to_s)
-                @message = "expected #{@subject.class.name} to have #{@subject._ct.options[:order]} as column"
+                @message = "expected #{@subject.name} to have #{@subject._ct.options[:order]} as column"
                 return false
               end
             end
 
             if @with_advisory_lock && !@subject._ct.options[:with_advisory_lock]
-                @message = "expected #{@subject.class.name} to have advisory lock"
+                @message = "expected #{@subject.name} to have advisory lock"
                 return false
             end
 
             if @without_advisory_lock && @subject._ct.options[:with_advisory_lock]
-                @message = "expected #{@subject.class.name} to not have advisory lock"
+                @message = "expected #{@subject.name} to not have advisory lock"
                 return false
             end
 
@@ -65,13 +65,13 @@ module ClosureTree
         end
 
         def failure_message
-          @message || "expected #{@subject.class.name} to #{description}"
+          @message || "expected #{@subject.name} to #{description}"
         end
 
         alias_method :failure_message_for_should, :failure_message
 
         def failure_message_when_negated
-          "expected #{@subject.class.name} not be a closure tree, but it is."
+          "expected #{@subject.name} not be a closure tree, but it is."
         end
 
         alias_method :failure_message_for_should_not, :failure_message_when_negated
@@ -82,4 +82,8 @@ module ClosureTree
       end
     end
   end
+end
+
+RSpec.configure do |c|
+  c.include ClosureTree::Test::Matcher, type: :model
 end
