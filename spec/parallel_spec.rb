@@ -58,28 +58,28 @@ describe 'Concurrent creation', if: support_concurrency do
 
   it 'will not create dupes from class methods' do
     run_workers
-    Tag.roots.collect { |ea| ea.name }.should =~ @names
+    expect(Tag.roots.collect { |ea| ea.name }).to match_array(@names)
     # No dupe children:
     %w(a b c).each do |ea|
-      Tag.where(name: ea).size.should == @iterations
+      expect(Tag.where(name: ea).size).to eq(@iterations)
     end
   end
 
   it 'will not create dupes from instance methods' do
     @target = Tag.create!(name: 'root')
     run_workers
-    @target.reload.children.collect { |ea| ea.name }.should =~ @names
-    Tag.where(name: @names).size.should == @iterations
+    expect(@target.reload.children.collect { |ea| ea.name }).to match_array(@names)
+    expect(Tag.where(name: @names).size).to eq(@iterations)
     %w(a b c).each do |ea|
-      Tag.where(name: ea).size.should == @iterations
+      expect(Tag.where(name: ea).size).to eq(@iterations)
     end
   end
 
   it 'creates dupe roots without advisory locks' do
     # disable with_advisory_lock:
-    Tag.stub(:with_advisory_lock).and_return { |_lock_name, &block| block.call }
+    allow(Tag).to receive(:with_advisory_lock) { |_lock_name, &block| block.call }
     run_workers
-    Tag.where(name: @names).size.should > @iterations
+    expect(Tag.where(name: @names).size).to be > @iterations
   end
 
   class SiblingPrependerWorker < WorkerBase
@@ -133,8 +133,8 @@ describe 'Concurrent creation', if: support_concurrency do
     creator_threads.each { |ea| ea.join }
     run_destruction = false
     destroyer_threads.each { |ea| ea.join }
-    added_children.should =~ expected_children
-    deleted_children.should =~ expected_children
+    expect(added_children).to match(expected_children)
+    expect(deleted_children).to match(expected_children)
   end
 
   xit 'fails to deadlock while simultaneously deleting items from the same hierarchy' do
@@ -149,7 +149,7 @@ describe 'Concurrent creation', if: support_concurrency do
       end
     end
     destroyer_threads.each { |ea| ea.join }
-    User.all.should be_empty
+    expect(User.all).to be_empty
   end
 
   class SiblingPrependerWorker < WorkerBase
@@ -168,10 +168,10 @@ describe 'Concurrent creation', if: support_concurrency do
     run_workers(SiblingPrependerWorker)
     children = Label.roots
     uniq_order_values = children.collect { |ea| ea.order_value }.uniq
-    children.size.should == uniq_order_values.size
+    expect(children.size).to eq(uniq_order_values.size)
 
     # The only non-root node should be "root":
-    Label.all.select { |ea| ea.root? }.should == [@target.parent]
+    expect(Label.all.select { |ea| ea.root? }).to eq([@target.parent])
   end
 
 end

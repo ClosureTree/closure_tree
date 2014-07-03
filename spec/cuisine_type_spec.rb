@@ -1,12 +1,12 @@
 require 'spec_helper'
 
 def assert_lineage(e, m)
-  m.parent.should == e
-  m.self_and_ancestors.should == [m, e]
+  expect(m.parent).to eq(e)
+  expect(m.self_and_ancestors).to eq([m, e])
 
   # make sure reloading doesn't affect the self_and_ancestors:
   m.reload
-  m.self_and_ancestors.should == [m, e]
+  expect(m.self_and_ancestors).to eq([m, e])
 end
 
 describe CuisineType do
@@ -25,14 +25,14 @@ describe CuisineType do
   end
 
   it "sets the table_name of the hierarchy class properly" do
-    CuisineTypeHierarchy.table_name.should == ActiveRecord::Base.table_name_prefix + "cuisine_type_hierarchies" + ActiveRecord::Base.table_name_suffix
+    expect(CuisineTypeHierarchy.table_name).to eq(ActiveRecord::Base.table_name_prefix + "cuisine_type_hierarchies" + ActiveRecord::Base.table_name_suffix)
   end
 
   it 'fixes self_and_ancestors properly on reparenting' do
     a = CuisineType.create! :name => 'a'
     b = CuisineType.create! :name => 'b'
-    b.self_and_ancestors.to_a.should == [b]
+    expect(b.self_and_ancestors.to_a).to eq([b])
     a.children << b
-    b.self_and_ancestors.to_a.should == [b, a]
+    expect(b.self_and_ancestors.to_a).to eq([b, a])
   end
 end
