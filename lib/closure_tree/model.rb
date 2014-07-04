@@ -27,6 +27,7 @@ module ClosureTree
       has_many :ancestor_hierarchies, *_ct.has_many_without_order_option(
         class_name: _ct.hierarchy_class_name,
         foreign_key: 'descendant_id',
+        primary_key: _ct.primary_key,
         order: order_by_generations)
 
       has_many :self_and_ancestors, *_ct.has_many_without_order_option(
@@ -37,6 +38,7 @@ module ClosureTree
       has_many :descendant_hierarchies, *_ct.has_many_without_order_option(
         class_name: _ct.hierarchy_class_name,
         foreign_key: 'ancestor_id',
+        primary_key: _ct.primary_key,
         order: order_by_generations)
 
       has_many :self_and_descendants, *_ct.has_many_with_order_option(
@@ -145,7 +147,7 @@ module ClosureTree
     end
 
     def _ct_id
-      read_attribute(_ct.model_class.primary_key)
+      read_attribute(_ct.primary_key)
     end
 
     def _ct_quoted_id

@@ -104,7 +104,7 @@ module ClosureTree
     end
 
     def ids_from(scope)
-      scope.pluck(model_class.primary_key)
+      scope.pluck(primary_key)
     end
 
     def where_eq(column_name, value)
