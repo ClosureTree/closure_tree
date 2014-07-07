@@ -38,6 +38,23 @@ ActiveRecord::Schema.define(:version => 0) do
     t.integer "generations", :null => false
   end
 
+
+  create_table "primary_key_tags" do |t|
+    t.string "uuid", :unique => true
+    t.string "name"
+    t.string "title"
+    t.string "parent_id"
+    t.integer "sort_order"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "primary_key_tag_hierarchies", :id => false do |t|
+    t.string "ancestor_id", :null => false
+    t.string "descendant_id", :null => false
+    t.integer "generations", :null => false
+  end
+
   create_table "destroyed_tags" do |t|
     t.string "name"
   end

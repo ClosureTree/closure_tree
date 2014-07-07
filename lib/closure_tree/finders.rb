@@ -5,7 +5,7 @@ module ClosureTree
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.
     def find_by_path(path, attributes = {})
       return self if path.empty?
-      self.class.find_by_path(path, attributes, id)
+      self.class.find_by_path(path, attributes, send(_ct.primary_key))
     end
 
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
@@ -38,10 +38,10 @@ module ClosureTree
         INNER JOIN (
           SELECT descendant_id
           FROM #{_ct.quoted_hierarchy_table_name}
-          WHERE ancestor_id = #{_ct.quote(self.id)}
+          WHERE ancestor_id = #{_ct.quote(self.send _ct.primary_key)}
           GROUP BY 1
           HAVING MAX(#{_ct.quoted_hierarchy_table_name}.generations) = #{generation_level.to_i}
-        ) AS descendants ON (#{_ct.quoted_table_name}.#{_ct.base_class.primary_key} = descendants.descendant_id)
+        ) AS descendants ON (#{_ct.quoted_table_name}.#{_ct.primary_key} = descendants.descendant_id)
       SQL
       _ct.scope_with_order(s)
     end
@@ -61,7 +61,7 @@ module ClosureTree
         if instance.new_record?
           all
         else
-          where(["#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name} != ?", instance.id])
+          where(["#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name} != ?", instance._ct_id])
         end
       end
 
@@ -81,7 +81,7 @@ module ClosureTree
             FROM #{_ct.quoted_hierarchy_table_name}
             GROUP BY 1
             HAVING MAX(#{_ct.quoted_hierarchy_table_name}.generations) = 0
-          ) AS leaves ON (#{_ct.quoted_table_name}.#{primary_key} = leaves.ancestor_id)
+          ) AS leaves ON (#{_ct.quoted_table_name}.#{_ct.primary_key} = leaves.ancestor_id)
         SQL
         _ct.scope_with_order(s.readonly(false))
       end
@@ -98,7 +98,7 @@ module ClosureTree
       def find_all_by_generation(generation_level)
         s = joins(<<-SQL.strip_heredoc)
           INNER JOIN (
-            SELECT #{primary_key} as root_id
+            SELECT #{_ct.primary_key} as root_id
             FROM #{_ct.quoted_table_name}
             WHERE #{_ct.quoted_parent_column_name} IS NULL
           ) AS roots ON (1 = 1)
@@ -108,7 +108,7 @@ module ClosureTree
             GROUP BY 1, 2
             HAVING MAX(generations) = #{generation_level.to_i}
           ) AS descendants ON (
-            #{_ct.quoted_table_name}.#{primary_key} = descendants.descendant_id
+            #{_ct.quoted_table_name}.#{_ct.primary_key} = descendants.descendant_id
             AND roots.root_id = descendants.ancestor_id
           )
         SQL
@@ -141,7 +141,7 @@ module ClosureTree
         end
         result = scope.where("#{last_joined_table}.#{_ct.parent_column_name}" => parent_id).first
         if path.size > 50 && result
-          find_by_path(path[50..-1], attributes, result.primary_key)
+          find_by_path(path[50..-1], attributes, result.send(_ct.primary_key))
         else
           result
         end

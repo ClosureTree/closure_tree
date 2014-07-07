@@ -104,7 +104,7 @@ shared_examples_for Tag do
         tag_class.leaves.should == [@leaf]
       end
       it "should return child_ids for root" do
-        @root.child_ids.should == [@leaf.id]
+        @root.child_ids.should == [@leaf._ct_id]
       end
 
       it "should return an empty array for leaves" do
@@ -208,19 +208,19 @@ shared_examples_for Tag do
 
       it "cleans up hierarchy references for leaves" do
         @leaf.destroy
-        tag_hierarchy_class.where(:ancestor_id => @leaf.id).should be_empty
-        tag_hierarchy_class.where(:descendant_id => @leaf.id).should be_empty
+        tag_hierarchy_class.where(:ancestor_id => @leaf._ct_id).should be_empty
+        tag_hierarchy_class.where(:descendant_id => @leaf._ct_id).should be_empty
       end
 
       it "cleans up hierarchy references" do
         @mid.destroy
-        tag_hierarchy_class.where(:ancestor_id => @mid.id).should be_empty
-        tag_hierarchy_class.where(:descendant_id => @mid.id).should be_empty
+        tag_hierarchy_class.where(:ancestor_id => @mid._ct_id).should be_empty
+        tag_hierarchy_class.where(:descendant_id => @mid._ct_id).should be_empty
         @root.reload.should be_root
         root_hiers = @root.ancestor_hierarchies.to_a
         root_hiers.size.should == 1
-        tag_hierarchy_class.where(:ancestor_id => @root.id).should == root_hiers
-        tag_hierarchy_class.where(:descendant_id => @root.id).should == root_hiers
+        tag_hierarchy_class.where(:ancestor_id => @root._ct_id).should == root_hiers
+        tag_hierarchy_class.where(:descendant_id => @root._ct_id).should == root_hiers
       end
 
       it "should have different hash codes for each hierarchy model" do
@@ -568,7 +568,7 @@ shared_examples_for Tag do
         tag_class.find_or_create_by_path(%w(a b1 c1))
         tag_class.find_or_create_by_path(%w(a b2 c2))
         tag_class.find_or_create_by_path(%w(a b2 c3))
-        a, b1, b2, c1, c2, c3 = %w(a b1 b2 c1 c2 c3).map { |ea| tag_class.where(:name => ea).first.id }
+        a, b1, b2, c1, c2, c3 = %w(a b1 b2 c1 c2 c3).map { |ea| tag_class.where(:name => ea).first._ct_id }
         dot = tag_class.roots.first.to_dot_digraph
         dot.should == <<-DOT
 digraph G {

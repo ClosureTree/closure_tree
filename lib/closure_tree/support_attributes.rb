@@ -30,6 +30,10 @@ module ClosureTree
       options[:parent_column_name]
     end
 
+    def primary_key
+      options[:primary_key] || model_class.primary_key
+    end
+
     def parent_column_sym
       parent_column_name.to_sym
     end
@@ -58,7 +62,7 @@ module ClosureTree
     end
 
     def quoted_id_column_name
-      connection.quote_column_name model_class.primary_key
+      connection.quote_column_name primary_key
     end
 
     def quoted_parent_column_name

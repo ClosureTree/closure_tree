@@ -62,7 +62,11 @@ module ClosureTree
     def rebuild!(called_by_rebuild = false)
       _ct.with_advisory_lock do
         delete_hierarchy_references unless @was_new_record
-        hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
+        hierarchy_class.create!(
+          :ancestor_id => self.send(_ct.primary_key),
+          :descendant_id => self.send(_ct.primary_key),
+          :generations => 0
+        )
         unless root?
           _ct.connection.execute <<-SQL.strip_heredoc
             INSERT INTO #{_ct.quoted_hierarchy_table_name}
@@ -97,9 +101,9 @@ module ClosureTree
             SELECT DISTINCT descendant_id
             FROM (SELECT descendant_id
               FROM #{_ct.quoted_hierarchy_table_name}
-              WHERE ancestor_id = #{_ct.quote(id)}
+              WHERE ancestor_id = #{_ct.quote(_ct_id)}
             ) AS x )
-            OR descendant_id = #{_ct.quote(id)}
+            OR descendant_id = #{_ct.quote(_ct_id)}
         SQL
       end
     end

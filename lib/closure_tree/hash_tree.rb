@@ -34,7 +34,7 @@ module ClosureTree
             GROUP BY descendant_id
             #{having_clause}
           ) AS generation_depth
-            ON #{_ct.quoted_table_name}.#{primary_key} = generation_depth.descendant_id
+            ON #{_ct.quoted_table_name}.#{_ct.primary_key} = generation_depth.descendant_id
         SQL
         _ct.scope_with_order(joins(generation_depth), "generation_depth.depth")
       end
@@ -45,7 +45,7 @@ module ClosureTree
         id_to_hash = {}
 
         tree_scope.each do |ea|
-          h = id_to_hash[ea.id] = ActiveSupport::OrderedHash.new
+          h = id_to_hash[ea._ct_id] = ActiveSupport::OrderedHash.new
           if ea.root? || tree.empty? # We're at the top of the tree.
             tree[ea] = h
           else

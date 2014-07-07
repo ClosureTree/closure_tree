@@ -15,6 +15,7 @@ module ClosureTree
       @options = {
         :base_class => model_class,
         :parent_column_name => 'parent_id',
+        :primary_key => nil,
         :dependent => :nullify, # or :destroy or :delete_all -- see the README
         :name_column => 'name',
         :with_advisory_lock => true
@@ -31,8 +32,8 @@ module ClosureTree
       include_forbidden_attributes_protection = include_forbidden_attributes_protection?
       hierarchy_class.class_eval <<-RUBY, __FILE__, __LINE__ + 1
         include ActiveModel::ForbiddenAttributesProtection if include_forbidden_attributes_protection
-        belongs_to :ancestor, :class_name => "#{model_class}"
-        belongs_to :descendant, :class_name => "#{model_class}"
+        belongs_to :ancestor, :class_name => "#{model_class}", :primary_key => :"#{primary_key}"
+        belongs_to :descendant, :class_name => "#{model_class}", :primary_key => :"#{primary_key}"
         attr_accessible :ancestor, :descendant, :generations if use_attr_accessible
         def ==(other)
           self.class == other.class && ancestor_id == other.ancestor_id && descendant_id == other.descendant_id
@@ -103,7 +104,7 @@ module ClosureTree
     end
 
     def ids_from(scope)
-      scope.pluck(model_class.primary_key)
+      scope.pluck(primary_key)
     end
 
     def where_eq(column_name, value)
