@@ -61,7 +61,7 @@ module ClosureTree
         if instance.new_record?
           all
         else
-          where(["#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name} != ?", instance.id])
+          where(["#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name} != ?", instance._ct_id])
         end
       end
 

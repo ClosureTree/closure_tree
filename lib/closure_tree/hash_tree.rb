@@ -45,7 +45,7 @@ module ClosureTree
         id_to_hash = {}
 
         tree_scope.each do |ea|
-          h = id_to_hash[ea.id] = ActiveSupport::OrderedHash.new
+          h = id_to_hash[ea._ct_id] = ActiveSupport::OrderedHash.new
           if ea.root? || tree.empty? # We're at the top of the tree.
             tree[ea] = h
           else
