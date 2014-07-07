@@ -5,7 +5,7 @@ module ClosureTree
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+.
     def find_by_path(path, attributes = {})
       return self if path.empty?
-      self.class.find_by_path(path, attributes, id)
+      self.class.find_by_path(path, attributes, send(_ct.primary_key))
     end
 
     # Find a child node whose +ancestry_path+ minus self.ancestry_path is +path+
@@ -38,7 +38,7 @@ module ClosureTree
         INNER JOIN (
           SELECT descendant_id
           FROM #{_ct.quoted_hierarchy_table_name}
-          WHERE ancestor_id = #{_ct.quote(self.id)}
+          WHERE ancestor_id = #{_ct.quote(self.send _ct.primary_key)}
           GROUP BY 1
           HAVING MAX(#{_ct.quoted_hierarchy_table_name}.generations) = #{generation_level.to_i}
         ) AS descendants ON (#{_ct.quoted_table_name}.#{_ct.primary_key} = descendants.descendant_id)

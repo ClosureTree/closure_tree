@@ -36,6 +36,26 @@ class UUIDTag < ActiveRecord::Base
   end
 end
 
+class PrimaryKeyTag < ActiveRecord::Base
+  before_create :set_uuid
+  acts_as_tree :dependent => :destroy, :order => 'name', :primary_key => :uuid
+  before_destroy :add_destroyed_tag
+  attr_accessible :name, :title if _ct.use_attr_accessible?
+
+  def set_uuid
+    self.uuid = UUIDTools::UUID.timestamp_create.to_s
+  end
+
+  def to_s
+    name
+  end
+
+  def add_destroyed_tag
+    # Proof for the tests that the destroy rather than the delete method was called:
+    DestroyedTag.create(:name => name)
+  end
+end
+
 class DestroyedTag < ActiveRecord::Base
   attr_accessible :name if Tag._ct.use_attr_accessible?
 end

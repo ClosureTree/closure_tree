@@ -101,9 +101,9 @@ module ClosureTree
             SELECT DISTINCT descendant_id
             FROM (SELECT descendant_id
               FROM #{_ct.quoted_hierarchy_table_name}
-              WHERE ancestor_id = #{_ct.quote(id)}
+              WHERE ancestor_id = #{_ct.quote(_ct_id)}
             ) AS x )
-            OR descendant_id = #{_ct.quote(id)}
+            OR descendant_id = #{_ct.quote(_ct_id)}
         SQL
       end
     end

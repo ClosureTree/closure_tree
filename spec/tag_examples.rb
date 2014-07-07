@@ -237,6 +237,7 @@ shared_examples_for Tag do
       grandparent = tag_class.create(:name => 'Grandparent')
       parent = grandparent.children.create(:name => 'Parent')
       child1 = tag_class.create(:name => 'First Child', :parent => parent)
+      puts child1.parent_id
       child2 = tag_class.new(:name => 'Second Child')
       parent.children << child2
       child3 = tag_class.new(:name => 'Third Child')
