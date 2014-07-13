@@ -49,7 +49,7 @@ describe Label do
       b = c.parent
       a = c.root
       a.destroy
-      Label.exists?(id: [a.id, b.id, c.id]).should be_false
+      expect(Label.exists?(id: [a.id, b.id, c.id])).to be_falsey
     end
 
     it "properly destroys descendents created with add_child" do
@@ -59,9 +59,9 @@ describe Label do
       c = Label.new(name: 'c')
       b.add_child c
       a.destroy
-      Label.exists?(a).should be_false
-      Label.exists?(b).should be_false
-      Label.exists?(c).should be_false
+      expect(Label.exists?(a)).to be_falsey
+      expect(Label.exists?(b)).to be_falsey
+      expect(Label.exists?(c)).to be_falsey
     end
 
     it "properly destroys descendents created with <<" do
@@ -71,9 +71,9 @@ describe Label do
       c = Label.new(name: 'c')
       b.children << c
       a.destroy
-      Label.exists?(a).should be_false
-      Label.exists?(b).should be_false
-      Label.exists?(c).should be_false
+      expect(Label.exists?(a)).to be_falsey
+      expect(Label.exists?(b)).to be_falsey
+      expect(Label.exists?(c)).to be_falsey
     end
   end
 
@@ -86,7 +86,7 @@ describe Label do
           l.order_value = ea
         end
       end
-      Label.roots.collect { |ea| ea.order_value }.should == expected
+      expect(Label.roots.collect { |ea| ea.order_value }).to eq(expected)
     end
   end
 
@@ -94,9 +94,9 @@ describe Label do
     it "should find or create by path" do
       # class method:
       c = Label.find_or_create_by_path(%w{grandparent parent child})
-      c.ancestry_path.should == %w{grandparent parent child}
-      c.name.should == "child"
-      c.parent.name.should == "parent"
+      expect(c.ancestry_path).to eq(%w{grandparent parent child})
+      expect(c.name).to eq("child")
+      expect(c.parent.name).to eq("parent")
     end
   end
 
@@ -104,33 +104,33 @@ describe Label do
     it "should associate both sides of the parent and child relationships" do
       parent = Label.new(:name => 'parent')
       child = parent.children.build(:name => 'child')
-      parent.should be_root
-      parent.should_not be_leaf
-      child.should_not be_root
-      child.should be_leaf
+      expect(parent).to be_root
+      expect(parent).not_to be_leaf
+      expect(child).not_to be_root
+      expect(child).to be_leaf
     end
   end
 
   context "DateLabel" do
     it "should find or create by path" do
       date = DateLabel.find_or_create_by_path(%w{2011 November 23})
-      date.ancestry_path.should == %w{2011 November 23}
-      date.self_and_ancestors.each { |ea| ea.class.should == DateLabel }
-      date.name.should == "23"
-      date.parent.name.should == "November"
+      expect(date.ancestry_path).to eq(%w{2011 November 23})
+      date.self_and_ancestors.each { |ea| expect(ea.class).to eq(DateLabel) }
+      expect(date.name).to eq("23")
+      expect(date.parent.name).to eq("November")
     end
   end
 
   context "DirectoryLabel" do
     it "should find or create by path" do
       dir = DirectoryLabel.find_or_create_by_path(%w{grandparent parent child})
-      dir.ancestry_path.should == %w{grandparent parent child}
-      dir.name.should == "child"
-      dir.parent.name.should == "parent"
-      dir.parent.parent.name.should == "grandparent"
-      dir.root.name.should == "grandparent"
-      dir.id.should_not == Label.find_or_create_by_path(%w{grandparent parent child})
-      dir.self_and_ancestors.each { |ea| ea.class.should == DirectoryLabel }
+      expect(dir.ancestry_path).to eq(%w{grandparent parent child})
+      expect(dir.name).to eq("child")
+      expect(dir.parent.name).to eq("parent")
+      expect(dir.parent.parent.name).to eq("grandparent")
+      expect(dir.root.name).to eq("grandparent")
+      expect(dir.id).not_to eq(Label.find_or_create_by_path(%w{grandparent parent child}))
+      dir.self_and_ancestors.each { |ea| expect(ea.class).to eq(DirectoryLabel) }
     end
   end
 
@@ -143,20 +143,21 @@ describe Label do
         end
       end
       it "finds roots with specific classes" do
-        Label.roots.should == Label.where(:name => 'a').to_a
-        DirectoryLabel.roots.should be_empty
-        EventLabel.roots.should be_empty
+        expect(Label.roots).to eq(Label.where(:name => 'a').to_a)
+        expect(DirectoryLabel.roots).to be_empty
+        expect(EventLabel.roots).to be_empty
       end
 
       it "all is limited to subclasses" do
-        DateLabel.all.map(&:name).should =~ %w(f h l n p)
-        DirectoryLabel.all.map(&:name).should =~ %w(g q)
-        EventLabel.all.map(&:name).should == %w(r)
+        expect(DateLabel.all.map(&:name)).to match_array(%w(f h l n p))
+        expect(DirectoryLabel.all.map(&:name)).to match_array(%w(g q))
+        expect(EventLabel.all.map(&:name)).to eq(%w(r))
       end
 
       it "returns descendents regardless of subclass" do
-        Label.root.descendants.map { |ea| ea.class.to_s }.uniq.should =~
+        expect(Label.root.descendants.map { |ea| ea.class.to_s }.uniq).to match_array(
           %w(Label DateLabel DirectoryLabel EventLabel)
+        )
       end
     end
 
@@ -167,13 +168,13 @@ describe Label do
       c = Label.new(:name => "c")
       b.add_child(c)
 
-      a.self_and_descendants.collect do |ea|
+      expect(a.self_and_descendants.collect do |ea|
         ea.class
-      end.should == [EventLabel, DateLabel, Label]
+      end).to eq([EventLabel, DateLabel, Label])
 
-      a.self_and_descendants.collect do |ea|
+      expect(a.self_and_descendants.collect do |ea|
         ea.name
-      end.should == %w(a b c)
+      end).to eq(%w(a b c))
     end
   end
 
@@ -183,37 +184,37 @@ describe Label do
     end
 
     it "finds roots from the class method" do
-      Label.find_all_by_generation(0).to_a.should == [@a1, @a2]
+      expect(Label.find_all_by_generation(0).to_a).to eq([@a1, @a2])
     end
 
     it "finds roots from themselves" do
-      @a1.find_all_by_generation(0).to_a.should == [@a1]
+      expect(@a1.find_all_by_generation(0).to_a).to eq([@a1])
     end
 
     it "finds itself for non-roots" do
-      @b1.find_all_by_generation(0).to_a.should == [@b1]
+      expect(@b1.find_all_by_generation(0).to_a).to eq([@b1])
     end
 
     it "finds children for roots" do
-      Label.find_all_by_generation(1).to_a.should == [@b1, @b2]
+      expect(Label.find_all_by_generation(1).to_a).to eq([@b1, @b2])
     end
 
     it "finds children" do
-      @a1.find_all_by_generation(1).to_a.should == [@b1]
-      @b1.find_all_by_generation(1).to_a.should == [@c1, @c2]
+      expect(@a1.find_all_by_generation(1).to_a).to eq([@b1])
+      expect(@b1.find_all_by_generation(1).to_a).to eq([@c1, @c2])
     end
 
     it "finds grandchildren for roots" do
-      Label.find_all_by_generation(2).to_a.should == [@c1, @c2, @c3]
+      expect(Label.find_all_by_generation(2).to_a).to eq([@c1, @c2, @c3])
     end
 
     it "finds grandchildren" do
-      @a1.find_all_by_generation(2).to_a.should == [@c1, @c2]
-      @b1.find_all_by_generation(2).to_a.should == [@d1, @d2]
+      expect(@a1.find_all_by_generation(2).to_a).to eq([@c1, @c2])
+      expect(@b1.find_all_by_generation(2).to_a).to eq([@d1, @d2])
     end
 
     it "finds great-grandchildren for roots" do
-      Label.find_all_by_generation(3).to_a.should == [@d1, @d2, @d3]
+      expect(Label.find_all_by_generation(3).to_a).to eq([@d1, @d2, @d3])
     end
   end
 
@@ -223,17 +224,17 @@ describe Label do
     end
 
     it "self_and_descendants should result in one select" do
-      count_queries do
+      expect(count_queries do
         a1_array = @a1.self_and_descendants
-        a1_array.collect { |ea| ea.name }.should == %w(a1 b1 c1 c2 d1 d2)
-      end.should == 1
+        expect(a1_array.collect { |ea| ea.name }).to eq(%w(a1 b1 c1 c2 d1 d2))
+      end).to eq(1)
     end
 
     it "self_and_ancestors should result in one select" do
-      count_queries do
+      expect(count_queries do
         d1_array = @d1.self_and_ancestors
-        d1_array.collect { |ea| ea.name }.should == %w(d1 c1 b1 a1)
-      end.should == 1
+        expect(d1_array.collect { |ea| ea.name }).to eq(%w(d1 c1 b1 a1))
+      end).to eq(1)
     end
   end
 
@@ -262,32 +263,32 @@ describe Label do
     end
 
     it 'order_values properly' do
-      children_name_and_order.should == [['a', 0], ['b', 1], ['c', 2], ['d', 3]]
+      expect(children_name_and_order).to eq([['a', 0], ['b', 1], ['c', 2], ['d', 3]])
     end
 
     it 'when inserted before' do
       @b.append_sibling(@a)
-      children_name_and_order.should == [['b', 0], ['a', 1], ['c', 2], ['d', 3]]
+      expect(children_name_and_order).to eq([['b', 0], ['a', 1], ['c', 2], ['d', 3]])
     end
 
     it 'when inserted after' do
       @a.append_sibling(@c)
-      children_name_and_order.should == [['a', 0], ['c', 1], ['b', 2], ['d', 3]]
+      expect(children_name_and_order).to eq([['a', 0], ['c', 1], ['b', 2], ['d', 3]])
     end
 
     it 'when inserted before the first' do
       @a.prepend_sibling(@d)
-      children_name_and_order.should == [['d', 0], ['a', 1], ['b', 2], ['c', 3]]
+      expect(children_name_and_order).to eq([['d', 0], ['a', 1], ['b', 2], ['c', 3]])
     end
 
     it 'when inserted after the last' do
       @d.append_sibling(@b)
-      children_name_and_order.should == [['a', 0], ['c', 1], ['d', 2], ['b', 3]]
+      expect(children_name_and_order).to eq([['a', 0], ['c', 1], ['d', 2], ['b', 3]])
     end
 
     it 'prepends to root nodes' do
       @parent.prepend_sibling(@f)
-      roots_name_and_order.should == [['f', 0], ['parent', 1], ['e', 2]]
+      expect(roots_name_and_order).to eq([['f', 0], ['parent', 1], ['e', 2]])
     end
   end
 
@@ -298,29 +299,29 @@ describe Label do
     c = Label.create(name: 'c')
 
     a.append_sibling(b)
-    a.self_and_siblings.collect(&:name).should == %w(a b)
-    root.reload.children.collect(&:name).should == %w(a b)
-    root.children.collect(&:order_value).should == [0, 1]
+    expect(a.self_and_siblings.collect(&:name)).to eq(%w(a b))
+    expect(root.reload.children.collect(&:name)).to eq(%w(a b))
+    expect(root.children.collect(&:order_value)).to eq([0, 1])
 
     a.prepend_sibling(b)
-    a.self_and_siblings.collect(&:name).should == %w(b a)
-    root.reload.children.collect(&:name).should == %w(b a)
-    root.children.collect(&:order_value).should == [0, 1]
+    expect(a.self_and_siblings.collect(&:name)).to eq(%w(b a))
+    expect(root.reload.children.collect(&:name)).to eq(%w(b a))
+    expect(root.children.collect(&:order_value)).to eq([0, 1])
 
     a.append_sibling(c)
-    a.self_and_siblings.collect(&:name).should == %w(b a c)
-    root.reload.children.collect(&:name).should == %w(b a c)
-    root.children.collect(&:order_value).should == [0, 1, 2]
+    expect(a.self_and_siblings.collect(&:name)).to eq(%w(b a c))
+    expect(root.reload.children.collect(&:name)).to eq(%w(b a c))
+    expect(root.children.collect(&:order_value)).to eq([0, 1, 2])
 
     # We need to reload b because it was updated by a.append_sibling(c)
     b.reload.append_sibling(c)
-    root.reload.children.collect(&:name).should == %w(b c a)
-    root.children.collect(&:order_value).should == [0, 1, 2]
+    expect(root.reload.children.collect(&:name)).to eq(%w(b c a))
+    expect(root.children.collect(&:order_value)).to eq([0, 1, 2])
 
     # We need to reload a because it was updated by b.append_sibling(c)
     d = a.reload.append_sibling(Label.new(:name => "d"))
-    d.self_and_siblings.collect(&:name).should == %w(b c a d)
-    d.self_and_siblings.collect(&:order_value).should == [0, 1, 2, 3]
+    expect(d.self_and_siblings.collect(&:name)).to eq(%w(b c a d))
+    expect(d.self_and_siblings.collect(&:order_value)).to eq([0, 1, 2, 3])
   end
 
   # https://github.com/mceachen/closure_tree/issues/84
@@ -328,36 +329,36 @@ describe Label do
     root = Label.create(:name => "root")
     a = Label.create(:name => "a", :parent => root)
     b = Label.create(:name => "b", :parent => root)
-    a.order_value.should == 0
-    b.order_value.should == 1
+    expect(a.order_value).to eq(0)
+    expect(b.order_value).to eq(1)
     #c = Label.create(:name => "c")
 
     # should the order_value for roots be set?
-    root.order_value.should_not be_nil
-    root.order_value.should == 0
+    expect(root.order_value).not_to be_nil
+    expect(root.order_value).to eq(0)
 
     # order_value should never be nil on a child.
-    a.order_value.should_not be_nil
-    a.order_value.should == 0
+    expect(a.order_value).not_to be_nil
+    expect(a.order_value).to eq(0)
     # Add a child to root at end of children.
     root.children << b
-    b.parent.should == root
-    a.self_and_siblings.collect(&:name).should == %w(a b)
-    root.reload.children.collect(&:name).should == %w(a b)
-    root.children.collect(&:order_value).should == [0, 1]
+    expect(b.parent).to eq(root)
+    expect(a.self_and_siblings.collect(&:name)).to eq(%w(a b))
+    expect(root.reload.children.collect(&:name)).to eq(%w(a b))
+    expect(root.children.collect(&:order_value)).to eq([0, 1])
   end
 
   context "#add_sibling" do
     it "should move a node before another node which has an uninitialized order_value" do
       f = Label.find_or_create_by_path %w(a b c d e fa)
       f0 = f.prepend_sibling(Label.new(:name => "fb")) # < not alpha sort, so name shouldn't matter
-      f0.ancestry_path.should == %w(a b c d e fb)
-      f.siblings_before.to_a.should == [f0]
-      f0.siblings_before.should be_empty
-      f0.siblings_after.should == [f]
-      f.siblings_after.should be_empty
-      f0.self_and_siblings.should == [f0, f]
-      f.self_and_siblings.should == [f0, f]
+      expect(f0.ancestry_path).to eq(%w(a b c d e fb))
+      expect(f.siblings_before.to_a).to eq([f0])
+      expect(f0.siblings_before).to be_empty
+      expect(f0.siblings_after).to eq([f])
+      expect(f.siblings_after).to be_empty
+      expect(f0.self_and_siblings).to eq([f0, f])
+      expect(f.self_and_siblings).to eq([f0, f])
     end
 
     let(:f1) { Label.find_or_create_by_path %w(a1 b1 c1 d1 e1 f1) }
@@ -365,8 +366,8 @@ describe Label do
     it "should move a node to another tree" do
       f2 = Label.find_or_create_by_path %w(a2 b2 c2 d2 e2 f2)
       f1.add_sibling(f2)
-      f2.ancestry_path.should == %w(a1 b1 c1 d1 e1 f2)
-      f1.parent.reload.children.should == [f1, f2]
+      expect(f2.ancestry_path).to eq(%w(a1 b1 c1 d1 e1 f2))
+      expect(f1.parent.reload.children).to eq([f1, f2])
     end
 
     it "should reorder old-parent siblings when a node moves to another tree" do
@@ -374,10 +375,10 @@ describe Label do
       f3 = f2.prepend_sibling(Label.new(:name => "f3"))
       f4 = f2.append_sibling(Label.new(:name => "f4"))
       f1.add_sibling(f2)
-      f1.self_and_siblings.collect(&:order_value).should == [0, 1]
-      f3.self_and_siblings.collect(&:order_value).should == [0, 1]
-      f1.self_and_siblings.collect(&:name).should == %w(f1 f2)
-      f3.self_and_siblings.collect(&:name).should == %w(f3 f4)
+      expect(f1.self_and_siblings.collect(&:order_value)).to eq([0, 1])
+      expect(f3.self_and_siblings.collect(&:order_value)).to eq([0, 1])
+      expect(f1.self_and_siblings.collect(&:name)).to eq(%w(f1 f2))
+      expect(f3.self_and_siblings.collect(&:name)).to eq(%w(f3 f4))
     end
   end
 
@@ -389,21 +390,21 @@ describe Label do
     end
 
     it 'should set order_value on roots' do
-      @root.order_value.should == 0
+      expect(@root.order_value).to eq(0)
     end
 
     it 'should set order_value with siblings' do
-      @a.order_value.should == 0
-      @b.order_value.should == 1
-      @c.order_value.should == 2
+      expect(@a.order_value).to eq(0)
+      expect(@b.order_value).to eq(1)
+      expect(@c.order_value).to eq(2)
     end
 
     it 'should reset order_value when a node is moved to another location' do
       root2 = Label.create(name: 'root2')
       root2.add_child @b
-      @a.order_value.should == 0
-      @b.order_value.should == 0
-      @c.reload.order_value.should == 1
+      expect(@a.order_value).to eq(0)
+      expect(@b.order_value).to eq(0)
+      expect(@c.reload.order_value).to eq(1)
     end
   end
 
@@ -419,18 +420,18 @@ describe Label do
     context "doesn't create sort order gaps" do
       it 'from head' do
         @a.destroy
-        @root.reload.children.should == [@b, @c]
-        @root.children.map { |ea| ea.order_value }.should == [0, 1]
+        expect(@root.reload.children).to eq([@b, @c])
+        expect(@root.children.map { |ea| ea.order_value }).to eq([0, 1])
       end
       it 'from mid' do
         @b.destroy
-        @root.reload.children.should == [@a, @c]
-        @root.children.map { |ea| ea.order_value }.should == [0, 1]
+        expect(@root.reload.children).to eq([@a, @c])
+        expect(@root.children.map { |ea| ea.order_value }).to eq([0, 1])
       end
       it 'from tail' do
         @c.destroy
-        @root.reload.children.should == [@a, @b]
-        @root.children.map { |ea| ea.order_value }.should == [0, 1]
+        expect(@root.reload.children).to eq([@a, @b])
+        expect(@root.children.map { |ea| ea.order_value }).to eq([0, 1])
       end
     end
 
@@ -442,9 +443,9 @@ describe Label do
         expected_order = ('a'..'z').to_a.shuffle
         expected_order.map { |ea| first_root.add_child(Label.new(name: ea)) }
         actual_order = first_root.children(reload = true).pluck(:name)
-        actual_order.should == expected_order
+        expect(actual_order).to eq(expected_order)
         last_root.append_child(first_root)
-        last_root.self_and_descendants.pluck(:name).should == %w(10 0) + expected_order
+        expect(last_root.self_and_descendants.pluck(:name)).to eq(%w(10 0) + expected_order)
       end
 
       it 'should retain sort orders of descendants when moving within the same new parent' do
@@ -452,20 +453,20 @@ describe Label do
         z = first_root.find_or_create_by_path(path)
         z_children_names = (100..150).to_a.shuffle.map { |ea| ea.to_s }
         z_children_names.reverse.each { |ea| z.prepend_child(Label.new(name: ea)) }
-        z.children(reload = true).pluck(:name).should == z_children_names
+        expect(z.children(reload = true).pluck(:name)).to eq(z_children_names)
         a = first_root.find_by_path(['a'])
         # move b up to a's level:
         b = a.children.first
         a.add_sibling(b)
-        b.parent.should == first_root
-        z.children(reload = true).pluck(:name).should == z_children_names
+        expect(b.parent).to eq(first_root)
+        expect(z.children(reload = true).pluck(:name)).to eq(z_children_names)
       end
     end
 
     it "shouldn't fail if all children are destroyed" do
       roots = Label.roots.to_a
       roots.each { |ea| ea.children.destroy_all }
-      Label.all.to_a.should =~ roots
+      expect(Label.all.to_a).to match_array(roots)
     end
   end
 
@@ -477,7 +478,7 @@ describe Label do
       c = Label.new(name: 'c')
       b.add_child c
       a.destroy
-      Label.exists?(id: [a.id, b.id, c.id]).should be_false
+      expect(Label.exists?(id: [a.id, b.id, c.id])).to be_falsey
     end
 
     it 'properly destroys descendents created with <<' do
@@ -487,7 +488,7 @@ describe Label do
       c = Label.new(name: 'c')
       b.children << c
       a.destroy
-      Label.exists?(id: [a.id, b.id, c.id]).should be_false
+      expect(Label.exists?(id: [a.id, b.id, c.id])).to be_falsey
     end
   end
 
@@ -495,10 +496,10 @@ describe Label do
     it 'returns descendants in proper order' do
       create_preorder_tree
       a = Label.root
-      a.name.should == 'a'
+      expect(a.name).to eq('a')
       expected = ('a'..'r').to_a
-      a.self_and_descendants_preordered.collect { |ea| ea.name }.should == expected
-      Label.roots_and_descendants_preordered.collect { |ea| ea.name }.should == expected
+      expect(a.self_and_descendants_preordered.collect { |ea| ea.name }).to eq(expected)
+      expect(Label.roots_and_descendants_preordered.collect { |ea| ea.name }).to eq(expected)
       # Let's create the second root by hand so we can explicitly set the sort order
       Label.create! do |l|
         l.name = "a1"
@@ -506,9 +507,9 @@ describe Label do
       end
       create_preorder_tree('1')
       # Should be no change:
-      a.reload.self_and_descendants_preordered.collect { |ea| ea.name }.should == expected
+      expect(a.reload.self_and_descendants_preordered.collect { |ea| ea.name }).to eq(expected)
       expected += ('a'..'r').collect { |ea| "#{ea}1" }
-      Label.roots_and_descendants_preordered.collect { |ea| ea.name }.should == expected
+      expect(Label.roots_and_descendants_preordered.collect { |ea| ea.name }).to eq(expected)
     end
   end unless ENV['DB'] == 'sqlite' # sqlite doesn't have a power function.
 end

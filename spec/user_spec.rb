@@ -4,16 +4,16 @@ describe "empty db" do
 
   context "empty db" do
     it "should return no entities" do
-      User.roots.should be_empty
-      User.leaves.should be_empty
+      expect(User.roots).to be_empty
+      expect(User.leaves).to be_empty
     end
   end
 
   context "1 user db" do
     it "should return the only entity as a root and leaf" do
       a = User.create!(:email => "me@domain.com")
-      User.roots.should == [a]
-      User.leaves.should == [a]
+      expect(User.roots).to eq([a])
+      expect(User.leaves).to eq([a])
     end
   end
 
@@ -21,8 +21,8 @@ describe "empty db" do
     it "should return a simple root and leaf" do
       root = User.create!(:email => "first@t.co")
       leaf = root.children.create!(:email => "second@t.co")
-      User.roots.should == [root]
-      User.leaves.should == [leaf]
+      expect(User.roots).to eq([root])
+      expect(User.leaves).to eq([leaf])
     end
   end
 
@@ -35,36 +35,36 @@ describe "empty db" do
     end
 
     it "should create all Users" do
-      User.all.to_a.should =~ [@root, @mid, @leaf]
+      expect(User.all.to_a).to match_array([@root, @mid, @leaf])
     end
 
     it 'orders self_and_ancestor_ids nearest generation first' do
-      @leaf.self_and_ancestor_ids.should == [@leaf.id, @mid.id, @root.id]
+      expect(@leaf.self_and_ancestor_ids).to eq([@leaf.id, @mid.id, @root.id])
     end
 
     it 'orders self_and_descendant_ids nearest generation first' do
-      @root.self_and_descendant_ids.should == [@root.id, @mid.id, @leaf.id]
+      expect(@root.self_and_descendant_ids).to eq([@root.id, @mid.id, @leaf.id])
     end
 
     it "should have children" do
-      @root.children.to_a.should == [@mid]
-      @mid.children.to_a.should == [@leaf]
-      @leaf.children.to_a.should == []
+      expect(@root.children.to_a).to eq([@mid])
+      expect(@mid.children.to_a).to eq([@leaf])
+      expect(@leaf.children.to_a).to eq([])
     end
 
     it "roots should have children" do
-      User.roots.first.children.to_a.should =~ [@mid]
+      expect(User.roots.first.children.to_a).to match_array([@mid])
     end
 
     it "should return a root and leaf without middle User" do
-      User.roots.to_a.should == [@root]
-      User.leaves.to_a.should == [@leaf]
+      expect(User.roots.to_a).to eq([@root])
+      expect(User.leaves.to_a).to eq([@leaf])
     end
 
     it "should delete leaves" do
       User.leaves.destroy_all
-      User.roots.to_a.should == [@root] # untouched
-      User.leaves.to_a.should == [@mid]
+      expect(User.roots.to_a).to eq([@root]) # untouched
+      expect(User.leaves.to_a).to eq([@mid])
     end
 
     it "should delete roots and maintain hierarchies" do
@@ -78,27 +78,27 @@ describe "empty db" do
     end
 
     def assert_mid_and_leaf_remain
-      ReferralHierarchy.where(:ancestor_id => @root_id).should be_empty
-      ReferralHierarchy.where(:descendant_id => @root_id).should be_empty
-      @mid.ancestry_path.should == %w{matt@t.co}
-      @leaf.ancestry_path.should == %w{matt@t.co james@t.co}
-      @mid.self_and_descendants.to_a.should =~ [@mid, @leaf]
-      User.roots.should == [@mid]
-      User.leaves.should == [@leaf]
+      expect(ReferralHierarchy.where(:ancestor_id => @root_id)).to be_empty
+      expect(ReferralHierarchy.where(:descendant_id => @root_id)).to be_empty
+      expect(@mid.ancestry_path).to eq(%w{matt@t.co})
+      expect(@leaf.ancestry_path).to eq(%w{matt@t.co james@t.co})
+      expect(@mid.self_and_descendants.to_a).to match_array([@mid, @leaf])
+      expect(User.roots).to eq([@mid])
+      expect(User.leaves).to eq([@leaf])
     end
   end
 
   it "supports users with contracts" do
     u = User.find_or_create_by_path(%w(a@t.co b@t.co c@t.co))
-    u.descendant_ids.should == []
-    u.ancestor_ids.should == [u.parent.id, u.root.id]
-    u.self_and_ancestor_ids.should == [u.id, u.parent.id, u.root.id]
-    u.root.descendant_ids.should == [u.parent.id, u.id]
-    u.root.ancestor_ids.should == []
-    u.root.self_and_ancestor_ids.should == [u.root.id]
+    expect(u.descendant_ids).to eq([])
+    expect(u.ancestor_ids).to eq([u.parent.id, u.root.id])
+    expect(u.self_and_ancestor_ids).to eq([u.id, u.parent.id, u.root.id])
+    expect(u.root.descendant_ids).to eq([u.parent.id, u.id])
+    expect(u.root.ancestor_ids).to eq([])
+    expect(u.root.self_and_ancestor_ids).to eq([u.root.id])
     c1 = u.contracts.create!
     c2 = u.parent.contracts.create!
-    u.root.indirect_contracts.to_a.should =~ [c1, c2]
+    expect(u.root.indirect_contracts.to_a).to match_array([c1, c2])
   end
 
   it "supports << on shallow unsaved hierarchies" do
@@ -106,9 +106,9 @@ describe "empty db" do
     b = User.new(:email => "b")
     a.children << b
     a.save
-    User.roots.should == [a]
-    User.leaves.should == [b]
-    b.ancestry_path.should == %w(a b)
+    expect(User.roots).to eq([a])
+    expect(User.leaves).to eq([b])
+    expect(b.ancestry_path).to eq(%w(a b))
   end
 
   it "supports << on deep unsaved hierarchies" do
@@ -125,30 +125,30 @@ describe "empty db" do
     c2.children << d
 
     a.save
-    User.roots.to_a.should == [a]
-    User.leaves.to_a.should =~ [b1, c1, d]
-    d.ancestry_path.should == %w(a b2 c2 d)
+    expect(User.roots.to_a).to eq([a])
+    expect(User.leaves.to_a).to match_array([b1, c1, d])
+    expect(d.ancestry_path).to eq(%w(a b2 c2 d))
   end
 
   it "supports siblings" do
-    User._ct.order_option?.should be_false
+    expect(User._ct.order_option?).to be_falsey
     a = User.create(:email => "a")
     b1 = a.children.create(:email => "b1")
     b2 = a.children.create(:email => "b2")
     b3 = a.children.create(:email => "b3")
-    a.siblings.should be_empty
-    b1.siblings.to_a.should =~ [b2, b3]
+    expect(a.siblings).to be_empty
+    expect(b1.siblings.to_a).to match_array([b2, b3])
   end
 
   context "when a user is not yet saved" do
     it "supports siblings" do
-      User._ct.order_option?.should be_false
+      expect(User._ct.order_option?).to be_falsey
       a = User.create(:email => "a")
       b1 = a.children.new(:email => "b1")
       b2 = a.children.create(:email => "b2")
       b3 = a.children.create(:email => "b3")
-      a.siblings.should be_empty
-      b1.siblings.to_a.should =~ [b2, b3]
+      expect(a.siblings).to be_empty
+      expect(b1.siblings.to_a).to match_array([b2, b3])
     end
   end
 
@@ -156,8 +156,8 @@ describe "empty db" do
     c = User.find_or_create_by_path %w(a b c)
     b = c.parent
     c.root.destroy
-    b.reload.should be_root
-    b.child_ids.should == [c.id]
+    expect(b.reload).to be_root
+    expect(b.child_ids).to eq([c.id])
   end
 
   context "roots" do
@@ -168,7 +168,7 @@ describe "empty db" do
           u.email = ea
         end
       end
-      User.roots.collect { |ea| ea.email }.sort.should == expected
+      expect(User.roots.collect { |ea| ea.email }.sort).to eq(expected)
     end
   end
 end

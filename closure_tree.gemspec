@@ -21,7 +21,7 @@ Gem::Specification.new do |gem|
 
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'yard'
-  gem.add_development_dependency 'rspec', '~> 2.14.0' # FIXME: migrate to rspec 3 (or, better, ditch rspec and switch to minitest)
+  gem.add_development_dependency 'rspec', '>= 3.0'
   gem.add_development_dependency 'rspec-instafail'
   gem.add_development_dependency 'rspec-rails' # FIXME: for rspec-rails and rspec fixture support
   gem.add_development_dependency 'uuidtools'
