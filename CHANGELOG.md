@@ -1,7 +1,12 @@
 # Changelog
 
+### 4.6.3
+
+ * More goodness from from [Abdelkader Boudih](https://github.com/seuros), including rspec 3 support.
+
 ### 4.6.2
- * Pull in [106](https://github.com/mceachen/closure_tree/pull/106) which fixed a bug introduced
+
+ * Pulled in [106](https://github.com/mceachen/closure_tree/pull/106) which fixed a bug introduced
    in 4.6.0 which broke if the numeric ordering column wasn't named 'sort_order'. Tests have been
    added. Thanks for the fix, [Fission Xuiptz](https://github.com/fissionxuiptz)!
 
