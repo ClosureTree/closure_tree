@@ -9,7 +9,8 @@ module ClosureTree
                  class_name: _ct.model_class.to_s,
                  foreign_key: _ct.parent_column_name,
                  inverse_of: :children,
-                 touch: _ct.options[:touch]
+                 touch: _ct.options[:touch],
+                 counter_cache: _ct.options[:cache_child_count] ? :child_count : false
 
       # TODO, remove when activerecord 3.2 support is dropped
       attr_accessible :parent if _ct.use_attr_accessible?

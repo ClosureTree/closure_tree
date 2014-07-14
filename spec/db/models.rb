@@ -103,5 +103,5 @@ class Metal < ActiveRecord::Base
 end
 
 class MenuItem < ActiveRecord::Base
-  acts_as_tree(touch: true, with_advisory_lock: false)
+  acts_as_tree(touch: true, with_advisory_lock: false, cache_child_count: true)
 end

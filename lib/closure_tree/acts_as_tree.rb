@@ -13,7 +13,8 @@ module ClosureTree
         :order,
         :parent_column_name,
         :with_advisory_lock,
-        :touch
+        :touch,
+        :cache_child_count
       )
 
       class_attribute :_ct
