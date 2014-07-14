@@ -2,7 +2,7 @@
 
 ### 4.6.3
 
- * More goodness from from [Abdelkader Boudih](https://github.com/seuros), including rspec 3 support.
+ * More goodness from [Abdelkader Boudih](https://github.com/seuros), including rspec 3 support.
 
 ### 4.6.2
 
