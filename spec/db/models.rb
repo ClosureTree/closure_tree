@@ -98,8 +98,14 @@ end
 
 class Metal < ActiveRecord::Base
   self.table_name = "#{table_name_prefix}metal#{table_name_suffix}"
-  acts_as_tree :order => 'sort_order'
+  acts_as_tree order: 'sort_order', name_column: 'value'
   self.inheritance_column = 'metal_type'
+end
+
+class Adamantium < Metal
+end
+
+class Unobtanium < Metal
 end
 
 class MenuItem < ActiveRecord::Base

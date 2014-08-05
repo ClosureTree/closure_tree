@@ -111,6 +111,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.integer "parent_id"
     t.string "metal_type"
     t.string "value"
+    t.string "description"
     t.integer "sort_order"
   end
 
