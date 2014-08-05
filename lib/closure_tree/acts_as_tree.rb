@@ -4,16 +4,14 @@ module ClosureTree
   module ActsAsTree
     def acts_as_tree(options = {})
       options.assert_valid_keys(
-        :base_class,
+        :parent_column_name,
         :dependent,
         :hierarchy_class_name,
         :hierarchy_table_name,
-        :name,
         :name_column,
         :order,
-        :parent_column_name,
-        :with_advisory_lock,
-        :touch
+        :touch,
+        :with_advisory_lock
       )
 
       class_attribute :_ct
