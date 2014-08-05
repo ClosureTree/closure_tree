@@ -80,6 +80,7 @@ module ClosureTree
 
     alias_method :level, :depth
 
+    # enumerable of ancestors, immediate parent is first, root is last.
     def ancestors
       without_self(self_and_ancestors)
     end
