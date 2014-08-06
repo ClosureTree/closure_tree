@@ -1,38 +1,32 @@
 require 'spec_helper'
+require 'forwardable'
 require 'securerandom'
 
 class WorkerBase
-  def initialize(target, run_at, name)
+  extend Forwardable
+  attr_reader :name
+  def_delegators :@thread, :join, :wakeup, :status, :to_s
+
+  def initialize(target, name)
     @target = target
+    @name = name
     @thread = Thread.new do
-      ActiveRecord::Base.connection_pool.with_connection do
-        before_work
-        sleep((run_at - Time.now).to_f)
-        do_work(name)
-      end
+      ActiveRecord::Base.connection_pool.with_connection { before_work } if respond_to? :before_work
+      sleep
+      ActiveRecord::Base.connection_pool.with_connection { work }
     end
-  end
-
-  def before_work
-  end
-
-  def work(name)
-    raise
-  end
-
-  def join
-    @thread.join
   end
 end
 
 class FindOrCreateWorker < WorkerBase
-  def do_work(name)
-    (@target || Tag).find_or_create_by_path([name.to_s, :a, :b, :c])
+  def work
+    path = [name, :a, :b, :c]
+    root = (@target || Tag)
+    t = root.find_or_create_by_path(path)
   end
 end
 
-describe 'Concurrent creation', if: support_concurrency do
-
+describe 'Concurrent creation' do
   before :each do
     @target = nil
     @iterations = 5
@@ -40,20 +34,20 @@ describe 'Concurrent creation', if: support_concurrency do
   end
 
   def run_workers(worker_class = FindOrCreateWorker)
-    all_workers = []
     @names = @iterations.times.map { |iter| "iteration ##{iter}" }
     @names.each do |name|
-      wake_time = 1.second.from_now
-      workers = @threads.times.map do
-        worker_class.new(@target, wake_time, name)
+      workers = @threads.times.map { worker_class.new(@target, name) }
+      # Wait for all the threads to get ready:
+      until workers.all? { |ea| ea.status == 'sleep' }
+        sleep(0.1)
       end
+      # OK, GO!
+      workers.each(&:wakeup)
+      # Then wait for them to finish:
       workers.each(&:join)
-      all_workers += workers
-      puts name
     end
     # Ensure we're still connected:
     ActiveRecord::Base.connection_pool.connection
-    all_workers
   end
 
   it 'will not create dupes from class methods' do
@@ -79,6 +73,7 @@ describe 'Concurrent creation', if: support_concurrency do
     # disable with_advisory_lock:
     allow(Tag).to receive(:with_advisory_lock) { |_lock_name, &block| block.call }
     run_workers
+    # duplication from at least one iteration:
     expect(Tag.where(name: @names).size).to be > @iterations
   end
 
@@ -88,7 +83,7 @@ describe 'Concurrent creation', if: support_concurrency do
       @sibling = Label.new(name: SecureRandom.hex(10))
     end
 
-    def do_work(name)
+    def work
       @target.prepend_sibling @sibling
     end
   end
@@ -102,7 +97,7 @@ describe 'Concurrent creation', if: support_concurrency do
     children_to_delete = []
     deleted_children = []
     creator_threads = @workers.times.map do
-      DbThread.new do
+      Thread.new do
         while children_to_add.present?
           name = children_to_add.shift
           unless name.nil?
@@ -115,7 +110,7 @@ describe 'Concurrent creation', if: support_concurrency do
     end
     run_destruction = true
     destroyer_threads = @workers.times.map do
-      DbThread.new do
+      Thread.new do
         begin
           victim_name = children_to_delete.shift
           if victim_name
@@ -158,7 +153,7 @@ describe 'Concurrent creation', if: support_concurrency do
       @sibling = Label.new(name: SecureRandom.hex(10))
     end
 
-    def do_work(name)
+    def work
       @target.prepend_sibling @sibling
     end
   end

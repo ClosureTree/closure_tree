@@ -2,6 +2,7 @@ require 'closure_tree/support_flags'
 require 'closure_tree/support_attributes'
 require 'closure_tree/numeric_order_support'
 
+# This class and mixins are an effort to reduce the namespace pollution to models that act_as_tree.
 module ClosureTree
   class Support
     include ClosureTree::SupportFlags
@@ -13,7 +14,6 @@ module ClosureTree
     def initialize(model_class, options)
       @model_class = model_class
       @options = {
-        :base_class => model_class,
         :parent_column_name => 'parent_id',
         :dependent => :nullify, # or :destroy or :delete_all -- see the README
         :name_column => 'name',
@@ -116,12 +116,62 @@ module ClosureTree
 
     def with_advisory_lock(&block)
       if options[:with_advisory_lock]
-        model_class.with_advisory_lock("closure_tree") do
+        model_class.with_advisory_lock(advisory_lock_name) do
           transaction { yield }
         end
       else
         yield
       end
+    end
+
+    def build_ancestry_attr_path(path, attributes)
+      path = path.is_a?(Array) ? path.dup : [path]
+      unless path.first.is_a?(Hash)
+        if subclass? && has_inheritance_column?
+          attributes = attributes.with_indifferent_access
+          attributes[inheritance_column] ||= self.sti_name
+        end
+        path = path.map { |ea| attributes.merge(name_column => ea) }
+      end
+      path
+    end
+
+    def scoped_attributes(scope, attributes, target_table = model_class.table_name)
+      table_prefixed_attributes = Hash[
+        attributes.map do |column_name, column_value|
+          ["#{target_table}.#{column_name}", column_value]
+        end
+      ]
+      scope.where(table_prefixed_attributes)
+    end
+
+    def max_join_tables
+      # MySQL doesn't support more than 61 joined tables (!!):
+      50
+    end
+
+    def find_by_large_path(path, attributes = {}, parent_id = nil)
+      next_parent_id = parent_id
+      child = nil
+      path.in_groups(max_join_tables, false).each do |subpath|
+        child = model_class.find_by_path(subpath, attributes, next_parent_id)
+        return nil if child.nil?
+        next_parent_id = child._ct_id
+      end
+      child
+    end
+
+    def create(model_class, attributes)
+      attrs = attributes.with_indifferent_access
+      creator_class = model_class
+      if attrs.include?(model_class.inheritance_column) || model_class != self.model_class
+        creator_class = creator_class.send(:find_sti_class, attrs[model_class.inheritance_column])
+      end
+      creator_class.new(attrs)
+    end
+
+    def create!(model_class, attributes)
+      create(model_class, attributes).tap { |ea| ea.save! }
     end
   end
 end

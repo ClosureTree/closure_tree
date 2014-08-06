@@ -1,11 +1,9 @@
 database_folder = "#{File.dirname(__FILE__)}/../db"
 database_adapter = ENV['DB'] ||= 'mysql'
 
-if ENV['STDOUT_LOGGING']
-  log = Logger.new(STDOUT)
-  log.sev_threshold = Logger::DEBUG
-  ActiveRecord::Base.logger = log
-end
+log = Logger.new('db.log')
+log.sev_threshold = Logger::DEBUG
+ActiveRecord::Base.logger = log
 
 ActiveRecord::Migration.verbose = false
 ActiveRecord::Base.table_name_prefix = ENV['DB_PREFIX'].to_s

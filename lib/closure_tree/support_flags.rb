@@ -27,13 +27,12 @@ module ClosureTree
       model_class != model_class.base_class
     end
 
-    def has_type?
-      attribute_names.include? 'type'
+    def has_inheritance_column?(hash = columns_hash)
+      hash.with_indifferent_access.include?(model_class.inheritance_column)
     end
 
     def has_name?
       model_class.new.attributes.include? options[:name_column]
     end
-
   end
 end

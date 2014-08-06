@@ -42,7 +42,6 @@ def create_preorder_tree(suffix = "", &block)
 end
 
 describe Label do
-
   context "destruction" do
     it "properly destroys descendents created with find_or_create_by_path" do
       c = Label.find_or_create_by_path %w(a b c)
@@ -54,10 +53,8 @@ describe Label do
 
     it "properly destroys descendents created with add_child" do
       a = Label.create(name: 'a')
-      b = Label.new(name: 'b')
-      a.add_child b
-      c = Label.new(name: 'c')
-      b.add_child c
+      b = a.add_child Label.new(name: 'b')
+      c = b.add_child Label.new(name: 'c')
       a.destroy
       expect(Label.exists?(a)).to be_falsey
       expect(Label.exists?(b)).to be_falsey
@@ -292,36 +289,51 @@ describe Label do
     end
   end
 
-  it 'behaves like the readme' do
-    root = Label.create(name: 'root')
-    a = root.append_child(Label.new(name: 'a'))
-    b = Label.create(name: 'b')
-    c = Label.create(name: 'c')
+  describe 'code in the readme' do
+    it 'creates STI label hierarchies' do
+      child = Label.find_or_create_by_path([
+        {type: 'DateLabel', name: '2014'},
+        {type: 'DateLabel', name: 'August'},
+        {type: 'DateLabel', name: '5'},
+        {type: 'EventLabel', name: 'Visit the Getty Center'}
+      ])
+      expect(child).to be_a(EventLabel)
+      expect(child.name).to eq('Visit the Getty Center')
+      expect(child.ancestors.map(&:name)).to eq(%w(5 August 2014))
+      expect(child.ancestors.map(&:class)).to eq([DateLabel, DateLabel, DateLabel])
+    end
 
-    a.append_sibling(b)
-    expect(a.self_and_siblings.collect(&:name)).to eq(%w(a b))
-    expect(root.reload.children.collect(&:name)).to eq(%w(a b))
-    expect(root.children.collect(&:order_value)).to eq([0, 1])
+    it 'appends and prepends siblings' do
+      root = Label.create(name: 'root')
+      a = root.append_child(Label.new(name: 'a'))
+      b = Label.create(name: 'b')
+      c = Label.create(name: 'c')
 
-    a.prepend_sibling(b)
-    expect(a.self_and_siblings.collect(&:name)).to eq(%w(b a))
-    expect(root.reload.children.collect(&:name)).to eq(%w(b a))
-    expect(root.children.collect(&:order_value)).to eq([0, 1])
+      a.append_sibling(b)
+      expect(a.self_and_siblings.collect(&:name)).to eq(%w(a b))
+      expect(root.reload.children.collect(&:name)).to eq(%w(a b))
+      expect(root.children.collect(&:order_value)).to eq([0, 1])
 
-    a.append_sibling(c)
-    expect(a.self_and_siblings.collect(&:name)).to eq(%w(b a c))
-    expect(root.reload.children.collect(&:name)).to eq(%w(b a c))
-    expect(root.children.collect(&:order_value)).to eq([0, 1, 2])
+      a.prepend_sibling(b)
+      expect(a.self_and_siblings.collect(&:name)).to eq(%w(b a))
+      expect(root.reload.children.collect(&:name)).to eq(%w(b a))
+      expect(root.children.collect(&:order_value)).to eq([0, 1])
 
-    # We need to reload b because it was updated by a.append_sibling(c)
-    b.reload.append_sibling(c)
-    expect(root.reload.children.collect(&:name)).to eq(%w(b c a))
-    expect(root.children.collect(&:order_value)).to eq([0, 1, 2])
+      a.append_sibling(c)
+      expect(a.self_and_siblings.collect(&:name)).to eq(%w(b a c))
+      expect(root.reload.children.collect(&:name)).to eq(%w(b a c))
+      expect(root.children.collect(&:order_value)).to eq([0, 1, 2])
 
-    # We need to reload a because it was updated by b.append_sibling(c)
-    d = a.reload.append_sibling(Label.new(:name => "d"))
-    expect(d.self_and_siblings.collect(&:name)).to eq(%w(b c a d))
-    expect(d.self_and_siblings.collect(&:order_value)).to eq([0, 1, 2, 3])
+      # We need to reload b because it was updated by a.append_sibling(c)
+      b.reload.append_sibling(c)
+      expect(root.reload.children.collect(&:name)).to eq(%w(b c a))
+      expect(root.children.collect(&:order_value)).to eq([0, 1, 2])
+
+      # We need to reload a because it was updated by b.append_sibling(c)
+      d = a.reload.append_sibling(Label.new(:name => "d"))
+      expect(d.self_and_siblings.collect(&:name)).to eq(%w(b c a d))
+      expect(d.self_and_siblings.collect(&:order_value)).to eq([0, 1, 2, 3])
+    end
   end
 
   # https://github.com/mceachen/closure_tree/issues/84

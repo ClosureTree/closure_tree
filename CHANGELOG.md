@@ -1,33 +1,48 @@
 # Changelog
 
+### 5.0.0
+
+#### Breaking API changes
+
+* `find_by_path` and `find_or_create_by_path` now takes either an array of strings 
+  or an array of attribute hashes, which can include the inheritance column for STI support.
+* Removed the extraneous `base_class` `acts_as_tree` option—it needlessly duplicated ActiveRecord's method.
+* Removed the unused `name` `acts_as_tree` option.
+
+#### Improvements and bugfixes
+
+* Cleaned up the inheritance support methods to delegate correctly to ActiveRecord
+* Fixed a query generation error when ancestor paths exceeded 50 items.
+* Documented the `.touch` option
+
 ### 4.6.3
 
- * More goodness from [Abdelkader Boudih](https://github.com/seuros), including rspec 3 support.
+* More goodness from [Abdelkader Boudih](https://github.com/seuros), including rspec 3 support.
 
 ### 4.6.2
 
- * Pulled in [106](https://github.com/mceachen/closure_tree/pull/106) which fixed a bug introduced
-   in 4.6.0 which broke if the numeric ordering column wasn't named 'sort_order'. Tests have been
-   added. Thanks for the fix, [Fission Xuiptz](https://github.com/fissionxuiptz)!
+* Pulled in [106](https://github.com/mceachen/closure_tree/pull/106) which fixed a bug introduced
+  in 4.6.0 which broke if the numeric ordering column wasn't named 'sort_order'. Tests have been
+  added. Thanks for the fix, [Fission Xuiptz](https://github.com/fissionxuiptz)!
 
 ### 4.6.1
 
- * Address [issue 60](https://github.com/mceachen/closure_tree/issues/60) (use `.empty?` rather 
-   than `.nil?`—thanks for the suggestion, [Leonel Galán](https://github.com/leonelgalan),
-   [Doug Mayer](https://github.com/doxavore) and [Samnang Chhun](https://github.com/samnang)!
+* Address [issue 60](https://github.com/mceachen/closure_tree/issues/60) (use `.empty?` rather 
+  than `.nil?`—thanks for the suggestion, [Leonel Galán](https://github.com/leonelgalan),
+  [Doug Mayer](https://github.com/doxavore) and [Samnang Chhun](https://github.com/samnang)!
 
 ### 4.6.0
 
- * Deterministically ordered trees are guaranteed to have a sort_order now.
+* Deterministically ordered trees are guaranteed to have a sort_order now.
 
-   **This may be a breaking change if you're expecting sort_order to be nullable.**
+  **This may be a breaking change if you're expecting sort_order to be nullable.**
 
-   Many thanks to [David Schmidt](https://github.com/inetdavid) for raising and
-   working on the issue!
+  Many thanks to [David Schmidt](https://github.com/inetdavid) for raising and
+  working on the issue!
 
- * Added ```append_child``` and ```prepend_child```
- 
- * All raw SQL is now ```strip_heredoc```'ed
+* Added ```append_child``` and ```prepend_child```
+
+* All raw SQL is now ```strip_heredoc```'ed
 
 ### 4.5.0
 

@@ -7,6 +7,7 @@ describe ClosureTree::HierarchyMaintenance do
         Metal.create(:value => "Nitro-#{counter}", parent: Metal.all.sample)
       end
       hierarchy_count = MetalHierarchy.count
+      expect(hierarchy_count).to be > (20*2)-1 # shallowest-possible case, where all children use the first root
       MetalHierarchy.delete_all
       Metal.rebuild!
       expect(MetalHierarchy.count).to eq(hierarchy_count)

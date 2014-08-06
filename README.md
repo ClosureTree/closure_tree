@@ -10,7 +10,7 @@ and tracking user referrals.
 [![Code Climate](https://codeclimate.com/github/mceachen/closure_tree.png)](https://codeclimate.com/github/mceachen/closure_tree)
 [![Dependency Status](https://gemnasium.com/mceachen/closure_tree.png)](https://gemnasium.com/mceachen/closure_tree)
 
-Substantially more efficient than
+Dramatically more performant than
 [ancestry](https://github.com/stefankroes/ancestry) and
 [acts_as_tree](https://github.com/amerine/acts_as_tree), and even more
 awesome than [awesome_nested_set](https://github.com/collectiveidea/awesome_nested_set/),
@@ -25,16 +25,16 @@ closure_tree has some great features:
 * __Best-in-class mutation performance__:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
+* __Support for [concurrency](#concurrency)__ (using [with_advisory_lock](https://github.com/mceachen/with_advisory_lock))
 * __Support for Rails 3.2, 4.0, and 4.1__
-* __Support for Ruby 1.9 and 2.1 (jRuby and Rubinius are still in development)__
+* __Support for Ruby 1.9, 2.1, and jRuby 1.6.13
 * Support for reparenting children (and all their descendants)
-* Support for [concurrency](#concurrency) (using [with_advisory_lock](https://github.com/mceachen/with_advisory_lock))
-* Support for polymorphism [STI](#sti) within the hierarchy
-* ```find_or_create_by_path``` for [building out hierarchies quickly and conveniently](#find_or_create_by_path)
-* Support for [deterministic ordering](#deterministic-ordering) of children
+* Support for [single-table inheritance (STI)](#sti) within the hierarchy
+* ```find_or_create_by_path``` for [building out heterogeneous hierarchies quickly and conveniently](#find_or_create_by_path)
+* Support for [deterministic ordering](#deterministic-ordering)
 * Support for [preordered](http://en.wikipedia.org/wiki/Tree_traversal#Pre-order) traversal of descendants
 * Support for rendering trees in [DOT format](http://en.wikipedia.org/wiki/DOT_(graph_description_language)), using [Graphviz](http://www.graphviz.org/)
-* Excellent [test coverage](#testing) in a variety of environments
+* Excellent [test coverage](#testing) in a comprehensive variety of environments
 
 See [Bill Karwin](http://karwin.blogspot.com/)'s excellent
 [Models for hierarchical data presentation](http://www.slideshare.net/billkarwin/models-for-hierarchical-data)
@@ -153,30 +153,40 @@ child1.ancestry_path
 
 ### find_or_create_by_path
 
-We can do all the node creation and add_child calls with one method call:
+You can ```find``` as well as ```find_or_create``` by "ancestry paths".
+
+If you provide an array of strings to these methods, they reference the `name` column in your 
+model, which can be overridden with the `:name_column` option provided to ```acts_as_tree```.
 
 ```ruby
 child = Tag.find_or_create_by_path(["grandparent", "parent", "child"])
 ```
 
-You can ```find``` as well as ```find_or_create``` by "ancestry paths".
-Ancestry paths may be built using any column in your model. The default
-column is ```name```, which can be changed with the :name_column option
-provided to ```acts_as_tree```.
-
-Note that any other AR fields can be set with the second, optional ```attributes``` argument,
-and as of version 4.2.0, these attributes are added to the where clause as selection criteria.
+As of v5.0.0, `find_or_create_by_path` can also take an array of attribute hashes:
 
 ```ruby
-child = Tag.find_or_create_by_path(%w{home chuck Photos"}, {:tag_type => "File"})
+child = Tag.find_or_create_by_path([
+  {name: "Grandparent", title: "Sr."},
+  {name: "Parent", title: "Mrs."},
+  {name: "Child", title: "Jr."}
+])
 ```
-This will pass the attribute hash of ```{:name => "home", :tag_type => "File"}``` to
-```Tag.find_or_create_by_name``` if the root directory doesn't exist (and
-```{:name => "chuck", :tag_type => "File"}``` if the second-level tag doesn't exist, and so on).
+
+If you're using STI, The attribute hashes can contain the `sti_name` and things work as expected:
+
+```ruby
+child = Label.find_or_create_by_path([
+  {type: 'DateLabel', name: '2014'},
+  {type: 'DateLabel', name: 'August'},
+  {type: 'DateLabel', name: '5'},
+  {type: 'EventLabel', name: 'Visit the Getty Center'}
+])
+```
 
 ### Moving nodes around the tree
 
-Nodes can be moved around to other parents, and closure_tree moves the node's descendancy to the new parent for you:
+Nodes can be moved around to other parents, and closure_tree moves the node's descendancy to the
+new parent for you:
 
 ```ruby
 d = Tag.find_or_create_by_path %w(a b c d)
@@ -252,6 +262,7 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
     * ```:destroy``` will destroy all descendant nodes (which runs the destroy hooks on each child node)
 * ```:name_column``` used by #```find_or_create_by_path```, #```find_by_path```, and ```ancestry_path``` instance methods. This is primarily useful if the model only has one required field (like a "tag").
 * ```:order``` used to set up [deterministic ordering](#deterministic-ordering)
+* ```:touch``` delegates to the `belongs_to` annotation for the parent, so `touch`ing cascades to all children (the performance of this for deep trees isn't currently optimal).
 
 ## Accessing Data
 
@@ -528,7 +539,6 @@ describe TodoList::Item do
 end
 
 ```
-
 
 ## Testing
 
