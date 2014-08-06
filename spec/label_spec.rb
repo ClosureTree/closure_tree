@@ -523,5 +523,5 @@ describe Label do
       expected += ('a'..'r').collect { |ea| "#{ea}1" }
       expect(Label.roots_and_descendants_preordered.collect { |ea| ea.name }).to eq(expected)
     end
-  end unless ENV['DB'] == 'sqlite' # sqlite doesn't have a power function.
+  end unless sqlite? # sqlite doesn't have a power function.
 end

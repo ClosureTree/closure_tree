@@ -1,3 +1,3 @@
 def sqlite?
-  ENV['DB'] =~ /sqlite/
+  ENV['DB'] == 'sqlite'
 end

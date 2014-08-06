@@ -79,7 +79,7 @@ describe 'Concurrent creation' do
     run_workers
     # duplication from at least one iteration:
     expect(Tag.where(name: @names).size).to be > @iterations
-  end
+  end unless sqlite? # sqlite throws errors with concurrent access. Just test with the expected-successful case.
 
   class SiblingPrependerWorker < WorkerBase
     def before_work
