@@ -161,13 +161,16 @@ module ClosureTree
       child
     end
 
-    def create(model_class, attributes)
-      attrs = attributes.with_indifferent_access
-      creator_class = model_class
-      if attrs.include?(model_class.inheritance_column) || model_class != self.model_class
-        creator_class = creator_class.send(:find_sti_class, attrs[model_class.inheritance_column])
+    def creator_class(model_class, sti_class)
+      if sti_class.present?
+        base_class.send(:find_sti_class, sti_class)
+      else
+        model_class
       end
-      creator_class.new(attrs)
+    end
+
+    def create(model_class, attributes)
+      creator_class(model_class, attributes.with_indifferent_access[inheritance_column]).new(attributes)
     end
 
     def create!(model_class, attributes)
