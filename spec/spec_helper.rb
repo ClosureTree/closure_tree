@@ -10,6 +10,9 @@ require 'closure_tree'
 require 'closure_tree/test/matcher'
 require 'tmpdir'
 require 'timecop'
+require 'forwardable'
+require 'securerandom'
+require 'parallel'
 
 Thread.abort_on_exception = true
 

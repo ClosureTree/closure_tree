@@ -1,6 +1,11 @@
 require 'spec_helper'
-require 'forwardable'
-require 'securerandom'
+
+# We don't need to run the expensive parallel tests for every combination of prefix/suffix.
+# Those affect SQL generation, not parallelism
+def run_parallel_tests?
+  ActiveRecord::Base.table_name_prefix.empty? &&
+  ActiveRecord::Base.table_name_suffix.empty?
+end
 
 class WorkerBase
   extend Forwardable
@@ -92,7 +97,8 @@ describe 'Concurrent creation' do
     end
   end
 
-  xit 'fails to deadlock from parallel sibling churn' do
+  # TODO: this test should be rewritten to be proper producer-consumer code
+  it 'fails to deadlock from parallel sibling churn' do
     # target should be non-trivially long to maximize time spent in hierarchy maintenance
     target = Tag.find_or_create_by_path(('a'..'z').to_a + ('A'..'Z').to_a)
     expected_children = (1..100).to_a.map { |ea| "root ##{ea}" }
@@ -129,25 +135,22 @@ describe 'Concurrent creation' do
         end while run_destruction || !children_to_delete.empty?
       end
     end
-    creator_threads.each { |ea| ea.join }
-    run_destruction = false
-    destroyer_threads.each { |ea| ea.join }
+    creator_threads.each(&:join)
+    destroyer_threads.each(&:join)
     expect(added_children).to match(expected_children)
     expect(deleted_children).to match(expected_children)
   end
 
-  xit 'fails to deadlock while simultaneously deleting items from the same hierarchy' do
+  it 'fails to deadlock while simultaneously deleting items from the same hierarchy' do
     target = User.find_or_create_by_path((1..200).to_a.map { |ea| ea.to_s })
-    to_delete = target.self_and_ancestors.to_a.shuffle.map(&:email)
-    destroyer_threads = @workers.times.map do
-      DbThread.new do
-        until to_delete.empty?
-          email = to_delete.shift
-          User.transaction { User.where(email: email).first.destroy } if email
+    emails = target.self_and_ancestors.to_a.shuffle.map(&:email)
+    Parallel.map(emails) do |email|
+      ActiveRecord::Base.connection_pool.with_connection do
+        User.transaction do
+          User.where(email: email).first.destroy
         end
       end
     end
-    destroyer_threads.each { |ea| ea.join }
     expect(User.all).to be_empty
   end
 
@@ -173,4 +176,4 @@ describe 'Concurrent creation' do
     expect(Label.all.select { |ea| ea.root? }).to eq([@target.parent])
   end
 
-end
+end if run_parallel_tests?
