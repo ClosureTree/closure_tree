@@ -3,7 +3,7 @@
 source "https://rubygems.org"
 
 gem "foreigner", :git => "https://github.com/mceachen/foreigner.git"
-gem "activerecord", "~> 3.2"
+gem "activerecord", "~> 3.2.0"
 gem "strong_parameters"
 
 platforms :ruby, :rbx do
