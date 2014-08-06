@@ -7,8 +7,8 @@ common: &common
   min_messages: ERROR
 
 sqlite:
+  <<: *common
   adapter: <%= "jdbc" if defined? JRUBY_VERSION %>sqlite3
-  database: 'closure_tree_test'
 
 postgresql:
   <<: *common

@@ -1,6 +1,10 @@
 database_folder = "#{File.dirname(__FILE__)}/../db"
 database_adapter = ENV['DB'] ||= 'mysql'
 
+def sqlite?
+  ENV['DB'] == 'sqlite'
+end
+
 log = Logger.new('db.log')
 log.sev_threshold = Logger::DEBUG
 ActiveRecord::Base.logger = log
@@ -11,11 +15,6 @@ ActiveRecord::Base.table_name_suffix = ENV['DB_SUFFIX'].to_s
 ActiveRecord::Base.configurations = YAML::load(ERB.new(IO.read("#{database_folder}/database.yml")).result)
 
 config = ActiveRecord::Base.configurations[database_adapter]
-
-unless config['database'] == ':memory:'
-  # Postgresql or Mysql
-  config['database'].concat ENV['TRAVIS_JOB_NUMBER'].to_s.gsub(/\W/, '_')
-end
 
 begin
   case database_adapter
