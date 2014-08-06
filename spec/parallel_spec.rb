@@ -12,8 +12,11 @@ class WorkerBase
     @name = name
     @thread = Thread.new do
       ActiveRecord::Base.connection_pool.with_connection { before_work } if respond_to? :before_work
+      puts "#{Thread.current} going to sleep..."
       sleep
+      puts "#{Thread.current} woke up..."
       ActiveRecord::Base.connection_pool.with_connection { work }
+      puts "#{Thread.current} done..."
     end
   end
 end
@@ -21,8 +24,9 @@ end
 class FindOrCreateWorker < WorkerBase
   def work
     path = [name, :a, :b, :c]
-    root = (@target || Tag)
-    t = root.find_or_create_by_path(path)
+    puts "#{Thread.current} making #{path}..."
+    t = (@target || Tag).find_or_create_by_path(path)
+    puts "#{Thread.current} made #{t.id}, #{t.ancestry_path}"
   end
 end
 
