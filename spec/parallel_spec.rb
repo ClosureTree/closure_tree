@@ -98,7 +98,7 @@ describe 'Concurrent creation' do
   end
 
   # TODO: this test should be rewritten to be proper producer-consumer code
-  it 'fails to deadlock from parallel sibling churn' do
+  xit 'fails to deadlock from parallel sibling churn' do
     # target should be non-trivially long to maximize time spent in hierarchy maintenance
     target = Tag.find_or_create_by_path(('a'..'z').to_a + ('A'..'Z').to_a)
     expected_children = (1..100).to_a.map { |ea| "root ##{ea}" }
