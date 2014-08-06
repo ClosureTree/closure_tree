@@ -1,5 +1,5 @@
 common: &common
-  database: closure_tree_test<%= ENV['TRAVIS_JOB_NUMBER'].to_s.gsub(/\W/, '_') %>
+  database: <%= db_name %>
   host: localhost
   pool: 50
   timeout: 5000

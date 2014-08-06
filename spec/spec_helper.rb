@@ -13,8 +13,6 @@ require 'timecop'
 
 Thread.abort_on_exception = true
 
-ENV['TRAVIS_JOB_NUMBER'] ||= rand(1..2**31).to_s
-
 Dir['./spec/support/**/*.rb'].sort.each { |f| require f }
 
 RSpec.configure do |config|

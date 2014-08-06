@@ -12,6 +12,11 @@ ActiveRecord::Base.logger = log
 ActiveRecord::Migration.verbose = false
 ActiveRecord::Base.table_name_prefix = ENV['DB_PREFIX'].to_s
 ActiveRecord::Base.table_name_suffix = ENV['DB_SUFFIX'].to_s
+
+def db_name
+  @db_name ||= "closure_tree_test_#{rand(1..2**31)}"
+end
+
 ActiveRecord::Base.configurations = YAML::load(ERB.new(IO.read("#{database_folder}/database.yml")).result)
 
 config = ActiveRecord::Base.configurations[database_adapter]
@@ -39,8 +44,8 @@ require "#{database_folder}/models"
 def count_queries(&block)
   count = 0
   counter_fn = ->(name, started, finished, unique_id, payload) do
-    count += 1 unless payload[:name].in? %w[ CACHE SCHEMA ]
+    count += 1 unless payload[:name].in? %w[CACHE SCHEMA]
   end
-  ActiveSupport::Notifications.subscribed(counter_fn, "sql.active_record", &block)
+  ActiveSupport::Notifications.subscribed(counter_fn, 'sql.active_record', &block)
   count
 end
