@@ -174,6 +174,6 @@ describe 'Concurrent creation' do
 
     # The only non-root node should be "root":
     expect(Label.all.select { |ea| ea.root? }).to eq([@target.parent])
-  end
+  end unless sqlite? # sqlite throws errors from concurrent access
 
 end if run_parallel_tests?
