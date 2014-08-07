@@ -47,9 +47,14 @@ describe 'Concurrent creation' do
     @names.each do |name|
       workers = @threads.times.map { worker_class.new(@target, name) }
       # Wait for all the threads to get ready:
-      until workers.all? { |ea| ea.status == 'sleep' }
-        puts (workers.map { |ea| [ea.to_s, ea.status] })
-        sleep(0.1)
+      while true
+        unready_workers = workers.select { |ea| ea.status != 'sleep' }
+        if unready_workers.empty?
+          break
+        else
+          puts "Not ready to wakeup: #{unready_workers.map { |ea| [ea.to_s, ea.status] }}"
+          sleep(0.1)
+        end
       end
       # OK, GO!
       puts 'Calling .wakeup on all workers...'
