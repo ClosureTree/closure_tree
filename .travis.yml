@@ -19,6 +19,9 @@ env:
   - DB=mysql
   - DB=postgresql
 
+addons:
+  postgresql: "9.3"
+
 script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rake --trace all_spec_flavors
 
 matrix:
