@@ -4,7 +4,7 @@ require 'spec_helper'
 # Those affect SQL generation, not parallelism
 def run_parallel_tests?
   ActiveRecord::Base.table_name_prefix.empty? &&
-  ActiveRecord::Base.table_name_suffix.empty?
+    ActiveRecord::Base.table_name_suffix.empty?
 end
 
 class WorkerBase
@@ -48,11 +48,14 @@ describe 'Concurrent creation' do
       workers = @threads.times.map { worker_class.new(@target, name) }
       # Wait for all the threads to get ready:
       until workers.all? { |ea| ea.status == 'sleep' }
+        puts (workers.map { |ea| [ea.to_s, ea.status] })
         sleep(0.1)
       end
       # OK, GO!
+      puts 'Calling .wakeup on all workers...'
       workers.each(&:wakeup)
       # Then wait for them to finish:
+      puts 'Calling .join on all workers...'
       workers.each(&:join)
     end
     # Ensure we're still connected:
