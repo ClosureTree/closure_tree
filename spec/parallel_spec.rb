@@ -151,14 +151,15 @@ describe 'Concurrent creation' do
 
   it 'fails to deadlock while simultaneously deleting items from the same hierarchy' do
     target = User.find_or_create_by_path((1..200).to_a.map { |ea| ea.to_s })
-    emails = target.self_and_ancestors.to_a.shuffle.map(&:email)
-    Parallel.map(emails) do |email|
+    emails = target.self_and_ancestors.to_a.map(&:email).shuffle
+    Parallel.map(emails, :in_processes => 10) do |email|
       ActiveRecord::Base.connection_pool.with_connection do
         User.transaction do
-          User.where(email: email).first.destroy
+          User.where(email: email).destroy_all
         end
       end
     end
+    User.connection.reconnect!
     expect(User.all).to be_empty
   end unless sqlite? # sqlite throws errors from concurrent access
 
