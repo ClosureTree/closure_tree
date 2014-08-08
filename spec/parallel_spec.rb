@@ -59,9 +59,11 @@ describe 'Concurrent creation' do
           sleep(0.1)
         end
       end
+      sleep(0.25)
       # OK, GO!
       puts 'Calling .wakeup on all workers...'
       workers.each(&:wakeup)
+      sleep(0.25)
       # Then wait for them to finish:
       puts 'Calling .join on all workers...'
       workers.each(&:join)
