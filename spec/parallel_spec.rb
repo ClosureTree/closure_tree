@@ -7,6 +7,10 @@ def run_parallel_tests?
     ActiveRecord::Base.table_name_suffix.empty?
 end
 
+def max_threads
+  5
+end
+
 class WorkerBase
   extend Forwardable
   attr_reader :name
@@ -39,13 +43,12 @@ describe 'Concurrent creation' do
   before :each do
     @target = nil
     @iterations = 5
-    @threads = 10
   end
 
   def run_workers(worker_class = FindOrCreateWorker)
     @names = @iterations.times.map { |iter| "iteration ##{iter}" }
     @names.each do |name|
-      workers = @threads.times.map { worker_class.new(@target, name) }
+      workers = max_threads.times.map { worker_class.new(@target, name) }
       # Wait for all the threads to get ready:
       while true
         unready_workers = workers.select { |ea| ea.status != 'sleep' }
@@ -152,9 +155,10 @@ describe 'Concurrent creation' do
   it 'fails to deadlock while simultaneously deleting items from the same hierarchy' do
     target = User.find_or_create_by_path((1..200).to_a.map { |ea| ea.to_s })
     emails = target.self_and_ancestors.to_a.map(&:email).shuffle
-    Parallel.map(emails, :in_processes => 10) do |email|
+    Parallel.map(emails, :in_threads => max_threads) do |email|
       ActiveRecord::Base.connection_pool.with_connection do
         User.transaction do
+          puts "Destroying #{email}..."
           User.where(email: email).destroy_all
         end
       end
