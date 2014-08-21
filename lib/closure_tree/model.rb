@@ -41,6 +41,13 @@ module ClosureTree
         through: :descendant_hierarchies,
         source: :descendant,
         order: order_by_generations)
+
+      has_one :root_hierarchy, *_ct.has_many_without_order_option(
+        class_name: _ct.hierarchy_class_name,
+        foreign_key: "descendant_id",
+        order: "#{_ct.quoted_hierarchy_table_name}.generations desc")
+
+      has_one :root, through: :root_hierarchy, source: :ancestor
     end
 
     # Delegate to the Support instance on the class:
@@ -63,11 +70,6 @@ module ClosureTree
     # Returns true if this node has no children.
     def leaf?
       children.empty?
-    end
-
-    # Returns the farthest ancestor, or self if +root?+
-    def root
-      self_and_ancestors.where(_ct.parent_column_name.to_sym => nil).first
     end
 
     def leaves
