@@ -103,6 +103,9 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
     end
     ```
 
+    if you are using Rails you can use the build-in generator ```rails g closure_tree:migration tag```
+
+
 6.  Run ```rake db:migrate```
 
 7.  If you're migrating from another system where your model already has a

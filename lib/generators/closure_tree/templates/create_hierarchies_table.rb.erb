@@ -1,0 +1,14 @@
+class <%= migration_class_name %> < ActiveRecord::Migration
+  def change
+      create_table <%= hierarchies_table -%>, id: false do |t|
+          t.<%= primary_key_type %>  :ancestor_id, null: false
+          t.<%= primary_key_type %> :descendant_id, null: false
+          t.<%= primary_key_type %>  :generations, null: false
+      end
+
+      add_index <%= hierarchies_table -%>, [:ancestor_id, :descendant_id, :generations],
+                unique: true, name: "<%= model_name -%>_anc_desc_idx"
+
+      add_index <%= hierarchies_table -%>, [:descendant_id], name: "<%= model_name -%>_desc_idx"
+  end
+end
