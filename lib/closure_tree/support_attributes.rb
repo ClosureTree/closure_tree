@@ -21,6 +21,14 @@ module ClosureTree
       options[:hierarchy_class_name] || model_class.to_s + "Hierarchy"
     end
 
+    def primary_key_column
+      model_class.columns.detect { |ea| ea.name == model_class.primary_key }
+    end
+
+    def primary_key_type
+      primary_key_column.type
+    end
+
     def parent_column_name
       options[:parent_column_name]
     end

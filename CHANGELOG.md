@@ -1,5 +1,10 @@
 # Changelog
 
+### 5.1.0
+
+* [Abdelkader Boudih](https://github.com/seuros) added a database generator
+  for the hierarchies table!
+
 ### 5.0.0
 
 #### Breaking API changes

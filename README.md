@@ -78,33 +78,12 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
 
     Note that if the column is null, the tag will be considered a root node.
 
-5.  Add a database migration to store the hierarchy for your model. By
-    default the table name will be the model's table name, followed by
+5.  Run `rails g closure_tree:migration tag` (and replace "tag" with your model name)
+    to create the closure tree table for your model.
+    
+    By default the table name will be the model's table name, followed by
     "_hierarchies". Note that by calling ```acts_as_tree```, a "virtual model" (in this case, ```TagHierarchy```)
-    will be added automatically, so you don't need to create it.
-
-    ```ruby
-    class CreateTagHierarchies < ActiveRecord::Migration
-      def change
-        create_table :tag_hierarchies, :id => false do |t|
-          t.integer  :ancestor_id, :null => false   # ID of the parent/grandparent/great-grandparent/... tag
-          t.integer  :descendant_id, :null => false # ID of the target tag
-          t.integer  :generations, :null => false   # Number of generations between the ancestor and the descendant. Parent/child = 1, for example.
-        end
-
-        # For "all progeny of…" and leaf selects:
-        add_index :tag_hierarchies, [:ancestor_id, :descendant_id, :generations],
-          :unique => true, :name => "tag_anc_desc_udx"
-
-        # For "all ancestors of…" selects,
-        add_index :tag_hierarchies, [:descendant_id],
-          :name => "tag_desc_idx"
-      end
-    end
-    ```
-
-    if you are using Rails you can use the build-in generator ```rails g closure_tree:migration tag```
-
+    will be created dynamically. You don't need to create it.
 
 6.  Run ```rake db:migrate```
 
@@ -489,7 +468,7 @@ the spec ```tag_spec.rb```:
       Tag.rebuild! # <- required if you use fixtures
     end
 ```
-
+`
 **However, if you're just starting with Rails, may I humbly suggest you adopt a factory library**,
 rather than using fixtures? [Lots of people have written about this already](https://www.google.com/search?q=fixtures+versus+factories).
 

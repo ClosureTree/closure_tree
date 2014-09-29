@@ -1,10 +1,14 @@
 require 'rails/generators/named_base'
 require 'rails/generators/active_record/migration'
+require 'forwardable'
 
 module ClosureTree
   module Generators # :nodoc:
     class MigrationGenerator < ::Rails::Generators::NamedBase # :nodoc:
       include ActiveRecord::Generators::Migration
+
+      extend Forwardable
+      def_delegators :ct, :hierarchy_table_name, :primary_key_type
 
       def self.default_generator_root
         File.dirname(__FILE__)
@@ -14,28 +18,13 @@ module ClosureTree
         migration_template 'create_hierarchies_table.rb.erb', "db/migrate/create_#{singular_table_name}_hierarchies.rb"
       end
 
-      private
-
       def migration_class_name
-        "Create#{class_name}Hierarchies".gsub('::', '')
+        "Create#{ct.hierarchy_class_name}".gsub(/\W/, '')
       end
 
-      def model_name
-        file_name
+      def ct
+        @ct ||= class_name.constantize._ct
       end
-
-      def hierarchies_table
-        ":#{klass.table_name.singularize}"
-      end
-
-      def klass
-        class_name.constantize
-      end
-
-      def primary_key_type
-        klass.columns.first.sql_type
-      end
-
     end
   end
 end
