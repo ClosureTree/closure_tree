@@ -56,16 +56,25 @@ for a description of different tree storage algorithms.
 
 Note that closure_tree only supports Rails 3.2 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
 
-1.  Add this to your Gemfile: ```gem 'closure_tree'```
+1.  Add `gem 'closure_tree'` to your Gemfile 
 
-2.  Run ```bundle install```
+2.  Run `bundle install`
 
-3.  Add ```acts_as_tree``` to your hierarchical model(s).
-    Make sure you add ```acts_as_tree``` *after any ```attr_accessible``` and ```self.table_name =```
-    lines in your model.
-    Please review the [available options](#available-options) you can provide.
+3.  Add `acts_as_tree``` to your hierarchical model:
 
-4.  Add a migration to add a ```parent_id``` column to the model you want to act_as_tree.
+    ```ruby
+    class Tag < ActiveRecord::Base
+      acts_as_tree
+    end
+    ```
+    
+    Make sure you add `acts_as_tree` *after* `attr_accessible` and
+    `self.table_name =` lines in your model.
+    
+    Make sure you review the [options](#available-options)
+    `acts_as_tree` accepts.
+
+4.  Add a migration to add a `parent_id` column to the hierarchical model.
     You may want to also [add a column for deterministic ordering of children](#sort_order), but that's optional.
 
     ```ruby
@@ -76,22 +85,22 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
     end
     ```
 
-    Note that if the column is null, the tag will be considered a root node.
+    The column must be nullable, which signifies root nodes.
 
-5.  Run `rails g closure_tree:migration tag` (and replace "tag" with your model name)
+5.  Run `rails g closure_tree:migration tag` (and replace `tag` with your model name)
     to create the closure tree table for your model.
     
     By default the table name will be the model's table name, followed by
     "_hierarchies". Note that by calling ```acts_as_tree```, a "virtual model" (in this case, ```TagHierarchy```)
     will be created dynamically. You don't need to create it.
 
-6.  Run ```rake db:migrate```
+6.  Run `rake db:migrate`
 
 7.  If you're migrating from another system where your model already has a
-    ```parent_id``` column, run ```Tag.rebuild!``` and your
-    ```tag_hierarchies``` table will be truncated and rebuilt.
+    `parent_id` column, run `Tag.rebuild!` and your
+    `tag_hierarchies` table will be truncated and rebuilt.
 
-    If you're starting from scratch you don't need to call ```rebuild!```.
+    If you're starting from scratch you don't need to call `rebuild!`.
 
 ## Usage
 
@@ -100,26 +109,26 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
 Create a root node:
 
 ```ruby
-grandparent = Tag.create(:name => 'Grandparent')
+grandparent = Tag.create(name: 'Grandparent')
 ```
 
 Child nodes are created by appending to the children collection:
 
 ```ruby
-parent = grandparent.children.create(:name => 'Parent')
+parent = grandparent.children.create(name: 'Parent')
 ```
 
 Or by appending to the children collection:
 
 ```ruby
-child2 = Tag.new(:name => 'Second Child')
+child2 = Tag.new(name: 'Second Child')
 parent.children << child2
 ```
 
 Or by calling the "add_child" method:
 
 ```ruby
-child3 = Tag.new(:name => 'Third Child')
+child3 = Tag.new(name: 'Third Child')
 parent.add_child child3
 ```
 
@@ -135,22 +144,22 @@ child1.ancestry_path
 
 ### find_or_create_by_path
 
-You can ```find``` as well as ```find_or_create``` by "ancestry paths".
+You can `find` as well as `find_or_create` by "ancestry paths".
 
 If you provide an array of strings to these methods, they reference the `name` column in your 
-model, which can be overridden with the `:name_column` option provided to ```acts_as_tree```.
+model, which can be overridden with the `:name_column` option provided to `acts_as_tree`.
 
 ```ruby
-child = Tag.find_or_create_by_path(["grandparent", "parent", "child"])
+child = Tag.find_or_create_by_path(%w[grandparent parent child])
 ```
 
 As of v5.0.0, `find_or_create_by_path` can also take an array of attribute hashes:
 
 ```ruby
 child = Tag.find_or_create_by_path([
-  {name: "Grandparent", title: "Sr."},
-  {name: "Parent", title: "Mrs."},
-  {name: "Child", title: "Jr."}
+  {name: 'Grandparent', title: 'Sr.'},
+  {name: 'Parent', title: 'Mrs.'},
+  {name: 'Child', title: 'Jr.'}
 ])
 ```
 
@@ -171,8 +180,8 @@ Nodes can be moved around to other parents, and closure_tree moves the node's de
 new parent for you:
 
 ```ruby
-d = Tag.find_or_create_by_path %w(a b c d)
-h = Tag.find_or_create_by_path %w(e f g h)
+d = Tag.find_or_create_by_path %w[a b c d]
+h = Tag.find_or_create_by_path %w[e f g h]
 e = h.root
 d.add_child(e) # "d.children << e" would work too, of course
 h.ancestry_path
