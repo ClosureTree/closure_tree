@@ -27,7 +27,7 @@ closure_tree has some great features:
   * 3 SQL INSERT/UPDATEs on node reparenting
 * __Support for [concurrency](#concurrency)__ (using [with_advisory_lock](https://github.com/mceachen/with_advisory_lock))
 * __Support for Rails 3.2, 4.0, and 4.1__
-* __Support for Ruby 1.9, 2.1, and jRuby 1.6.13
+* __Support for Ruby 1.9, 2.1, and jRuby 1.6.13__
 * Support for reparenting children (and all their descendants)
 * Support for [single-table inheritance (STI)](#sti) within the hierarchy
 * ```find_or_create_by_path``` for [building out heterogeneous hierarchies quickly and conveniently](#find_or_create_by_path)
