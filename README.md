@@ -60,7 +60,7 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
 
 2.  Run `bundle install`
 
-3.  Add `acts_as_tree``` to your hierarchical model:
+3.  Add `acts_as_tree` to your hierarchical model:
 
     ```ruby
     class Tag < ActiveRecord::Base
