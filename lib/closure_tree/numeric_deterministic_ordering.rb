@@ -38,14 +38,14 @@ module ClosureTree
         JOIN #{_ct.quoted_hierarchy_table_name} anc_hier
           ON anc_hier.descendant_id = #{_ct.quoted_hierarchy_table_name}.descendant_id
         JOIN #{_ct.quoted_table_name} anc
-          ON anc.id = anc_hier.ancestor_id
+          ON anc.#{_ct.quoted_id_column_name} = anc_hier.ancestor_id
         JOIN #{_ct.quoted_hierarchy_table_name} depths
-          ON depths.ancestor_id = #{_ct.quote(self.id)} AND depths.descendant_id = anc.id
+          ON depths.ancestor_id = #{_ct.quote(self.id)} AND depths.descendant_id = anc.#{_ct.quoted_id_column_name}
       SQL
       node_score = "(1 + anc.#{_ct.quoted_order_column(false)}) * " +
         "power(#{h['total_descendants']}, #{h['max_depth'].to_i + 1} - depths.generations)"
       order_by = "sum(#{node_score})"
-      self_and_descendants.joins(join_sql).group("#{_ct.quoted_table_name}.id").reorder(order_by)
+      self_and_descendants.joins(join_sql).group("#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name}").reorder(order_by)
     end
 
     module ClassMethods
@@ -58,19 +58,19 @@ module ClosureTree
         SQL
         join_sql = <<-SQL.strip_heredoc
           JOIN #{_ct.quoted_hierarchy_table_name} anc_hier
-            ON anc_hier.descendant_id = #{_ct.quoted_table_name}.id
+            ON anc_hier.descendant_id = #{_ct.quoted_table_name}.#{_ct.quoted_id_column_name}
           JOIN #{_ct.quoted_table_name} anc
-            ON anc.id = anc_hier.ancestor_id
+            ON anc.#{_ct.quoted_id_column_name} = anc_hier.ancestor_id
           JOIN (
             SELECT descendant_id, max(generations) AS max_depth
             FROM #{_ct.quoted_hierarchy_table_name}
             GROUP BY 1
-          ) AS depths ON depths.descendant_id = anc.id
+          ) AS depths ON depths.descendant_id = anc.#{_ct.quoted_id_column_name}
         SQL
         node_score = "(1 + anc.#{_ct.quoted_order_column(false)}) * " +
           "power(#{h['total_descendants']}, #{h['max_depth'].to_i + 1} - depths.max_depth)"
         order_by = "sum(#{node_score})"
-        joins(join_sql).group("#{_ct.quoted_table_name}.id").reorder(order_by)
+        joins(join_sql).group("#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name}").reorder(order_by)
       end
     end
 
