@@ -88,7 +88,7 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
 
 5.  Run `rails g closure_tree:migration tag` (and replace `tag` with your model name)
     to create the closure tree table for your model.
-    
+
     By default the table name will be the model's table name, followed by
     "_hierarchies". Note that by calling ```acts_as_tree```, a "virtual model" (in this case, ```TagHierarchy```)
     will be created dynamically. You don't need to create it.

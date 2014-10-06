@@ -3,7 +3,9 @@
 ### 5.1.0
 
 * [Abdelkader Boudih](https://github.com/seuros) added a database generator
-  for the hierarchies table!
+  for the hierarchies table. Thanks!
+* [Jason Weathered](https://github.com/jasoncodes) fixed [issue #117](https://github.com/mceachen/closure_tree/pull/117)
+  with the preordered traversal code that assumed the primary key column was called `id`. Thanks!   
 
 ### 5.0.0
 
