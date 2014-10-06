@@ -67,12 +67,11 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
       acts_as_tree
     end
     ```
+
+    Make sure you check out the [large number options](#available-options) that `acts_as_tree` accepts.
     
-    Make sure you add `acts_as_tree` *after* `attr_accessible` and
+    Make sure you add `acts_as_tree` **after** `attr_accessible` and
     `self.table_name =` lines in your model.
-    
-    Make sure you review the [options](#available-options)
-    `acts_as_tree` accepts.
 
 4.  Add a migration to add a `parent_id` column to the hierarchical model.
     You may want to also [add a column for deterministic ordering of children](#sort_order), but that's optional.
@@ -85,7 +84,7 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
     end
     ```
 
-    The column must be nullable, which signifies root nodes.
+    The column must be nullable. Root nodes have a `NULL` `parent_id`.
 
 5.  Run `rails g closure_tree:migration tag` (and replace `tag` with your model name)
     to create the closure tree table for your model.
