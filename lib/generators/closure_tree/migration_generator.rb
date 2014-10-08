@@ -19,7 +19,7 @@ module ClosureTree
       end
 
       def migration_class_name
-        "Create#{ct.hierarchy_class_name}".gsub(/\W/, '')
+        "Create#{ct.hierarchy_class_name.to_s.pluralize}".gsub(/\W/, '')
       end
 
       def ct
