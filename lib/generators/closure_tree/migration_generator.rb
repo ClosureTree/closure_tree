@@ -15,11 +15,11 @@ module ClosureTree
       end
 
       def create_migration_file
-        migration_template 'create_hierarchies_table.rb.erb', "db/migrate/create_#{singular_table_name}_hierarchies.rb"
+        migration_template 'create_hierarchies_table.rb.erb', "db/migrate/create_#{ct.hierarchy_table_name}.rb"
       end
 
       def migration_class_name
-        "Create#{ct.hierarchy_class_name.to_s.pluralize}".gsub(/\W/, '')
+        "Create#{ct.hierarchy_table_name.camelize}"
       end
 
       def ct
