@@ -2,7 +2,7 @@ require 'with_advisory_lock'
 
 module ClosureTree
   module ActsAsTree
-    def acts_as_tree(options = {})
+    def has_closure_tree(options = {})
       options.assert_valid_keys(
         :parent_column_name,
         :dependent,
@@ -35,5 +35,7 @@ module ClosureTree
       # Support Heroku's database-less assets:precompile pre-deploy step:
       raise e unless ENV['DATABASE_URL'].to_s.include?('//user:pass@127.0.0.1/') && ENV['RAILS_GROUPS'] == 'assets'
     end
+
+    alias_method :acts_as_tree, :has_closure_tree
   end
 end

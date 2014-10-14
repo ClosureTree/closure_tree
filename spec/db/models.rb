@@ -1,7 +1,7 @@
 require 'uuidtools'
 
 class Tag < ActiveRecord::Base
-  acts_as_tree :dependent => :destroy, :order => :name
+  has_closure_tree :dependent => :destroy, :order => :name
   before_destroy :add_destroyed_tag
   attr_accessible :name, :title if _ct.use_attr_accessible?
 
