@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-gem "foreigner", :git => "https://github.com/mceachen/foreigner.git"
+gem "foreigner", :git => "https://github.com/matthuhiggins/foreigner.git"
 gem "activerecord", "~> 4.1.0"
 
 platforms :ruby, :rbx do
