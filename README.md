@@ -61,24 +61,25 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
 
 2.  Run `bundle install`
 
-3.  Add `acts_as_tree` or `has_closure_tree` (alias of the same method) to your hierarchical model:
+3.  Add `has_closure_tree` (or `acts_as_tree`, which is an alias of the same method) to your hierarchical model:
 
     ```ruby
     class Tag < ActiveRecord::Base
-      acts_as_tree
+      has_closure_tree
     end
 
     class AnotherTag < ActiveRecord::Base
-      has_closure_tree
+      acts_as_tree
     end
     ```
 
-    Make sure you check out the [large number options](#available-options) that `acts_as_tree` accepts.
+    Make sure you check out the [large number options](#available-options) that `has_closure_tree` accepts.
     
-    Make sure you add `acts_as_tree` **after** `attr_accessible` and
+    Make sure you add `has_closure_tree` **after** `attr_accessible` and
     `self.table_name =` lines in your model.
 
-    If you have other hierarchical gems in your stack, `acts_as_tree` method may not be safe to use. See the [Warning](#warning) section bellow.
+    If you're already using other hierarchical gems, like `ancestry` or `acts_as_tree`, please refer
+    to the [warning section](#warning)!
 
 4.  Add a migration to add a `parent_id` column to the hierarchical model.
     You may want to also [add a column for deterministic ordering of children](#sort_order), but that's optional.
@@ -97,7 +98,7 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
     to create the closure tree table for your model.
 
     By default the table name will be the model's table name, followed by
-    "_hierarchies". Note that by calling ```acts_as_tree```, a "virtual model" (in this case, ```TagHierarchy```)
+    "_hierarchies". Note that by calling ```has_closure_tree```, a "virtual model" (in this case, ```TagHierarchy```)
     will be created dynamically. You don't need to create it.
 
 6.  Run `rake db:migrate`
@@ -110,9 +111,9 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
 
 ## Warning
 
-The preferred method is `acts_as_tree`. However, other gems (like [ancestry](https://github.com/stefankroes/ancestry) or [acts_as_tree](https://github.com/amerine/acts_as_tree)) may use that method name too. If you have those gems as dependencies, use the alternative `has_closure_tree` method.
-
-Bear in mind that using multiple hierarchy gems in the same model may not be safe.
+As stated above, using multiple hierarchy gems (like `ancestry` or `nested set`) on the same model 
+will most likely result in pain, suffering, hair loss, tooth decay, heel-related ailments, and gingivitis.
+Assume things will break. 
 
 ## Usage
 
@@ -159,7 +160,7 @@ child1.ancestry_path
 You can `find` as well as `find_or_create` by "ancestry paths".
 
 If you provide an array of strings to these methods, they reference the `name` column in your 
-model, which can be overridden with the `:name_column` option provided to `acts_as_tree`.
+model, which can be overridden with the `:name_column` option provided to `has_closure_tree`.
 
 ```ruby
 child = Tag.find_or_create_by_path(%w[grandparent parent child])
@@ -254,7 +255,7 @@ Just for kicks, this is the test tree I used for proving that preordered tree tr
 
 ### Available options
 
-When you include ```acts_as_tree``` in your model, you can provide a hash to override the following defaults:
+When you include ```has_closure_tree``` in your model, you can provide a hash to override the following defaults:
 
 * ```:parent_column_name``` to override the column name of the parent foreign key in the model's table. This defaults to "parent_id".
 * ```:hierarchy_class_name``` to override the hierarchy class name. This defaults to the singular name of the model + "Hierarchy", like ```TagHierarchy```.
@@ -309,18 +310,18 @@ When you include ```acts_as_tree``` in your model, you can provide a hash to ove
     * ```tag.find_all_by_generation(0).to_a``` == ```[tag]```
     * ```tag.find_all_by_generation(1)``` == ```tag.children```
     * ```tag.find_all_by_generation(2)``` will return the tag's grandchildren, and so on.
-* ```tag.destroy``` will destroy a node and do <em>something</em> to its children, which is determined by the ```:dependent``` option passed to ```acts_as_tree```.
+* ```tag.destroy``` will destroy a node and do <em>something</em> to its children, which is determined by the ```:dependent``` option passed to ```has_closure_tree```.
 
 ## Polymorphic hierarchies with STI
 
 Polymorphic models using single table inheritance (STI) are supported:
 
 1. Create a db migration that adds a String ```type``` column to your model
-2. Subclass the model class. You only need to add ```acts_as_tree``` to your base class:
+2. Subclass the model class. You only need to add ```has_closure_tree``` to your base class:
 
 ```ruby
 class Tag < ActiveRecord::Base
-  acts_as_tree
+  has_closure_tree
 end
 class WhenTag < Tag ; end
 class WhereTag < Tag ; end
@@ -332,17 +333,17 @@ you use the ```:type``` attribute, so **this doesn't work**:
 
 ```ruby
 # BAD: ActiveRecord ignores the :type attribute:
-root.children.create(:name => "child", :type => "WhenTag")
+root.children.create(name: "child", type: "WhenTag")
 ```
 
 Instead, use either ```.add_child``` or ```children <<```:
 
 ```ruby
 # GOOD!
-a = Tag.create!(:name => "a")
-b = WhenTag.new(:name => "b")
+a = Tag.create!(name: "a")
+b = WhenTag.new(name: "b")
 a.children << b
-c = WhatTag.new(:name => "c")
+c = WhatTag.new(name: "c")
 b.add_child(c)
 ```
 
@@ -356,7 +357,7 @@ If you want to order children alphabetically, and your model has a ```name``` co
 
 ```ruby
 class Tag < ActiveRecord::Base
-  acts_as_tree :order => 'name'
+  has_closure_tree order: 'name'
 end
 ```
 
@@ -370,7 +371,7 @@ and in your model:
 
 ```ruby
 class OrderedTag < ActiveRecord::Base
-  acts_as_tree :order => 'sort_order'
+  has_closure_tree order: 'sort_order'
 end
 ```
 
@@ -447,11 +448,11 @@ for both MySQL and PostgreSQL, [with_advisory_lock](https://github.com/mceachen/
 is used automatically to ensure correctness.
 
 If you are already managing concurrency elsewhere in your application, and want to disable the use
-of with_advisory_lock, pass ```:with_advisory_lock => false``` in the options hash:
+of with_advisory_lock, pass ```with_advisory_lock: false``` in the options hash:
 
 ```ruby
 class Tag
-  acts_as_tree :with_advisory_lock => false
+  has_closure_tree with_advisory_lock: false
 end
 ```
 

@@ -1,7 +1,5 @@
-require 'with_advisory_lock'
-
 module ClosureTree
-  module ActsAsTree
+  module HasClosureTree
     def has_closure_tree(options = {})
       options.assert_valid_keys(
         :parent_column_name,
@@ -36,6 +34,6 @@ module ClosureTree
       raise e unless ENV['DATABASE_URL'].to_s.include?('//user:pass@127.0.0.1/') && ENV['RAILS_GROUPS'] == 'assets'
     end
 
-    alias_method :acts_as_tree, :has_closure_tree
+    alias_method :has_closure_tree, :acts_as_tree
   end
 end
