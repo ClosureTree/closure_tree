@@ -18,7 +18,7 @@ end
 class UUIDTag < ActiveRecord::Base
   self.primary_key = :uuid
   before_create :set_uuid
-  acts_as_tree :dependent => :destroy, :order => 'name', :parent_column_name => 'parent_uuid'
+  has_closure_tree dependent: :destroy, order: 'name', parent_column_name: 'parent_uuid'
   before_destroy :add_destroyed_tag
   attr_accessible :name, :title if _ct.use_attr_accessible?
 
@@ -94,14 +94,14 @@ module Namespace
     'namespace_'
   end
   class Type < ActiveRecord::Base
-    acts_as_tree :dependent => :destroy
+    has_closure_tree dependent: :destroy
     attr_accessible :name if _ct.use_attr_accessible?
   end
 end
 
 class Metal < ActiveRecord::Base
   self.table_name = "#{table_name_prefix}metal#{table_name_suffix}"
-  acts_as_tree order: 'sort_order', name_column: 'value'
+  has_closure_tree order: 'sort_order', name_column: 'value'
   self.inheritance_column = 'metal_type'
 end
 
@@ -112,5 +112,5 @@ class Unobtanium < Metal
 end
 
 class MenuItem < ActiveRecord::Base
-  acts_as_tree(touch: true, with_advisory_lock: false)
+  has_closure_tree touch: true, with_advisory_lock: false
 end

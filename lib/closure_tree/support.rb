@@ -1,6 +1,7 @@
 require 'closure_tree/support_flags'
 require 'closure_tree/support_attributes'
 require 'closure_tree/numeric_order_support'
+require 'with_advisory_lock'
 
 # This class and mixins are an effort to reduce the namespace pollution to models that act_as_tree.
 module ClosureTree

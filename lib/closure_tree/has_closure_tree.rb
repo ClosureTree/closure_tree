@@ -34,6 +34,6 @@ module ClosureTree
       raise e unless ENV['DATABASE_URL'].to_s.include?('//user:pass@127.0.0.1/') && ENV['RAILS_GROUPS'] == 'assets'
     end
 
-    alias_method :has_closure_tree, :acts_as_tree
+    alias_method :acts_as_tree, :has_closure_tree
   end
 end
