@@ -9,7 +9,7 @@ require 'generators/closure_tree/migration_generator'
 
 RSpec.describe ClosureTree::Generators::MigrationGenerator, :type => :generator do
   # Tell generator where to put its output
-  destination File.expand_path('../tmp', __FILE__)
+  destination Dir.mktmpdir
   before { prepare_destination }
 
   describe 'generator output' do
