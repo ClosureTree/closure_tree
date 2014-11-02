@@ -20,14 +20,13 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency 'with_advisory_lock', '>= 3.0.0'
 
   gem.add_development_dependency 'yard'
-  gem.add_development_dependency 'rspec', '>= 3.0'
   gem.add_development_dependency 'rspec-instafail'
-  # TODO: delete rspec-rails.
-  gem.add_development_dependency 'rspec-rails' # FIXME: for rspec-rails and rspec fixture support
+  gem.add_development_dependency 'rspec-rails', '>= 3.1'
   gem.add_development_dependency 'uuidtools'
   gem.add_development_dependency 'database_cleaner'
   gem.add_development_dependency 'appraisal'
   gem.add_development_dependency 'timecop'
   gem.add_development_dependency 'parallel'
+  gem.add_development_dependency 'ammeter', '~> 1.1.2'
   # gem.add_development_dependency 'ruby-prof' # <- don't need this normally.
 end
