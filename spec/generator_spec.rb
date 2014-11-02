@@ -12,7 +12,7 @@ RSpec.describe ClosureTree::Generators::MigrationGenerator, :type => :generator 
   destination File.expand_path('../tmp', __FILE__)
   before { prepare_destination }
 
-  xdescribe 'generator output' do
+  describe 'generator output' do
     before { run_generator %w(tag) }
     subject { migration_file('db/migrate/create_tag_hierarchies.rb') }
     it { is_expected.to be_a_migration }
@@ -22,7 +22,7 @@ RSpec.describe ClosureTree::Generators::MigrationGenerator, :type => :generator 
     it { is_expected.to contain(/add_index :tag_hierarchies/) } 
   end
 
-  xdescribe 'generator output with namespaced model' do
+  describe 'generator output with namespaced model' do
     before { run_generator %w(Namespace::Type) }
     subject { migration_file('db/migrate/create_namespace_type_hierarchies.rb') }
     it { is_expected.to be_a_migration }
@@ -32,7 +32,7 @@ RSpec.describe ClosureTree::Generators::MigrationGenerator, :type => :generator 
     it { is_expected.to contain(/add_index :namespace_type_hierarchies/) } 
   end
 
-  xdescribe 'generator output with namespaced model with /' do
+  describe 'generator output with namespaced model with /' do
     before { run_generator %w(namespace/type) }
     subject { migration_file('db/migrate/create_namespace_type_hierarchies.rb') }
     it { is_expected.to be_a_migration }
