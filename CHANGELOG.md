@@ -2,11 +2,12 @@
 
 ### 5.2.0
 
+* [Ryan Selk](https://github.com/rselk) made several enhancements to the migration generation (thanks!).  
 * [Eduardo Turiño](https://github.com/eturino) renamed `acts_as_tree` to `has_closure_tree`. We'll 
   keep both annotations around for the forseeable future, but I think not name-colliding by default is
   strictly better. (Thanks for both the suggestion and PR!) 
 * Made migrations error with a helpful message if the target didn't have the `has_closure_tree` or
-  `acts_as_tree` annotation. This addresses [issue 131](https://github.com/mceachen/closure_tree/issues/131). 
+  `acts_as_tree` annotation. This addresses [issue 131](https://github.com/mceachen/closure_tree/issues/131).
 
 ### 5.1.1
 
