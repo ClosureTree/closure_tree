@@ -22,7 +22,8 @@ env:
 #addons:
 #  postgresql: "9.3"
 
-script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rake --trace all_spec_flavors
+script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rspec spec/generator_spec.rb
+#script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rake --trace all_spec_flavors
 
 matrix:
   allow_failures:
