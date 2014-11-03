@@ -14,13 +14,17 @@ module ClosureTree
       end
 
       def create_migration_file
-        migration_template 'create_hierarchies_table.rb.erb', "db/migrate/create_#{ct.hierarchy_table_name}.rb"
+        migration_template 'create_hierarchies_table.rb.erb', "db/migrate/create_#{migration_name}.rb"
       end
 
       private
 
+      def migration_name
+        ct.remove_prefix_and_suffix(ct.hierarchy_table_name)
+      end
+
       def migration_class_name
-        "Create#{ct.hierarchy_table_name.camelize}"
+        "Create#{migration_name.camelize}"
       end
 
       def target_class

@@ -1,16 +1,16 @@
 class <%= migration_class_name %> < ActiveRecord::Migration
   def change
-    create_table :<%= hierarchy_table_name %>, id: false do |t|
+    create_table :<%= migration_name %>, id: false do |t|
       t.<%= primary_key_type %> :ancestor_id, null: false
       t.<%= primary_key_type %> :descendant_id, null: false
       t.integer :generations, null: false
     end
 
-    add_index :<%= hierarchy_table_name %>, [:ancestor_id, :descendant_id, :generations],
+    add_index :<%= migration_name %>, [:ancestor_id, :descendant_id, :generations],
       unique: true,
       name: "<%= file_name %>_anc_desc_idx"
 
-    add_index :<%= hierarchy_table_name -%>, [:descendant_id],
+    add_index :<%= migration_name -%>, [:descendant_id],
       name: "<%= file_name %>_desc_idx"
   end
 end
