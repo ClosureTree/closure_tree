@@ -12,18 +12,17 @@ gemfile:
   - gemfiles/activerecord_3.2.gemfile
   - gemfiles/activerecord_4.0.gemfile
   - gemfiles/activerecord_4.1.gemfile
-#  - gemfiles/activerecord_edge.gemfile
+  - gemfiles/activerecord_edge.gemfile
 
 env:
-#  - DB=sqlite
+  - DB=sqlite
   - DB=mysql
-#  - DB=postgresql
+  - DB=postgresql
 
-#addons:
-#  postgresql: "9.3"
+addons:
+  postgresql: "9.3"
 
-script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rake --trace spec:generators
-#script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rake --trace spec:all
+script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rake --trace spec:all
 
 matrix:
   allow_failures:
