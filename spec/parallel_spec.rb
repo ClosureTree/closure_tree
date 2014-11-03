@@ -11,21 +11,26 @@ def max_threads
   5
 end
 
+
 class WorkerBase
   extend Forwardable
   attr_reader :name
   def_delegators :@thread, :join, :wakeup, :status, :to_s
+
+  def log(msg)
+    puts("#{Thread.current}: #{msg}") if ENV['VERBOSE']
+  end
 
   def initialize(target, name)
     @target = target
     @name = name
     @thread = Thread.new do
       ActiveRecord::Base.connection_pool.with_connection { before_work } if respond_to? :before_work
-      puts "#{Thread.current} going to sleep..."
+      log 'going to sleep...'
       sleep
-      puts "#{Thread.current} woke up..."
+      log 'woke up...'
       ActiveRecord::Base.connection_pool.with_connection { work }
-      puts "#{Thread.current} done..."
+      log 'done.'
     end
   end
 end
@@ -33,9 +38,9 @@ end
 class FindOrCreateWorker < WorkerBase
   def work
     path = [name, :a, :b, :c]
-    puts "#{Thread.current} making #{path}..."
+    log "making #{path}..."
     t = (@target || Tag).find_or_create_by_path(path)
-    puts "#{Thread.current} made #{t.id}, #{t.ancestry_path}"
+    log "made #{t.id}, #{t.ancestry_path}"
   end
 end
 
@@ -43,6 +48,10 @@ describe 'Concurrent creation' do
   before :each do
     @target = nil
     @iterations = 5
+  end
+
+  def log(msg)
+    puts(msg) if ENV['VERBOSE']
   end
 
   def run_workers(worker_class = FindOrCreateWorker)
@@ -55,17 +64,17 @@ describe 'Concurrent creation' do
         if unready_workers.empty?
           break
         else
-          puts "Not ready to wakeup: #{unready_workers.map { |ea| [ea.to_s, ea.status] }}"
+          log "Not ready to wakeup: #{unready_workers.map { |ea| [ea.to_s, ea.status] }}"
           sleep(0.1)
         end
       end
       sleep(0.25)
       # OK, GO!
-      puts 'Calling .wakeup on all workers...'
+      log 'Calling .wakeup on all workers...'
       workers.each(&:wakeup)
       sleep(0.25)
       # Then wait for them to finish:
-      puts 'Calling .join on all workers...'
+      log 'Calling .join on all workers...'
       workers.each(&:join)
     end
     # Ensure we're still connected:
@@ -160,7 +169,7 @@ describe 'Concurrent creation' do
     Parallel.map(emails, :in_threads => max_threads) do |email|
       ActiveRecord::Base.connection_pool.with_connection do
         User.transaction do
-          puts "Destroying #{email}..."
+          log "Destroying #{email}..."
           User.where(email: email).destroy_all
         end
       end
