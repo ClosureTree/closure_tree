@@ -4,8 +4,8 @@ require 'forwardable'
 
 module ClosureTree
   module Generators # :nodoc:
-    class MigrationGenerator < ::Rails::Generators::NamedBase # :nodoc:
-      include ActiveRecord::Generators::Migration
+    class MigrationGenerator < Rails::Generators::NamedBase # :nodoc:
+      include Rails::Generators::Migration
       extend Forwardable
       def_delegators :ct, :hierarchy_table_name, :primary_key_type
 
@@ -16,6 +16,8 @@ module ClosureTree
       def create_migration_file
         migration_template 'create_hierarchies_table.rb.erb', "db/migrate/create_#{ct.hierarchy_table_name}.rb"
       end
+
+      private
 
       def migration_class_name
         "Create#{ct.hierarchy_table_name.camelize}"
@@ -31,6 +33,10 @@ module ClosureTree
         else
           fail "Please RTFM and add the `has_closure_tree` (or `acts_as_tree`) annotation to #{class_name} before creating the migration."
         end
+      end
+
+      def self.next_migration_number(dirname)
+        ActiveRecord::Generators::Base.next_migration_number(dirname)
       end
     end
   end
