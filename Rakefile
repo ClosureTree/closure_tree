@@ -12,7 +12,9 @@ YARD::Rake::YardocTask.new do |t|
 end
 
 require "rspec/core/rake_task"
-RSpec::Core::RakeTask.new(:spec)
+RSpec::Core::RakeTask.new(:spec) do |task|
+  task.pattern = 'spec/*_spec.rb'
+end
 
 task :default => :spec
 
@@ -33,6 +35,6 @@ namespace :spec do
 
   desc 'Run generator specs'
   RSpec::Core::RakeTask.new(:generators) do |task|
-    task.pattern = "spec/generators/*_spec.rb"
+    task.pattern = 'spec/generators/*_spec.rb'
   end
 end
