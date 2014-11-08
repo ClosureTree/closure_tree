@@ -6,6 +6,7 @@
 * [Eduardo Turiño](https://github.com/eturino) renamed `acts_as_tree` to `has_closure_tree`. We'll 
   keep both annotations around for the forseeable future, but I think not name-colliding by default is
   strictly better. (Thanks for both the suggestion and PR!) 
+* [ruok5](https://github.com/ruok5) updated the README to clarify a heirarchy maintenance usecase. Thanks!
 * Made migrations error with a helpful message if the target didn't have the `has_closure_tree` or
   `acts_as_tree` annotation. This addresses [issue 131](https://github.com/mceachen/closure_tree/issues/131).
 
