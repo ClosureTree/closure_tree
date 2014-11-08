@@ -201,6 +201,17 @@ h.ancestry_path
 => ["a", "b", "c", "d", "e", "f", "g", "h"]
 ```
 
+When it is more convenient to simply change the `parent_id` of a node directly (for example, when dealing with a form `<select>`), closure_tree will handle the necessary changes automatically when the record is saved:
+
+```ruby
+j = Tag.find 102
+j.self_and_ancestor_ids
+=> [102, 87, 77]
+j.update parent_id: 96
+j.self_and_ancestor_ids
+=> [102, 96, 95, 78]
+```
+
 ### Nested hashes
 
 ```hash_tree``` provides a method for rendering a subtree as an
