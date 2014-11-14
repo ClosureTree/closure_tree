@@ -43,6 +43,7 @@ for a description of different tree storage algorithms.
 ## Table of Contents
 
 - [Installation](#installation)
+- [Warning](#warning)
 - [Usage](#usage)
 - [Accessing Data](#accessing-data)
 - [Polymorphic hierarchies with STI](#polymorphic-hierarchies-with-sti)
@@ -60,11 +61,15 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
 
 2.  Run `bundle install`
 
-3.  Add `acts_as_tree` to your hierarchical model:
+3.  Add `acts_as_tree` or `has_closure_tree` (alias of the same method) to your hierarchical model:
 
     ```ruby
     class Tag < ActiveRecord::Base
       acts_as_tree
+    end
+
+    class AnotherTag < ActiveRecord::Base
+      has_closure_tree
     end
     ```
 
@@ -72,6 +77,8 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
     
     Make sure you add `acts_as_tree` **after** `attr_accessible` and
     `self.table_name =` lines in your model.
+
+    If you have other hierarchical gems in your stack, `acts_as_tree` method may not be safe to use. See the [Warning](#warning) section bellow.
 
 4.  Add a migration to add a `parent_id` column to the hierarchical model.
     You may want to also [add a column for deterministic ordering of children](#sort_order), but that's optional.
@@ -100,6 +107,12 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
     `tag_hierarchies` table will be truncated and rebuilt.
 
     If you're starting from scratch you don't need to call `rebuild!`.
+
+## Warning
+
+The preferred method is `acts_as_tree`. However, other gems (like [ancestry](https://github.com/stefankroes/ancestry) or [acts_as_tree](https://github.com/amerine/acts_as_tree)) may use that method name too. If you have those gems as dependencies, use the alternative `has_closure_tree` method.
+
+Bear in mind that using multiple hierarchy gems in the same model may not be safe. In fact, it's a safe bet to assume that it will cause all sorts of pain, suffering, and havoc. Avoid it.
 
 ## Usage
 
