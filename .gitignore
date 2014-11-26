@@ -10,3 +10,4 @@ tmp/
 .yardoc/
 .rvmrc
 *.lock
+tmp/
