@@ -21,11 +21,11 @@ task :default => :spec
 namespace :spec do
   desc 'Run all spec variants'
   task :all do
-    rake = "bundle exec rake"
+    rake = 'bundle exec rake'
+    fail unless system("#{rake} spec:generators #{env}")
     [['', ''], ['db_prefix_', ''], ['', '_db_suffix'], ['abc_', '_123']].each do |prefix, suffix|
       env = "DB_PREFIX=#{prefix} DB_SUFFIX=#{suffix}"
       fail unless system("#{rake} spec #{env}")
-      fail unless system("#{rake} spec:generators #{env}")
     end
     require 'active_record/version'
     if ActiveRecord::VERSION::MAJOR == 3
