@@ -5,9 +5,7 @@ require 'ammeter/init'
 require 'generators/closure_tree/migration_generator'
 
 RSpec.describe ClosureTree::Generators::MigrationGenerator, type: :generator do
-
   TMPDIR = Dir.mktmpdir
-
   # Tell generator where to put its output
   destination TMPDIR
   before { prepare_destination }
@@ -23,19 +21,13 @@ RSpec.describe ClosureTree::Generators::MigrationGenerator, type: :generator do
   end
 
   describe 'generator output with namespaced model' do
-    before do
-      run_generator %w(Namespace::Type)
-    end
-    subject do
-      migration_file('db/migrate/create_namespace_type_hierarchies.rb')
-    end
+    before { run_generator %w(Namespace::Type) }
+    subject { migration_file('db/migrate/create_namespace_type_hierarchies.rb') }
     it { is_expected.to be_a_migration }
-    describe {
-      it { is_expected.to contain(/t.integer :ancestor_id, null: false/) }
-      it { is_expected.to contain(/t.integer :descendant_id, null: false/) }
-      it { is_expected.to contain(/t.integer :generations, null: false/) }
-      it { is_expected.to contain(/add_index :namespace_type_hierarchies/) }
-    }
+    it { is_expected.to contain(/t.integer :ancestor_id, null: false/) }
+    it { is_expected.to contain(/t.integer :descendant_id, null: false/) }
+    it { is_expected.to contain(/t.integer :generations, null: false/) }
+    it { is_expected.to contain(/add_index :namespace_type_hierarchies/) }
   end
 
   describe 'generator output with namespaced model with /' do

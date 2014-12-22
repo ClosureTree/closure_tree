@@ -35,8 +35,6 @@ module ClosureTree
 
       def ct
         @ct ||= if target_class.respond_to?(:_ct)
-          # Without this, at the time of migration generation, the prefix and suffix may
-          # not have been set properly, causing a "no such table" error:
           target_class._ct
         else
           fail "Please RTFM and add the `has_closure_tree` (or `acts_as_tree`) annotation to #{class_name} before creating the migration."
