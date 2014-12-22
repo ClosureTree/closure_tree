@@ -4,8 +4,8 @@ language: ruby
 rvm:
   - 1.9.3
   - 2.1.5
- - rbx-2
- - jruby-19mode
+  - rbx-2
+  - jruby-19mode
 #  - ruby-head
 #  - rbx-head
 #  - jruby-head
