@@ -22,7 +22,7 @@ namespace :spec do
   desc 'Run all spec variants'
   task :all do
     rake = 'bundle exec rake'
-    fail unless system("#{rake} spec:generators #{env}")
+    fail unless system("#{rake} spec:generators")
     [['', ''], ['db_prefix_', ''], ['', '_db_suffix'], ['abc_', '_123']].each do |prefix, suffix|
       env = "DB_PREFIX=#{prefix} DB_SUFFIX=#{suffix}"
       fail unless system("#{rake} spec #{env}")
