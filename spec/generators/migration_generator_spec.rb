@@ -5,10 +5,7 @@ require 'ammeter/init'
 # Generators are not automatically loaded by Rails
 require 'generators/closure_tree/migration_generator'
 
-# Note - Tests set to pending due to failures on Travis-ci build.
-# Tests pass locally.
-
-RSpec.describe ClosureTree::Generators::MigrationGenerator, :type => :generator do
+RSpec.describe ClosureTree::Generators::MigrationGenerator, type: :generator do
 
   TMPDIR = Dir.mktmpdir
 
@@ -16,7 +13,7 @@ RSpec.describe ClosureTree::Generators::MigrationGenerator, :type => :generator 
   destination TMPDIR
   before { prepare_destination }
 
-  xdescribe 'generator output' do
+  describe 'generator output' do
     before { run_generator %w(tag) }
     subject { migration_file('db/migrate/create_tag_hierarchies.rb') }
     it { is_expected.to be_a_migration }
@@ -27,12 +24,14 @@ RSpec.describe ClosureTree::Generators::MigrationGenerator, :type => :generator 
   end
 
   describe 'generator output with namespaced model' do
-    before { run_generator %w(Namespace::Type) }
+    before do
+      run_generator %w(Namespace::Type)
+    end
     subject do
       migration_file('db/migrate/create_namespace_type_hierarchies.rb')
     end
     it { is_expected.to be_a_migration }
-    xdescribe {
+    describe {
       it { is_expected.to contain(/t.integer :ancestor_id, null: false/) }
       it { is_expected.to contain(/t.integer :descendant_id, null: false/) }
       it { is_expected.to contain(/t.integer :generations, null: false/) }
@@ -40,7 +39,7 @@ RSpec.describe ClosureTree::Generators::MigrationGenerator, :type => :generator 
     }
   end
 
-  xdescribe 'generator output with namespaced model with /' do
+  describe 'generator output with namespaced model with /' do
     before { run_generator %w(namespace/type) }
     subject { migration_file('db/migrate/create_namespace_type_hierarchies.rb') }
     it { is_expected.to be_a_migration }
@@ -50,7 +49,7 @@ RSpec.describe ClosureTree::Generators::MigrationGenerator, :type => :generator 
     it { is_expected.to contain(/add_index :namespace_type_hierarchies/) }
   end
 
-  xit 'should run all tasks in generator without errors' do
+  it 'should run all tasks in generator without errors' do
     gen = generator %w(tag)
     expect(gen).to receive :create_migration_file
     capture(:stdout) { gen.invoke_all }

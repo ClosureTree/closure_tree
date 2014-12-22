@@ -1,6 +1,7 @@
 require 'closure_tree/support_flags'
 require 'closure_tree/support_attributes'
 require 'closure_tree/numeric_order_support'
+require 'closure_tree/active_record_support'
 require 'with_advisory_lock'
 
 # This class and mixins are an effort to reduce the namespace pollution to models that act_as_tree.
@@ -8,6 +9,7 @@ module ClosureTree
   class Support
     include ClosureTree::SupportFlags
     include ClosureTree::SupportAttributes
+    include ClosureTree::ActiveRecordSupport
 
     attr_reader :model_class
     attr_reader :options
@@ -91,15 +93,6 @@ module ClosureTree
         [lambda { order(order_options) }, opts.except(:order)]
       else
         [with_order_option(opts)]
-      end
-    end
-
-    def remove_prefix_and_suffix(table_name)
-      pre, suff = ActiveRecord::Base.table_name_prefix, ActiveRecord::Base.table_name_suffix
-      if table_name.start_with?(pre) && table_name.end_with?(suff)
-        table_name[pre.size..-(suff.size + 1)]
-      else
-        table_name
       end
     end
 
