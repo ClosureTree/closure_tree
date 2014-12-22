@@ -1,4 +1,3 @@
-ENV['DB_PREFIX'] = 'foo_'
 require 'spec_helper'
 require 'ammeter/init'
 
