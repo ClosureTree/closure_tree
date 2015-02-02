@@ -1,5 +1,5 @@
 require 'spec_helper'
-
+require 'debugger'
 shared_examples_for Tag do
 
   let (:tag_class) { described_class }
@@ -502,12 +502,25 @@ shared_examples_for Tag do
       before :each do
         @b = tag_class.find_or_create_by_path %w(a b)
         @a = @b.parent
+        @a2 = tag_class.create
         @b2 = tag_class.find_or_create_by_path %w(a b2)
         @d1 = @b.find_or_create_by_path %w(c1 d1)
         @c1 = @d1.parent
         @d2 = @b.find_or_create_by_path %w(c2 d2)
         @c2 = @d2.parent
-        @full_tree = {@a => {@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}, @b2 => {}}}
+        #@full_tree = {@a => {@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}, @b2 => {}}}
+        
+        # We need to take into consideration multiple roots
+        # in one table, this is inferred from your example
+        # in the readme under "Moving nodes around the tree"
+        # where you specifically create two seperate trees,
+        # each having it's own root, as shown below.
+        @full_tree = {@a => {@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}, @b2 => {}}, @a2 => {}}
+        # All respective previous tests have been updated. 
+        # The current gem accommodates the need for multiple 
+        # trees in a given table in all test cases, 
+        # except for the newest test.
+
         #File.open("example.dot", "w") { |f| f.write(tag_class.root.to_dot_digraph) }
       end
 
@@ -516,19 +529,23 @@ shared_examples_for Tag do
           expect(tag_class.hash_tree(limit_depth: 0)).to eq({})
         end
         it "limit_depth 1" do
-          expect(tag_class.hash_tree(limit_depth: 1)).to eq({@a => {}})
+          expect(tag_class.hash_tree(limit_depth: 1)).to eq({@a => {}, @a2 => {}})
         end
         it "limit_depth 2" do
-          expect(tag_class.hash_tree(limit_depth: 2)).to eq({@a => {@b => {}, @b2 => {}}})
+          expect(tag_class.hash_tree(limit_depth: 2)).to eq({@a => {@b => {}, @b2 => {}}, @a2 => {}})
         end
         it "limit_depth 3" do
-          expect(tag_class.hash_tree(limit_depth: 3)).to eq({@a => {@b => {@c1 => {}, @c2 => {}}, @b2 => {}}})
+          expect(tag_class.hash_tree(limit_depth: 3)).to eq({@a => {@b => {@c1 => {}, @c2 => {}}, @b2 => {}}, @a2 => {}})
         end
         it "limit_depth 4" do
           expect(tag_class.hash_tree(limit_depth: 4)).to eq(@full_tree)
         end
         it "no limit holdum" do
           expect(tag_class.hash_tree).to eq(@full_tree)
+        end
+        # AR Association Test
+        it "no limit holdumn from chained activerecord association subroots" do
+          expect(@a.children.hash_tree).to eq({@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}, @b2 => {}})
         end
       end
 
@@ -583,7 +600,7 @@ shared_examples_for Tag do
           expect(@b.hash_tree).to eq({@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}})
         end
         it "no limit holdum from root" do
-          expect(@a.hash_tree).to eq(@full_tree)
+          expect(@a.hash_tree.merge(@a2.hash_tree)).to eq(@full_tree)
         end
       end
     end
