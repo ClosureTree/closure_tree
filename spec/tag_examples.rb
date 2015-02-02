@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'debugger'
+#require 'debugger'
 shared_examples_for Tag do
 
   let (:tag_class) { described_class }
