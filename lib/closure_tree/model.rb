@@ -97,7 +97,7 @@ module ClosureTree
     # to the +name_column+.
     # (so child.ancestry_path == +%w{grandparent parent child}+
     def ancestry_path(to_s_column = _ct.name_column)
-      self_and_ancestors.reverse.map { |n| n.send to_s_column.to_sym }
+      self_and_ancestors.map { |n| n.send to_s_column.to_sym }.reverse
     end
 
     def child_ids
