@@ -75,8 +75,8 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
 
     Make sure you check out the [large number options](#available-options) that `has_closure_tree` accepts.
     
-    Make sure you add `has_closure_tree` **after** `attr_accessible` and
-    `self.table_name =` lines in your model.
+    **IMPORTANT: Make sure you add `has_closure_tree` _after_ `attr_accessible` and
+    `self.table_name =` lines in your model.**
 
     If you're already using other hierarchical gems, like `ancestry` or `acts_as_tree`, please refer
     to the [warning section](#warning)!
