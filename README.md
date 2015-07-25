@@ -562,7 +562,7 @@ Closure tree is [tested under every valid combination](http://travis-ci.org/#!/m
 * Ruby 1.9.3, 2.1.2 (and sometimes head)
 * Rubinius 2.2.1+ (and sometimes head)
 * jRuby 1.9mode (and sometimes head)
-* The latest Rails 3.2, 4.0, 4.1 and master branches
+* The latest Rails 3.2, 4.0, 4.1, 4.2 and master branches
 * Concurrency tests for MySQL and PostgreSQL. SQLite is tested in a single-threaded environment.
 
 Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
