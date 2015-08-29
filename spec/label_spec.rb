@@ -56,9 +56,9 @@ describe Label do
       b = a.add_child Label.new(name: 'b')
       c = b.add_child Label.new(name: 'c')
       a.destroy
-      expect(Label.exists?(a)).to be_falsey
-      expect(Label.exists?(b)).to be_falsey
-      expect(Label.exists?(c)).to be_falsey
+      expect(Label.exists?(a.id)).to be_falsey
+      expect(Label.exists?(b.id)).to be_falsey
+      expect(Label.exists?(c.id)).to be_falsey
     end
 
     it "properly destroys descendents created with <<" do
@@ -68,9 +68,9 @@ describe Label do
       c = Label.new(name: 'c')
       b.children << c
       a.destroy
-      expect(Label.exists?(a)).to be_falsey
-      expect(Label.exists?(b)).to be_falsey
-      expect(Label.exists?(c)).to be_falsey
+      expect(Label.exists?(a.id)).to be_falsey
+      expect(Label.exists?(b.id)).to be_falsey
+      expect(Label.exists?(c.id)).to be_falsey
     end
   end
 
