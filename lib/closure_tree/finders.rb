@@ -79,6 +79,8 @@ module ClosureTree
           INNER JOIN (
             SELECT ancestor_id
             FROM #{_ct.quoted_hierarchy_table_name}
+            INNER JOIN (#{self.all.to_sql}) AS outer_table
+              ON outer_table.#{primary_key} = #{_ct.quoted_hierarchy_table_name}.ancestor_id
             GROUP BY 1
             HAVING MAX(#{_ct.quoted_hierarchy_table_name}.generations) = 0
           ) AS leaves ON (#{_ct.quoted_table_name}.#{primary_key} = leaves.ancestor_id)
