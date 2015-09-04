@@ -82,7 +82,7 @@ Note that closure_tree only supports Rails 3.2 and later, and has test coverage 
     to the [warning section](#warning)!
 
 4.  Add a migration to add a `parent_id` column to the hierarchical model.
-    You may want to also [add a column for deterministic ordering of children](#sort_order), but that's optional.
+    You may want to also [add a column for deterministic ordering of children](#deterministic-ordering), but that's optional.
 
     ```ruby
     class AddParentIdToTag < ActiveRecord::Migration
