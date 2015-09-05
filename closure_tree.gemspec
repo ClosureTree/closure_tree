@@ -28,6 +28,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'timecop'
   gem.add_development_dependency 'parallel'
   gem.add_development_dependency 'ammeter', '~> 1.1.2'
+  gem.add_development_dependency 'test-unit', '~> 3.0'
   # gem.add_development_dependency 'byebug'
   # gem.add_development_dependency 'ruby-prof' # <- don't need this normally.
 end
