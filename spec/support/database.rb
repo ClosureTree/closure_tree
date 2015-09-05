@@ -35,7 +35,8 @@ begin
 end unless ENV['NONUKES']
 
 ActiveRecord::Base.establish_connection(config)
-Foreigner.load
+# Drop this when support for ActiveRecord 4.1 is removed
+Foreigner.load if defined?(Foreigner)
 
 require "#{database_folder}/schema"
 require "#{database_folder}/models"
