@@ -27,13 +27,6 @@ module ClosureTree
 
     def self_and_descendants_preordered
       # TODO: raise NotImplementedError if sort_order is not numeric and not null?
-      h = _ct.connection.select_one(<<-SQL)
-        SELECT
-          count(*) as total_descendants,
-          max(generations) as max_depth
-        FROM #{_ct.quoted_hierarchy_table_name}
-        WHERE ancestor_id = #{_ct.quote(self.id)}
-      SQL
       join_sql = <<-SQL
         JOIN #{_ct.quoted_hierarchy_table_name} anc_hier
           ON anc_hier.descendant_id = #{_ct.quoted_hierarchy_table_name}.descendant_id
@@ -42,20 +35,35 @@ module ClosureTree
         JOIN #{_ct.quoted_hierarchy_table_name} depths
           ON depths.ancestor_id = #{_ct.quote(self.id)} AND depths.descendant_id = anc.#{_ct.quoted_id_column_name}
       SQL
-      node_score = "(1 + anc.#{_ct.quoted_order_column(false)}) * " +
-        "power(#{h['total_descendants']}, #{h['max_depth'].to_i + 1} - depths.generations)"
-      order_by = "sum(#{node_score})"
-      self_and_descendants.joins(join_sql).group("#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name}").reorder(order_by)
+
+      self_and_descendants
+        .joins(join_sql)
+        .group("#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name}")
+        .reorder(_ct_sum_order_by(self))
     end
 
     module ClassMethods
-      def roots_and_descendants_preordered
-        h = _ct.connection.select_one(<<-SQL.strip_heredoc)
+
+      # If node is nil, order the whole tree.
+      def _ct_sum_order_by(node = nil)
+        stats_sql = <<-SQL.strip_heredoc
           SELECT
             count(*) as total_descendants,
             max(generations) as max_depth
           FROM #{_ct.quoted_hierarchy_table_name}
         SQL
+        stats_sql += " WHERE ancestor_id = #{_ct.quote(node.id)}" if node
+        h = _ct.connection.select_one(stats_sql)
+
+        depth_column = node ? 'depths.generations' : 'depths.max_depth'
+
+        node_score = "(1 + anc.#{_ct.quoted_order_column(false)}) * " +
+          "power(#{h['total_descendants']}, #{h['max_depth'].to_i + 1} - #{depth_column})"
+
+        "sum(#{node_score})"
+      end
+
+      def roots_and_descendants_preordered
         join_sql = <<-SQL.strip_heredoc
           JOIN #{_ct.quoted_hierarchy_table_name} anc_hier
             ON anc_hier.descendant_id = #{_ct.quoted_table_name}.#{_ct.quoted_id_column_name}
@@ -67,10 +75,9 @@ module ClosureTree
             GROUP BY 1
           ) AS depths ON depths.descendant_id = anc.#{_ct.quoted_id_column_name}
         SQL
-        node_score = "(1 + anc.#{_ct.quoted_order_column(false)}) * " +
-          "power(#{h['total_descendants']}, #{h['max_depth'].to_i + 1} - depths.max_depth)"
-        order_by = "sum(#{node_score})"
-        joins(join_sql).group("#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name}").reorder(order_by)
+        joins(join_sql)
+          .group("#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name}")
+          .reorder(_ct_sum_order_by)
       end
     end
 
