@@ -480,7 +480,7 @@ the spec ```tag_spec.rb```:
       Tag.rebuild! # <- required if you use fixtures
     end
 ```
-`
+
 **However, if you're just starting with Rails, may I humbly suggest you adopt a factory library**,
 rather than using fixtures? [Lots of people have written about this already](https://www.google.com/search?q=fixtures+versus+factories).
 
