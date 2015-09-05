@@ -1,7 +1,8 @@
 # Changelog
 
 ### 6.0.0.alpha
-* Drop support for unsupported version of Rails
+* Drop support for unsupported versions of Rails, 3.2 and 4.0.
+* Drop support for Ruby 1.9 and JRuby 1.9
 
 ### 5.2.0
 

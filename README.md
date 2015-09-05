@@ -552,7 +552,7 @@ See the [change log](https://github.com/mceachen/closure_tree/blob/master/CHANGE
 
 ## Thanks to
 
-* The more than 20 engineers around the world that have contributed their time and code to this gem
+* The more than 30 engineers around the world that have contributed their time and code to this gem
   (see the [changelog](https://github.com/mceachen/closure_tree/blob/master/CHANGELOG.md)!)
 * https://github.com/collectiveidea/awesome_nested_set
 * https://github.com/patshaughnessy/class_factory
