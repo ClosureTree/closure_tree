@@ -3,11 +3,10 @@ sudo: false
 language: ruby
 rvm:
   - 2.2.1
-  - rbx-2
-  - jruby-19mode
+#  - rbx-2
 #  - ruby-head
 #  - rbx-head
-#  - jruby-head
+  - jruby-head
 
 gemfile:
   - gemfiles/activerecord_3.2.gemfile
@@ -21,8 +20,8 @@ env:
   - DB=mysql
   - DB=postgresql
 
-addons:
-  postgresql: "9.3"
+#addons:
+#  postgresql: "9.3"
 
 script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rake --trace spec:all
 
