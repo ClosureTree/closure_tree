@@ -23,10 +23,6 @@ script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rake --trace spec:a
 matrix:
   allow_failures:
     - gemfile: gemfiles/activerecord_edge.gemfile
-    - rvm: rbx-2
-    - rvm: jruby-19mode
-    - rvm: ruby-head
-    - rvm: rbx-head
     - rvm: jruby-head
 
   exclude:
