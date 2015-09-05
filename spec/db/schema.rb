@@ -7,8 +7,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.string "title"
     t.integer "parent_id"
     t.integer "sort_order"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.timestamps null: false
   end
 
   add_foreign_key(:tags, :tags, :column => 'parent_id')
@@ -28,8 +27,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.string "title"
     t.string "parent_uuid"
     t.integer "sort_order"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.timestamps null: false
   end
 
   create_table "uuid_tag_hierarchies", :id => false do |t|
@@ -48,8 +46,7 @@ ActiveRecord::Schema.define(:version => 0) do
   create_table "users" do |t|
     t.string "email"
     t.integer "referrer_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.timestamps null: false
   end
 
   add_foreign_key(:users, :users, :column => 'referrer_id')
@@ -129,7 +126,7 @@ ActiveRecord::Schema.define(:version => 0) do
   create_table 'menu_items' do |t|
     t.string 'name'
     t.integer 'parent_id'
-    t.timestamps
+    t.timestamps null: false
   end
 
   add_foreign_key(:menu_items, :menu_items, :column => 'parent_id')

@@ -21,7 +21,7 @@ Gem::Specification.new do |gem|
 
   gem.add_development_dependency 'yard'
   gem.add_development_dependency 'rspec-instafail'
-  gem.add_development_dependency 'rspec-rails', '>= 3.1'
+  gem.add_development_dependency 'rspec-rails', '~> 3.2.3'
   gem.add_development_dependency 'uuidtools'
   gem.add_development_dependency 'database_cleaner'
   gem.add_development_dependency 'appraisal'
