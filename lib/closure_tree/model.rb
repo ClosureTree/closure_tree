@@ -11,9 +11,6 @@ module ClosureTree
                  inverse_of: :children,
                  touch: _ct.options[:touch]
 
-      # TODO, remove when activerecord 3.2 support is dropped
-      attr_accessible :parent if _ct.use_attr_accessible?
-
       order_by_generations = "#{_ct.quoted_hierarchy_table_name}.generations asc"
 
       has_many :children, *_ct.has_many_with_order_option(

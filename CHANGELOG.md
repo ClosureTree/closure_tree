@@ -1,5 +1,8 @@
 # Changelog
 
+### 6.0.0.alpha
+* Drop support for unsupported version of Rails
+
 ### 5.2.0
 
 * [Eduardo Turiño](https://github.com/eturino) renamed `acts_as_tree` to `has_closure_tree`. We'll

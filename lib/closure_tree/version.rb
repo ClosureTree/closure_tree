@@ -1,3 +1,3 @@
 module ClosureTree
-  VERSION = Gem::Version.new('5.2.0') unless defined?(::ClosureTree::VERSION)
+  VERSION = Gem::Version.new('6.0.0.alpha')
 end

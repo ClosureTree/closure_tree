@@ -3,13 +3,9 @@ sudo: false
 language: ruby
 rvm:
   - 2.2
-#  - rbx-2
-#  - ruby-head
-#  - rbx-head
   - jruby-head
 
 gemfile:
-  - gemfiles/activerecord_4.0.gemfile
   - gemfiles/activerecord_4.1.gemfile
   - gemfiles/activerecord_4.2.gemfile
   - gemfiles/activerecord_edge.gemfile
@@ -34,7 +30,5 @@ matrix:
     - rvm: jruby-head
 
   exclude:
-    - rvm: ruby-head
-      gemfile: gemfiles/activerecord_4.0.gemfile
     - rvm: ruby-head
       gemfile: gemfiles/activerecord_4.1.gemfile

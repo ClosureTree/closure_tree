@@ -1,9 +1,6 @@
-require 'uuidtools'
-
 class Tag < ActiveRecord::Base
   has_closure_tree :dependent => :destroy, :order => :name
   before_destroy :add_destroyed_tag
-  attr_accessible :name, :title if _ct.use_attr_accessible?
 
   def to_s
     name
@@ -20,10 +17,9 @@ class UUIDTag < ActiveRecord::Base
   before_create :set_uuid
   has_closure_tree dependent: :destroy, order: 'name', parent_column_name: 'parent_uuid'
   before_destroy :add_destroyed_tag
-  attr_accessible :name, :title if _ct.use_attr_accessible?
 
   def set_uuid
-    self.uuid = UUIDTools::UUID.timestamp_create.to_s
+    self.uuid = SecureRandom.uuid
   end
 
   def to_s
@@ -37,7 +33,6 @@ class UUIDTag < ActiveRecord::Base
 end
 
 class DestroyedTag < ActiveRecord::Base
-  attr_accessible :name if Tag._ct.use_attr_accessible?
 end
 
 class User < ActiveRecord::Base
@@ -51,8 +46,6 @@ class User < ActiveRecord::Base
   def indirect_contracts
     Contract.where(:user_id => descendant_ids)
   end
-
-  attr_accessible :email, :referrer if _ct.use_attr_accessible?
 
   def to_s
     email
@@ -68,8 +61,6 @@ class Label < ActiveRecord::Base
   acts_as_tree :order => :column_whereby_ordering_is_inferred, # <- symbol, and not "sort_order"
     :parent_column_name => "mother_id",
     :dependent => :destroy
-
-  attr_accessible :name if _ct.use_attr_accessible?
 
   def to_s
     "#{self.class}: #{name}"
@@ -95,7 +86,6 @@ module Namespace
   end
   class Type < ActiveRecord::Base
     has_closure_tree dependent: :destroy
-    attr_accessible :name if _ct.use_attr_accessible?
   end
 end
 

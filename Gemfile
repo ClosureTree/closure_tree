@@ -1,5 +1,4 @@
 source 'https://rubygems.org'
-gem 'foreigner', :git => 'https://github.com/matthuhiggins/foreigner.git'
 
 platforms :ruby, :rbx do
   gem 'mysql2'
