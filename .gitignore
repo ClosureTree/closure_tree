@@ -11,3 +11,4 @@ tmp/
 .rvmrc
 *.lock
 tmp/
+.ruby-version
