@@ -22,7 +22,7 @@ module ClosureTree
         :name_column => 'name',
         :with_advisory_lock => true
       }.merge(options)
-      raise IllegalArgumentException, "name_column can't be 'path'" if options[:name_column] == 'path'
+      raise ArgumentError, "name_column can't be 'path'" if options[:name_column] == 'path'
       if order_is_numeric?
         extend NumericOrderSupport.adapter_for_connection(connection)
       end
@@ -80,20 +80,12 @@ module ClosureTree
 
     # lambda-ize the order, but don't apply the default order_option
     def has_many_without_order_option(opts)
-      if ActiveRecord::VERSION::MAJOR > 3
         [lambda { order(opts[:order]) }, opts.except(:order)]
-      else
-        [opts]
-      end
     end
 
     def has_many_with_order_option(opts)
-      if ActiveRecord::VERSION::MAJOR > 3
-        order_options = [opts[:order], order_by].compact
-        [lambda { order(order_options) }, opts.except(:order)]
-      else
-        [with_order_option(opts)]
-      end
+      order_options = [opts[:order], order_by].compact
+      [lambda { order(order_options) }, opts.except(:order)]
     end
 
     def ids_from(scope)
