@@ -19,9 +19,9 @@ module ClosureTree
         output << "digraph G {\n"
         tree_scope.each do |ea|
           if id_to_instance.key? ea._ct_parent_id
-            output << "  #{ea._ct_parent_id} -> #{ea._ct_id}\n"
+            output << "  \"#{ea._ct_parent_id}\" -> \"#{ea._ct_id}\"\n"
           end
-          output << "  #{ea._ct_id} [label=\"#{ea.to_digraph_label}\"]\n"
+          output << "  \"#{ea._ct_id}\" [label=\"#{ea.to_digraph_label}\"]\n"
         end
         output << "}\n"
         output.string

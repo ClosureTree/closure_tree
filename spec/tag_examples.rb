@@ -610,17 +610,17 @@ shared_examples_for Tag do
         dot = tag_class.roots.first.to_dot_digraph
         expect(dot).to eq <<-DOT
 digraph G {
-  #{a} [label="a"]
-  #{a} -> #{b1}
-  #{b1} [label="b1"]
-  #{a} -> #{b2}
-  #{b2} [label="b2"]
-  #{b1} -> #{c1}
-  #{c1} [label="c1"]
-  #{b2} -> #{c2}
-  #{c2} [label="c2"]
-  #{b2} -> #{c3}
-  #{c3} [label="c3"]
+  "#{a}" [label="a"]
+  "#{a}" -> "#{b1}"
+  "#{b1}" [label="b1"]
+  "#{a}" -> "#{b2}"
+  "#{b2}" [label="b2"]
+  "#{b1}" -> "#{c1}"
+  "#{c1}" [label="c1"]
+  "#{b2}" -> "#{c2}"
+  "#{c2}" [label="c2"]
+  "#{b2}" -> "#{c3}"
+  "#{c3}" [label="c3"]
 }
         DOT
       end
