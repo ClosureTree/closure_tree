@@ -26,7 +26,7 @@ closure_tree has some great features:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
 * __Support for [concurrency](#concurrency)__ (using [with_advisory_lock](https://github.com/mceachen/with_advisory_lock))
-* __Support for Rails 4.1, 4.2 and 5.0.alpha__
+* __Support for ActiveRecord 4.1, 4.2 and 5.0.alpha__
 * __Support for Ruby 2.2 and JRuby 9000__
 * Support for reparenting children (and all their descendants)
 * Support for [single-table inheritance (STI)](#sti) within the hierarchy
@@ -55,7 +55,7 @@ for a description of different tree storage algorithms.
 
 ## Installation
 
-Note that closure_tree only supports Rails 3.2 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
+Note that closure_tree only supports ActiveRecord 4.1 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
 
 1.  Add `gem 'closure_tree'` to your Gemfile 
 
@@ -339,27 +339,6 @@ class WhereTag < Tag ; end
 class WhatTag < Tag ; end
 ```
 
-Please note that Rails (<= 3.2) doesn't handle polymorphic associations correctly if
-you use the ```:type``` attribute, so **this doesn't work**:
-
-```ruby
-# BAD: ActiveRecord ignores the :type attribute:
-root.children.create(name: "child", type: "WhenTag")
-```
-
-Instead, use either ```.add_child``` or ```children <<```:
-
-```ruby
-# GOOD!
-a = Tag.create!(name: "a")
-b = WhenTag.new(name: "b")
-a.children << b
-c = WhatTag.new(name: "c")
-b.add_child(c)
-```
-
-See [issue 43](https://github.com/mceachen/closure_tree/issues/43) for more information.
-
 ## Deterministic ordering
 
 By default, children will be ordered by your database engine, which may not be what you want.
@@ -559,10 +538,9 @@ end
 
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
 
-* Ruby 1.9.3, 2.1.2 (and sometimes head)
-* Rubinius 2.2.1+ (and sometimes head)
-* jRuby 1.9mode (and sometimes head)
-* The latest Rails 3.2, 4.0, 4.1, 4.2 and master branches
+* Ruby 2.2 (and sometimes head)
+* jRuby 9000 (and sometimes head)
+* The latest ActiveRecord 4.1, 4.2, and master branch
 * Concurrency tests for MySQL and PostgreSQL. SQLite is tested in a single-threaded environment.
 
 Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
