@@ -39,7 +39,7 @@ module ClosureTree
       self_and_descendants
         .joins(join_sql)
         .group("#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name}")
-        .reorder(_ct_sum_order_by(self))
+        .reorder(self.class._ct_sum_order_by(self))
     end
 
     module ClassMethods
