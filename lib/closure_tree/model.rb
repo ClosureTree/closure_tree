@@ -17,7 +17,14 @@ module ClosureTree
         class_name: _ct.model_class.to_s,
         foreign_key: _ct.parent_column_name,
         dependent: _ct.options[:dependent],
-        inverse_of: :parent)
+        inverse_of: :parent) do
+          # We have to redefine hash_tree because the activerecord relation is already scoped to parent_id.
+          def hash_tree(options = {})
+            # we want limit_depth + 1 because we don't do self_and_descendants.
+            limit_depth = options[:limit_depth]
+            _ct.hash_tree(@association.owner.descendants, limit_depth ? limit_depth + 1 : nil)
+          end
+        end
 
       has_many :ancestor_hierarchies, *_ct.has_many_without_order_option(
         class_name: _ct.hierarchy_class_name,

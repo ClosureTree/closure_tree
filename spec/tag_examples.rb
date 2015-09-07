@@ -1,5 +1,5 @@
 require 'spec_helper'
-#require 'debugger'
+
 shared_examples_for Tag do
 
   let (:tag_class) { described_class }
@@ -20,25 +20,25 @@ shared_examples_for Tag do
     end
 
     it 'should have a correct parent column name' do
-      expected_parent_column_name = tag_class == UUIDTag ? "parent_uuid" : "parent_id"
+      expected_parent_column_name = tag_class == UUIDTag ? 'parent_uuid' : 'parent_id'
       expect(tag_class._ct.parent_column_name).to eq(expected_parent_column_name)
     end
   end
 
-  describe "from empty db" do
+  describe 'from empty db' do
 
-    context "with no tags" do
-      it "should return no entities" do
+    context 'with no tags' do
+      it 'should return no entities' do
         expect(tag_class.roots).to be_empty
         expect(tag_class.leaves).to be_empty
       end
 
-      it "#find_or_create_by_path with strings" do
+      it '#find_or_create_by_path with strings' do
         a = tag_class.create!(name: 'a')
         expect(a.find_or_create_by_path(%w{b c}).ancestry_path).to eq(%w{a b c})
       end
 
-      it "#find_or_create_by_path with hashes" do
+      it '#find_or_create_by_path with hashes' do
         a = tag_class.create!(name: 'a', title: 'A')
         subject = a.find_or_create_by_path([
           {name: 'b', title: 'B'},
@@ -49,16 +49,16 @@ shared_examples_for Tag do
       end
     end
 
-    context "with 1 tag" do
+    context 'with 1 tag' do
       before do
-        @tag = tag_class.create!(name: "tag")
+        @tag = tag_class.create!(name: 'tag')
       end
 
-      it "should be a leaf" do
+      it 'should be a leaf' do
         expect(@tag.leaf?).to be_truthy
       end
 
-      it "should be a root" do
+      it 'should be a root' do
         expect(@tag.root?).to be_truthy
       end
 
@@ -66,13 +66,13 @@ shared_examples_for Tag do
         expect(@tag.parent).to be_nil
       end
 
-      it "should return the only entity as a root and leaf" do
+      it 'should return the only entity as a root and leaf' do
         expect(tag_class.all).to eq([@tag])
         expect(tag_class.roots).to eq([@tag])
         expect(tag_class.leaves).to eq([@tag])
       end
 
-      context "with child" do
+      context 'with child' do
         before do
           @child = tag_class.create!(name: 'tag 2')
         end
@@ -90,13 +90,13 @@ shared_examples_for Tag do
           expect(@tag.reload.children.to_a).to eq([@child])
         end
 
-        it "adds children through add_child" do
+        it 'adds children through add_child' do
           @tag.add_child @child
           assert_roots_and_leaves
           assert_parent_and_children
         end
 
-        it "adds children through collection" do
+        it 'adds children through collection' do
           @tag.children << @child
           assert_roots_and_leaves
           assert_parent_and_children
@@ -104,48 +104,48 @@ shared_examples_for Tag do
       end
     end
 
-    context "with 2 tags" do
+    context 'with 2 tags' do
       before :each do
-        @root = tag_class.create!(name: "root")
-        @leaf = @root.add_child(tag_class.create!(name: "leaf"))
+        @root = tag_class.create!(name: 'root')
+        @leaf = @root.add_child(tag_class.create!(name: 'leaf'))
       end
-      it "should return a simple root and leaf" do
+      it 'should return a simple root and leaf' do
         expect(tag_class.roots).to eq([@root])
         expect(tag_class.leaves).to eq([@leaf])
       end
-      it "should return child_ids for root" do
+      it 'should return child_ids for root' do
         expect(@root.child_ids).to eq([@leaf.id])
       end
 
-      it "should return an empty array for leaves" do
+      it 'should return an empty array for leaves' do
         expect(@leaf.child_ids).to be_empty
       end
     end
 
-    context "3 tag collection.create db" do
+    context '3 tag collection.create db' do
       before :each do
-        @root = tag_class.create! name: "root"
-        @mid = @root.children.create! name: "mid"
-        @leaf = @mid.children.create! name: "leaf"
+        @root = tag_class.create! name: 'root'
+        @mid = @root.children.create! name: 'mid'
+        @leaf = @mid.children.create! name: 'leaf'
         DestroyedTag.delete_all
       end
 
-      it "should create all tags" do
+      it 'should create all tags' do
         expect(tag_class.all.to_a).to match_array([@root, @mid, @leaf])
       end
 
-      it "should return a root and leaf without middle tag" do
+      it 'should return a root and leaf without middle tag' do
         expect(tag_class.roots).to eq([@root])
         expect(tag_class.leaves).to eq([@leaf])
       end
 
-      it "should delete leaves" do
+      it 'should delete leaves' do
         tag_class.leaves.destroy_all
         expect(tag_class.roots).to eq([@root]) # untouched
         expect(tag_class.leaves).to eq([@mid])
       end
 
-      it "should delete everything if you delete the roots" do
+      it 'should delete everything if you delete the roots' do
         tag_class.roots.destroy_all
         expect(tag_class.all).to be_empty
         expect(tag_class.roots).to be_empty
@@ -167,7 +167,7 @@ shared_examples_for Tag do
       end
 
       it 'moves non-leaves' do
-        new_root = tag_class.create! name: "new_root"
+        new_root = tag_class.create! name: 'new_root'
         new_root.children << @mid
         expect(@root.reload.descendants).to be_empty
         expect(new_root.descendants).to eq([@mid, @leaf])
@@ -175,7 +175,7 @@ shared_examples_for Tag do
       end
 
       it 'moves leaves' do
-        new_root = tag_class.create! name: "new_root"
+        new_root = tag_class.create! name: 'new_root'
         new_root.children << @leaf
         expect(new_root.descendants).to eq([@leaf])
         expect(@root.reload.descendants).to eq([@mid])
@@ -183,46 +183,46 @@ shared_examples_for Tag do
       end
     end
 
-    context "3 tag explicit_create db" do
+    context '3 tag explicit_create db' do
       before :each do
-        @root = tag_class.create!(name: "root")
-        @mid = @root.add_child(tag_class.create!(name: "mid"))
-        @leaf = @mid.add_child(tag_class.create!(name: "leaf"))
+        @root = tag_class.create!(name: 'root')
+        @mid = @root.add_child(tag_class.create!(name: 'mid'))
+        @leaf = @mid.add_child(tag_class.create!(name: 'leaf'))
       end
 
-      it "should create all tags" do
+      it 'should create all tags' do
         expect(tag_class.all.to_a).to match_array([@root, @mid, @leaf])
       end
 
-      it "should return a root and leaf without middle tag" do
+      it 'should return a root and leaf without middle tag' do
         expect(tag_class.roots).to eq([@root])
         expect(tag_class.leaves).to eq([@leaf])
       end
 
-      it "should prevent parental loops from torso" do
+      it 'should prevent parental loops from torso' do
         @mid.children << @root
         expect(@root.valid?).to be_falsey
         expect(@mid.reload.children).to eq([@leaf])
       end
 
-      it "should prevent parental loops from toes" do
+      it 'should prevent parental loops from toes' do
         @leaf.children << @root
         expect(@root.valid?).to be_falsey
         expect(@leaf.reload.children).to be_empty
       end
 
-      it "should support re-parenting" do
+      it 'should support re-parenting' do
         @root.children << @leaf
         expect(tag_class.leaves).to eq([@leaf, @mid])
       end
 
-      it "cleans up hierarchy references for leaves" do
+      it 'cleans up hierarchy references for leaves' do
         @leaf.destroy
         expect(tag_hierarchy_class.where(ancestor_id: @leaf.id)).to be_empty
         expect(tag_hierarchy_class.where(descendant_id: @leaf.id)).to be_empty
       end
 
-      it "cleans up hierarchy references" do
+      it 'cleans up hierarchy references' do
         @mid.destroy
         expect(tag_hierarchy_class.where(ancestor_id: @mid.id)).to be_empty
         expect(tag_hierarchy_class.where(descendant_id: @mid.id)).to be_empty
@@ -233,17 +233,17 @@ shared_examples_for Tag do
         expect(tag_hierarchy_class.where(descendant_id: @root.id)).to eq(root_hiers)
       end
 
-      it "should have different hash codes for each hierarchy model" do
+      it 'should have different hash codes for each hierarchy model' do
         hashes = tag_hierarchy_class.all.map(&:hash)
         expect(hashes).to match_array(hashes.uniq)
       end
 
-      it "should return the same hash code for equal hierarchy models" do
+      it 'should return the same hash code for equal hierarchy models' do
         expect(tag_hierarchy_class.first.hash).to eq(tag_hierarchy_class.first.hash)
       end
     end
 
-    it "performs as the readme says it does" do
+    it 'performs as the readme says it does' do
       grandparent = tag_class.create(name: 'Grandparent')
       parent = grandparent.children.create(name: 'Parent')
       child1 = tag_class.create(name: 'First Child', parent: parent)
@@ -252,13 +252,13 @@ shared_examples_for Tag do
       child3 = tag_class.new(name: 'Third Child')
       parent.add_child child3
       expect(grandparent.self_and_descendants.collect(&:name)).to eq(
-        ["Grandparent", "Parent", "First Child", "Second Child", "Third Child"]
+        ['Grandparent', 'Parent', 'First Child', 'Second Child', 'Third Child']
       )
       expect(child1.ancestry_path).to eq(
-        ["Grandparent", "Parent", "First Child"]
+        ['Grandparent', 'Parent', 'First Child']
       )
       expect(child3.ancestry_path).to eq(
-        ["Grandparent", "Parent", "Third Child"]
+        ['Grandparent', 'Parent', 'Third Child']
       )
       d = tag_class.find_or_create_by_path %w(a b c d)
       h = tag_class.find_or_create_by_path %w(e f g h)
@@ -267,8 +267,8 @@ shared_examples_for Tag do
       expect(h.ancestry_path).to eq(%w(a b c d e f g h))
     end
 
-    it "roots sort alphabetically" do
-      expected = ("a".."z").to_a
+    it 'roots sort alphabetically' do
+      expected = ('a'..'z').to_a
       expected.shuffle.each { |ea| tag_class.create!(name: ea) }
       expect(tag_class.roots.collect { |ea| ea.name }).to eq(expected)
     end
@@ -403,7 +403,7 @@ shared_examples_for Tag do
           expect(@child.self_and_ancestors).to eq([@child, @parent, @grandparent])
         end
 
-        it "should find by path" do
+        it 'should find by path' do
           # class method:
           expect(tag_class.find_by_path(%w{grandparent parent child})).to eq(@child)
           # instance method:
@@ -412,7 +412,7 @@ shared_examples_for Tag do
           expect(@parent.find_by_path(%w{child larvae})).to be_nil
         end
 
-        it "should respect attribute hashes with both selection and creation" do
+        it 'should respect attribute hashes with both selection and creation' do
           expected_title = 'something else'
           attrs = {title: expected_title}
           existing_title = @grandparent.title
@@ -422,7 +422,7 @@ shared_examples_for Tag do
           expect(@grandparent.reload.title).to eq(existing_title)
         end
 
-        it "should create a hierarchy with a given attribute" do
+        it 'should create a hierarchy with a given attribute' do
           expected_title = 'unicorn rainbows'
           attrs = {title: expected_title}
           child = tag_class.find_or_create_by_path(%w{grandparent parent child}, attrs)
@@ -433,20 +433,20 @@ shared_examples_for Tag do
         end
       end
 
-      it "finds correctly rooted paths" do
+      it 'finds correctly rooted paths' do
         decoy = tag_class.find_or_create_by_path %w(a b c d)
         b_d = tag_class.find_or_create_by_path %w(b c d)
         expect(tag_class.find_by_path(%w(b c d))).to eq(b_d)
         expect(tag_class.find_by_path(%w(c d))).to be_nil
       end
 
-      it "find_by_path for 1 node" do
+      it 'find_by_path for 1 node' do
         b = tag_class.find_or_create_by_path %w(a b)
         b2 = b.root.find_by_path(%w(b))
         expect(b2).to eq(b)
       end
 
-      it "find_by_path for 2 nodes" do
+      it 'find_by_path for 2 nodes' do
         path = %w(a b c)
         c = tag_class.find_or_create_by_path path
         permutations = path.permutation.to_a
@@ -457,34 +457,34 @@ shared_examples_for Tag do
         end
       end
 
-      it "find_by_path for 3 nodes" do
+      it 'find_by_path for 3 nodes' do
         d = tag_class.find_or_create_by_path %w(a b c d)
         expect(d.root.find_by_path(%w(b c d))).to eq(d)
         expect(tag_class.find_by_path(%w(a b c d))).to eq(d)
         expect(tag_class.find_by_path(%w(d))).to be_nil
       end
 
-      it "should return nil for missing nodes" do
+      it 'should return nil for missing nodes' do
         expect(tag_class.find_by_path(%w{missing})).to be_nil
         expect(tag_class.find_by_path(%w{grandparent missing})).to be_nil
         expect(tag_class.find_by_path(%w{grandparent parent missing})).to be_nil
         expect(tag_class.find_by_path(%w{grandparent parent missing child})).to be_nil
       end
 
-      describe ".find_or_create_by_path" do
-        it "uses existing records" do
+      describe '.find_or_create_by_path' do
+        it 'uses existing records' do
           grandparent = tag_class.find_or_create_by_path(%w{grandparent})
           expect(grandparent).to eq(grandparent)
           child = tag_class.find_or_create_by_path(%w{grandparent parent child})
           expect(child).to eq(child)
         end
 
-        it "creates 2-deep trees with strings" do
+        it 'creates 2-deep trees with strings' do
           subject = tag_class.find_or_create_by_path(%w{events anniversary})
           expect(subject.ancestry_path).to eq(%w{events anniversary})
         end
 
-        it "creates 2-deep trees with hashes" do
+        it 'creates 2-deep trees with hashes' do
           subject = tag_class.find_or_create_by_path([
             {name: 'test1', title: 'TEST1'},
             {name: 'test2', title: 'TEST2'}
@@ -497,55 +497,103 @@ shared_examples_for Tag do
       end
     end
 
-    context "hash_tree" do
-
+    context 'hash_tree' do
       before :each do
         @b = tag_class.find_or_create_by_path %w(a b)
         @a = @b.parent
-        @a2 = tag_class.create
+        @a2 = tag_class.create(name: 'a2')
         @b2 = tag_class.find_or_create_by_path %w(a b2)
         @d1 = @b.find_or_create_by_path %w(c1 d1)
         @c1 = @d1.parent
-        @d2 = @b.find_or_create_by_path %w(c2 d2)
-        @c2 = @d2.parent
-        #@full_tree = {@a => {@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}, @b2 => {}}}
-        
-        # We need to take into consideration multiple roots
-        # in one table, this is inferred from your example
-        # in the readme under "Moving nodes around the tree"
-        # where you specifically create two seperate trees,
-        # each having it's own root, as shown below.
-        @full_tree = {@a => {@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}, @b2 => {}}, @a2 => {}}
-        # All respective previous tests have been updated. 
-        # The current gem accommodates the need for multiple 
-        # trees in a given table in all test cases, 
-        # except for the newest test.
+        @c3 = tag_class.find_or_create_by_path %w(a3 b3 c3)
+        @b3 = @c3.parent
+        @a3 = @b3.parent
+        @tree2 = {
+          @a => {@b => {}, @b2 => {}}, @a2 => {}, @a3 => {@b3 => {}}
+        }
 
+        @one_tree = {
+          @a => {},
+          @a2 => {},
+          @a3 => {}
+        }
+        @two_tree = {
+          @a => {
+            @b => {},
+            @b2 => {}
+          },
+          @a2 => {},
+          @a3 => {
+            @b3 => {}
+          }
+        }
+        @three_tree = {
+          @a => {
+            @b => {
+              @c1 => {},
+            },
+            @b2 => {}
+          },
+          @a2 => {},
+          @a3 => {
+            @b3 => {
+              @c3 => {}
+            }
+          }
+        }
+        @full_tree = {
+          @a => {
+            @b => {
+              @c1 => {
+                @d1 => {}
+              },
+            },
+            @b2 => {}
+          },
+          @a2 => {},
+          @a3 => {
+            @b3 => {
+              @c3 => {}
+            }
+          }
+        }
         #File.open("example.dot", "w") { |f| f.write(tag_class.root.to_dot_digraph) }
       end
 
-      context "#hash_tree" do
-        it "returns {} for depth 0" do
+      context '#hash_tree' do
+        it 'returns {} for depth 0' do
           expect(tag_class.hash_tree(limit_depth: 0)).to eq({})
         end
-        it "limit_depth 1" do
-          expect(tag_class.hash_tree(limit_depth: 1)).to eq({@a => {}, @a2 => {}})
+        it 'limit_depth 1' do
+          expect(tag_class.hash_tree(limit_depth: 1)).to eq(@one_tree)
         end
-        it "limit_depth 2" do
-          expect(tag_class.hash_tree(limit_depth: 2)).to eq({@a => {@b => {}, @b2 => {}}, @a2 => {}})
+        it 'limit_depth 2' do
+          expect(tag_class.hash_tree(limit_depth: 2)).to eq(@two_tree)
         end
-        it "limit_depth 3" do
-          expect(tag_class.hash_tree(limit_depth: 3)).to eq({@a => {@b => {@c1 => {}, @c2 => {}}, @b2 => {}}, @a2 => {}})
+        it 'limit_depth 3' do
+          expect(tag_class.hash_tree(limit_depth: 3)).to eq(@three_tree)
         end
-        it "limit_depth 4" do
+        it 'limit_depth 4' do
           expect(tag_class.hash_tree(limit_depth: 4)).to eq(@full_tree)
         end
-        it "no limit holdum" do
+        it 'no limit' do
           expect(tag_class.hash_tree).to eq(@full_tree)
         end
-        # AR Association Test
-        it "no limit holdumn from chained activerecord association subroots" do
-          expect(@a.children.hash_tree).to eq({@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}, @b2 => {}})
+        # AR Association Tests
+        it 'limit_depth 2 from chained activerecord association subroots' do
+          expect(@a.children.hash_tree(limit_depth: 2)).to eq(@three_tree[@a])
+        end
+        it 'no limit from chained activerecord association subroots' do
+          expect(@a.children.hash_tree).to eq(@full_tree[@a])
+        end
+        it 'limit_depth 3 from b.parent' do
+          expect(@b.parent.hash_tree(limit_depth: 3)).to eq(@three_tree.slice(@a))
+        end
+        it 'no limit_depth from b.parent' do
+          expect(@b.parent.hash_tree).to eq(@full_tree.slice(@a))
+        end
+        it 'no limit_depth from c.parent' do
+          expect(@c1.parent.hash_tree).to eq(@full_tree[@a].slice(@b))
         end
       end
 
@@ -556,50 +604,50 @@ shared_examples_for Tag do
         expect(a).to eq(a.uniq)
       end
 
-      context "#hash_tree_scope" do
-        it "no dupes for any depth" do
+      context '#hash_tree_scope' do
+        it 'no dupes for any depth' do
           (0..5).each do |ea|
             assert_no_dupes(tag_class.hash_tree_scope(ea))
           end
         end
-        it "no limit holdum" do
+        it 'no limit' do
           assert_no_dupes(tag_class.hash_tree_scope)
         end
       end
 
-      context ".hash_tree_scope" do
-        it "no dupes for any depth" do
+      context '.hash_tree_scope' do
+        it 'no dupes for any depth' do
           (0..5).each do |ea|
             assert_no_dupes(@a.hash_tree_scope(ea))
           end
         end
-        it "no limit holdum" do
+        it 'no limit holdum' do
           assert_no_dupes(@a.hash_tree_scope)
         end
       end
 
-      context ".hash_tree" do
+      context '.hash_tree' do
         before :each do
         end
-        it "returns {} for depth 0" do
+        it 'returns {} for depth 0' do
           expect(@b.hash_tree(limit_depth: 0)).to eq({})
         end
-        it "limit_depth 1" do
+        it 'limit_depth 1' do
           expect(@b.hash_tree(limit_depth: 1)).to eq({@b => {}})
         end
-        it "limit_depth 2" do
+        it 'limit_depth 2' do
           expect(@b.hash_tree(limit_depth: 2)).to eq({@b => {@c1 => {}, @c2 => {}}})
         end
-        it "limit_depth 3" do
+        it 'limit_depth 3' do
           expect(@b.hash_tree(limit_depth: 3)).to eq({@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}})
         end
-        it "no limit holdum from subsubroot" do
+        it 'no limit from subsubroot' do
           expect(@c1.hash_tree).to eq({@c1 => {@d1 => {}}})
         end
-        it "no limit holdum from subroot" do
+        it 'no limit from subroot' do
           expect(@b.hash_tree).to eq({@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}})
         end
-        it "no limit holdum from root" do
+        it 'no limit from root' do
           expect(@a.hash_tree.merge(@a2.hash_tree)).to eq(@full_tree)
         end
       end
@@ -617,7 +665,7 @@ shared_examples_for Tag do
 
     describe 'DOT rendering' do
       it 'should render for an empty scope' do
-        expect(tag_class.to_dot_digraph(tag_class.where("0=1"))).to eq("digraph G {\n}\n")
+        expect(tag_class.to_dot_digraph(tag_class.where('0=1'))).to eq("digraph G {\n}\n")
       end
       it 'should render for an empty scope' do
         tag_class.find_or_create_by_path(%w(a b1 c1))

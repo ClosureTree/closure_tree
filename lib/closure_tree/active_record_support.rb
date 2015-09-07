@@ -1,5 +1,10 @@
 module ClosureTree
   module ActiveRecordSupport
+
+    def quote(field)
+      connection.quote(field)
+    end
+
     def ensure_fixed_table_name(table_name)
       [
         ActiveRecord::Base.table_name_prefix,

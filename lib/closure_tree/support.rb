@@ -2,6 +2,7 @@ require 'closure_tree/support_flags'
 require 'closure_tree/support_attributes'
 require 'closure_tree/numeric_order_support'
 require 'closure_tree/active_record_support'
+require 'closure_tree/hash_tree_support'
 require 'with_advisory_lock'
 
 # This class and mixins are an effort to reduce the namespace pollution to models that act_as_tree.
@@ -10,6 +11,7 @@ module ClosureTree
     include ClosureTree::SupportFlags
     include ClosureTree::SupportAttributes
     include ClosureTree::ActiveRecordSupport
+    include ClosureTree::HashTreeSupport
 
     attr_reader :model_class
     attr_reader :options
@@ -57,10 +59,6 @@ module ClosureTree
         remove_prefix_and_suffix(table_name).singularize + "_hierarchies"
 
       ActiveRecord::Base.table_name_prefix + tablename + ActiveRecord::Base.table_name_suffix
-    end
-
-    def quote(field)
-      connection.quote(field)
     end
 
     def with_order_option(opts)
