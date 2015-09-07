@@ -499,12 +499,12 @@ shared_examples_for Tag do
 
     context 'hash_tree' do
       before :each do
-        @b = tag_class.find_or_create_by_path %w(a b)
+        @d1 = tag_class.find_or_create_by_path %w(a b c1 d1)
+        @c1 = @d1.parent
+        @b = @c1.parent
         @a = @b.parent
         @a2 = tag_class.create(name: 'a2')
         @b2 = tag_class.find_or_create_by_path %w(a b2)
-        @d1 = @b.find_or_create_by_path %w(c1 d1)
-        @c1 = @d1.parent
         @c3 = tag_class.find_or_create_by_path %w(a3 b3 c3)
         @b3 = @c3.parent
         @a3 = @b3.parent
@@ -586,22 +586,22 @@ shared_examples_for Tag do
           expect(@b.hash_tree(limit_depth: 0)).to eq({})
         end
         it 'limit_depth 1' do
-          expect(@b.hash_tree(limit_depth: 1)).to eq({@b => {}})
+          expect(@b.hash_tree(limit_depth: 1)).to eq(@two_tree[@a].slice(@b))
         end
         it 'limit_depth 2' do
-          expect(@b.hash_tree(limit_depth: 2)).to eq({@b => {@c1 => {}, @c2 => {}}})
+          expect(@b.hash_tree(limit_depth: 2)).to eq(@three_tree[@a].slice(@b))
         end
         it 'limit_depth 3' do
-          expect(@b.hash_tree(limit_depth: 3)).to eq({@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}})
+          expect(@b.hash_tree(limit_depth: 3)).to eq(@full_tree[@a].slice(@b))
         end
         it 'no limit from subsubroot' do
-          expect(@c1.hash_tree).to eq({@c1 => {@d1 => {}}})
+          expect(@c1.hash_tree).to eq(@full_tree[@a][@b].slice(@c1))
         end
         it 'no limit from subroot' do
-          expect(@b.hash_tree).to eq({@b => {@c1 => {@d1 => {}}, @c2 => {@d2 => {}}}})
+          expect(@b.hash_tree).to eq(@full_tree[@a].slice(@b))
         end
         it 'no limit from root' do
-          expect(@a.hash_tree.merge(@a2.hash_tree)).to eq(@full_tree)
+          expect(@a.hash_tree.merge(@a2.hash_tree)).to eq(@full_tree.slice(@a, @a2))
         end
       end
 
