@@ -579,56 +579,9 @@ shared_examples_for Tag do
         it 'no limit' do
           expect(tag_class.hash_tree).to eq(@full_tree)
         end
-        # AR Association Tests
-        it 'limit_depth 2 from chained activerecord association subroots' do
-          expect(@a.children.hash_tree(limit_depth: 2)).to eq(@three_tree[@a])
-        end
-        it 'no limit from chained activerecord association subroots' do
-          expect(@a.children.hash_tree).to eq(@full_tree[@a])
-        end
-        it 'limit_depth 3 from b.parent' do
-          expect(@b.parent.hash_tree(limit_depth: 3)).to eq(@three_tree.slice(@a))
-        end
-        it 'no limit_depth from b.parent' do
-          expect(@b.parent.hash_tree).to eq(@full_tree.slice(@a))
-        end
-        it 'no limit_depth from c.parent' do
-          expect(@c1.parent.hash_tree).to eq(@full_tree[@a].slice(@b))
-        end
-      end
-
-      def assert_no_dupes(scope)
-        # the named scope is complicated enough that an incorrect join could result in unnecessarily
-        # duplicated rows:
-        a = scope.collect { |ea| ea.id }
-        expect(a).to eq(a.uniq)
-      end
-
-      context '#hash_tree_scope' do
-        it 'no dupes for any depth' do
-          (0..5).each do |ea|
-            assert_no_dupes(tag_class.hash_tree_scope(ea))
-          end
-        end
-        it 'no limit' do
-          assert_no_dupes(tag_class.hash_tree_scope)
-        end
-      end
-
-      context '.hash_tree_scope' do
-        it 'no dupes for any depth' do
-          (0..5).each do |ea|
-            assert_no_dupes(@a.hash_tree_scope(ea))
-          end
-        end
-        it 'no limit holdum' do
-          assert_no_dupes(@a.hash_tree_scope)
-        end
       end
 
       context '.hash_tree' do
-        before :each do
-        end
         it 'returns {} for depth 0' do
           expect(@b.hash_tree(limit_depth: 0)).to eq({})
         end
@@ -649,6 +602,24 @@ shared_examples_for Tag do
         end
         it 'no limit from root' do
           expect(@a.hash_tree.merge(@a2.hash_tree)).to eq(@full_tree)
+        end
+      end
+
+      context '.hash_tree from relations' do
+        it 'limit_depth 2 from chained activerecord association subroots' do
+          expect(@a.children.hash_tree(limit_depth: 2)).to eq(@three_tree[@a])
+        end
+        it 'no limit from chained activerecord association subroots' do
+          expect(@a.children.hash_tree).to eq(@full_tree[@a])
+        end
+        it 'limit_depth 3 from b.parent' do
+          expect(@b.parent.hash_tree(limit_depth: 3)).to eq(@three_tree.slice(@a))
+        end
+        it 'no limit_depth from b.parent' do
+          expect(@b.parent.hash_tree).to eq(@full_tree.slice(@a))
+        end
+        it 'no limit_depth from c.parent' do
+          expect(@c1.parent.hash_tree).to eq(@full_tree[@a].slice(@b))
         end
       end
     end

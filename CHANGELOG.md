@@ -3,6 +3,9 @@
 ### 6.0.0.alpha
 * Drop support for unsupported versions of Rails, 3.2 and 4.0.
 * Drop support for Ruby 1.9 and JRuby 1.9
+* Added support for `.hash_tree` from `.parent` and `.children`. 
+  Addresses [PR146](https://github.com/mceachen/closure_tree/pull/146).
+  Thanks for reporting this and the breaking test, [Mike](https://github.com/mkralla11)!
 
 ### 5.2.0
 
