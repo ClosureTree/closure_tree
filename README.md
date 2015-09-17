@@ -145,14 +145,20 @@ child3 = Tag.new(name: 'Third Child')
 parent.add_child child3
 ```
 
+Or by setting the parent on the child :
+
+```ruby
+Tag.create(name: 'Fourth Child', parent: parent)
+```
+
 Then:
 
 ```ruby
 grandparent.self_and_descendants.collect(&:name)
-=> ["Grandparent", "Parent", "First Child", "Second Child", "Third Child"]
+=> ["Grandparent", "Parent", "First Child", "Second Child", "Third Child", "Fourth Child"]
 
 child1.ancestry_path
-=> ["Grandparent", "Parent", "First Child"]
+=> ["Grandparent", "Parent", "First Child", "Fourth Child"]
 ```
 
 ### find_or_create_by_path
