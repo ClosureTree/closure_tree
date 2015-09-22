@@ -158,7 +158,7 @@ grandparent.self_and_descendants.collect(&:name)
 => ["Grandparent", "Parent", "First Child", "Second Child", "Third Child", "Fourth Child"]
 
 child1.ancestry_path
-=> ["Grandparent", "Parent", "First Child", "Fourth Child"]
+=> ["Grandparent", "Parent", "First Child"]
 ```
 
 ### find_or_create_by_path
