@@ -6,7 +6,7 @@ gem "activerecord", :github => "rails/rails"
 gem "arel", :github => "rails/arel"
 
 platforms :ruby, :rbx do
-  gem "mysql2", '~> 0.3.20'
+  gem "mysql2"
   gem "pg"
   gem "sqlite3"
 end
