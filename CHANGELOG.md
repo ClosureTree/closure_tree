@@ -6,6 +6,7 @@
   Thanks for the PR!
 * [Martin Schmidt](https://github.com/martin-schmidt) discovered and fixed build problems due to new versions 
   of mysql2 and ammeter which broke Travis builds. Thanks for the PR!
+* [Fabien MICHEL](https://github.com/fabien-michel) updated the README with another example. Thanks for the PR!
 
 ### 6.0.0.alpha,beta,gamma
 
