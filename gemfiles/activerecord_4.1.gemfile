@@ -4,10 +4,9 @@ source "https://rubygems.org"
 
 gem "activerecord", "~> 4.1.0"
 gem "foreigner", :git => "https://github.com/matthuhiggins/foreigner.git"
-gem "mysql2", "~> 0.3.20"
 
 platforms :ruby, :rbx do
-  gem "mysql2"
+  gem "mysql2", "~> 0.3.20"
   gem "pg"
   gem "sqlite3"
 end
