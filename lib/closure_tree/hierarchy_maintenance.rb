@@ -98,8 +98,8 @@ module ClosureTree
             FROM (SELECT descendant_id
               FROM #{_ct.quoted_hierarchy_table_name}
               WHERE ancestor_id = #{_ct.quote(id)}
+                 OR descendant_id = #{_ct.quote(id)}
             ) AS x )
-            OR descendant_id = #{_ct.quote(id)}
         SQL
       end
     end
