@@ -14,7 +14,7 @@ Gem::Specification.new do |gem|
 
   gem.files       = `git ls-files`.split($INPUT_RECORD_SEPARATOR)
   gem.test_files  = gem.files.grep(%r{^spec/})
-  gem.required_ruby_version = '>= 2.1.0'
+  gem.required_ruby_version = '>= 2.0.0'
 
   gem.add_runtime_dependency 'activerecord', '>= 4.1.0'
   gem.add_runtime_dependency 'with_advisory_lock', '>= 3.0.0'

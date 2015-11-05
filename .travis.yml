@@ -2,6 +2,7 @@ cache: bundler
 sudo: false
 language: ruby
 rvm:
+  - 2.0
   - 2.2.3
   - jruby-head
 
