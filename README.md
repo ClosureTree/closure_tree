@@ -400,12 +400,12 @@ If your ```order``` column is an integer attribute, you'll also have these:
 * ```node1.prepend_sibling(node2)``` which will
   1. set ```node2``` to the same parent as ```node1```,
   2. set ```node2```'s order column to 1 less than ```node1```'s value, and
-  3. decrement the order_column of all children of node1's parents whose order_column is <>>= node2's new value by 1.
+  3. increment the order_column of all children of node1's parents whose order_column is > node2's new value by 1.
 
 * ```node1.append_sibling(node2)``` which will
   1. set ```node2``` to the same parent as ```node1```,
   2. set ```node2```'s order column to 1 more than ```node1```'s value, and
-  3. increment the order_column of all children of node1's parents whose order_column is >= node2's new value by 1.
+  3. increment the order_column of all children of node1's parents whose order_column is > node2's new value by 1.
 
 ```ruby
 
