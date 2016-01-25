@@ -266,6 +266,11 @@ Then, in a shell, ```dot -Tpng example.dot > example.png```, which produces:
 
 If you want to customize the label value, override the ```#to_digraph_label``` instance method in your model.
 
+If you want to add other [dot file attributes](http://www.graphviz.org/doc/info/attrs.html) you can override
+```#to_digraph_extra_attributes``` to get them into your nodes. In this way it is possible to create a
+SVG file with clickable nodes by adding the `URL` and `target` attributes. The method should
+return a Hash with keys and values and closure_tree will construct the correct attribute string out of them.
+
 Just for kicks, this is the test tree I used for proving that preordered tree traversal was correct:
 
 ![Preordered test tree](https://raw.github.com/mceachen/closure_tree/master/img/preorder.png)

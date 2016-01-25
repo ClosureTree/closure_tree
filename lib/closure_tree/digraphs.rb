@@ -21,10 +21,19 @@ module ClosureTree
           if id_to_instance.key? ea._ct_parent_id
             output << "  \"#{ea._ct_parent_id}\" -> \"#{ea._ct_id}\"\n"
           end
-          output << "  \"#{ea._ct_id}\" [label=\"#{ea.to_digraph_label}\"]\n"
+          output << "  \"#{ea._ct_id}\" [label=\"#{ea.to_digraph_label}\" #{extra_attributes(ea)}]\n"
         end
         output << "}\n"
         output.string
+      end
+
+      def extra_attributes ea
+        if ea.respond_to? :to_digraph_extra_attributes
+          attributes_hash = ea.to_digraph_extra_attributes
+          attributes_hash.map { |key, value| "#{key.to_s}=\"#{value.to_s}\"" }.join(" ")
+        else
+          ""
+        end
       end
     end
   end
