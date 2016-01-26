@@ -9,7 +9,8 @@ module ClosureTree
                  class_name: _ct.model_class.to_s,
                  foreign_key: _ct.parent_column_name,
                  inverse_of: :children,
-                 touch: _ct.options[:touch]
+                 touch: _ct.options[:touch],
+                 required: false
 
       order_by_generations = "#{_ct.quoted_hierarchy_table_name}.generations asc"
 
