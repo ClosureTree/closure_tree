@@ -72,7 +72,7 @@ module ClosureTree
           JOIN (
             SELECT descendant_id, max(generations) AS max_depth
             FROM #{_ct.quoted_hierarchy_table_name}
-            GROUP BY 1
+            GROUP BY descendant_id
           ) AS depths ON depths.descendant_id = anc.#{_ct.quoted_id_column_name}
         SQL
         joins(join_sql)
