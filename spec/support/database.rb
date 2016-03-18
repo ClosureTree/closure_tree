@@ -1,6 +1,11 @@
 database_folder = "#{File.dirname(__FILE__)}/../db"
 database_adapter = ENV['DB'] ||= 'mysql'
 
+unless File.exist?(File.join(database_folder, "database.yml"))
+  fail "database.yml does not exists\
+  (cp spec/db/database.yml.example spec/db/database.yml)"
+end
+
 def sqlite?
   ENV['DB'] == 'sqlite'
 end
