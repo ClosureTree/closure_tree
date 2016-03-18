@@ -18,6 +18,8 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency 'activerecord', '>= 4.1.0'
   gem.add_runtime_dependency 'with_advisory_lock', '>= 3.0.0'
+  gem.add_runtime_dependency 'sequel', '>= 4.29'
+  gem.add_runtime_dependency 'ruby-progressbar'
 
   gem.add_development_dependency 'rspec-instafail'
   gem.add_development_dependency 'rspec-rails', '~> 3.2.3'
