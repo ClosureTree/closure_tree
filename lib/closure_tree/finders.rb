@@ -47,12 +47,12 @@ module ClosureTree
     end
 
     def without_self(scope)
-      scope.without(self)
+      scope.without_instance(self)
     end
 
     module ClassMethods
 
-      def without(instance)
+      def without_instance(instance)
         if instance.new_record?
           all
         else
