@@ -12,3 +12,4 @@ tmp/
 *.lock
 tmp/
 .ruby-version
+spec/db/database.yml
