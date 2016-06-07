@@ -36,7 +36,7 @@ module ClosureTree
 
     def _ct_after_save
       if changes[_ct.parent_column_name] || @was_new_record
-        rebuild! unless @_ct_skip_hierarchy_maintenance
+        rebuild!
       end
       if changes[_ct.parent_column_name] && !@was_new_record
         # Resetting the ancestral collections addresses
