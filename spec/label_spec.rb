@@ -524,4 +524,31 @@ describe Label do
       expect(Label.roots_and_descendants_preordered.collect { |ea| ea.name }).to eq(expected)
     end
   end unless sqlite? # sqlite doesn't have a power function.
+
+  context 'hash_tree' do
+    before do
+      @a = EventLabel.create(name: 'a')
+      @b = DateLabel.create(name: 'b')
+      @c = DirectoryLabel.create(name: 'c')
+      (1..3).each { |i| DirectoryLabel.create!(name: "c#{ i }", mother_id: @c.id) }
+    end
+    it 'should return tree with correct scope when called on class' do
+      tree = DirectoryLabel.hash_tree
+      expect(tree.keys.size).to eq(1)
+      expect(tree.keys.first).to eq(@c)
+      expect(tree[@c].keys.size).to eq(3)
+    end
+    it 'should return tree with correct scope when called on all' do
+      tree = DirectoryLabel.all.hash_tree
+      expect(tree.keys.size).to eq(1)
+      expect(tree.keys.first).to eq(@c)
+      expect(tree[@c].keys.size).to eq(3)
+    end
+    it 'should return tree with correct scope when called on scope chain' do
+      tree = Label.where(name: 'b').hash_tree
+      expect(tree.keys.size).to eq(1)
+      expect(tree.keys.first).to eq(@b)
+      expect(tree[@b]).to eq({})
+    end
+  end
 end
