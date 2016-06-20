@@ -252,7 +252,7 @@ describe Label do
     end
 
     def children_name_and_order
-      name_and_order(@parent.children(reload = true))
+      name_and_order(@parent.children.reload)
     end
 
     def roots_name_and_order
@@ -454,7 +454,7 @@ describe Label do
       it 'should retain sort orders of descendants when moving to a new parent' do
         expected_order = ('a'..'z').to_a.shuffle
         expected_order.map { |ea| first_root.add_child(Label.new(name: ea)) }
-        actual_order = first_root.children(reload = true).pluck(:name)
+        actual_order = first_root.children.reload.pluck(:name)
         expect(actual_order).to eq(expected_order)
         last_root.append_child(first_root)
         expect(last_root.self_and_descendants.pluck(:name)).to eq(%w(10 0) + expected_order)
@@ -465,13 +465,13 @@ describe Label do
         z = first_root.find_or_create_by_path(path)
         z_children_names = (100..150).to_a.shuffle.map { |ea| ea.to_s }
         z_children_names.reverse.each { |ea| z.prepend_child(Label.new(name: ea)) }
-        expect(z.children(reload = true).pluck(:name)).to eq(z_children_names)
+        expect(z.children.reload.pluck(:name)).to eq(z_children_names)
         a = first_root.find_by_path(['a'])
         # move b up to a's level:
         b = a.children.first
         a.add_sibling(b)
         expect(b.parent).to eq(first_root)
-        expect(z.children(reload = true).pluck(:name)).to eq(z_children_names)
+        expect(z.children.reload.pluck(:name)).to eq(z_children_names)
       end
     end
 
