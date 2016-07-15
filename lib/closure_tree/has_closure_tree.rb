@@ -30,8 +30,7 @@ module ClosureTree
       include ClosureTree::DeterministicOrdering if _ct.order_option?
       include ClosureTree::NumericDeterministicOrdering if _ct.order_is_numeric?
     rescue StandardError => e
-      # Support Heroku's database-less assets:precompile pre-deploy step:
-      raise e unless ENV['DATABASE_URL'].to_s.include?('//user:pass@127.0.0.1/')
+      raise e unless ClosureTree.configuration.database_less
     end
 
     alias_method :acts_as_tree, :has_closure_tree
