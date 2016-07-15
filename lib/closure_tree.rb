@@ -12,6 +12,15 @@ module ClosureTree
   autoload :Digraphs
   autoload :DeterministicOrdering
   autoload :NumericDeterministicOrdering
+  autoload :Configuration
+
+  def self.configure
+    yield configuration
+  end
+
+  def self.configuration
+    @configuration ||= Configuration.new
+  end
 end
 
 ActiveSupport.on_load :active_record do

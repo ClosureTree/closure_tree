@@ -109,6 +109,9 @@ Note that closure_tree only supports ActiveRecord 4.1 and later, and has test co
 
     If you're starting from scratch you don't need to call `rebuild!`.
 
+NOTE: Run `rails g closure_tree:config` to create an initializer with extra
+      configurations. (Optional)
+
 ## Warning
 
 As stated above, using multiple hierarchy gems (like `ancestry` or `nested set`) on the same model 
