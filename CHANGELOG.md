@@ -1,5 +1,11 @@
 # Changelog
 
+### 6.0.1
+
+* Add `database_less` configuration to not raise an error during build step when
+  database is unavailable which is a common case in some PaaS like
+  (Heroku, Catalyze, ..., etc).
+
 ### 6.0.0
 
 * [Andrew Kumanyaev](https://github.com/zzet) *dramatically* improved mutation performance on large trees. 
