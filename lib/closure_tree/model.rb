@@ -5,11 +5,13 @@ module ClosureTree
     extend ActiveSupport::Concern
 
     included do
-      belongs_to :parent,
-                 class_name: _ct.model_class.to_s,
-                 foreign_key: _ct.parent_column_name,
-                 inverse_of: :children,
-                 touch: _ct.options[:touch]
+
+      belongs_to :parent, nil, *_ct.belongs_to_with_optional_option(
+        class_name: _ct.model_class.to_s,
+        foreign_key: _ct.parent_column_name,
+        inverse_of: :children,
+        touch: _ct.options[:touch],
+        optional: true)
 
       order_by_generations = "#{_ct.quoted_hierarchy_table_name}.generations asc"
 

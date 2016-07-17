@@ -76,6 +76,10 @@ module ClosureTree
       end
     end
 
+    def belongs_to_with_optional_option(opts)
+      [ActiveRecord::VERSION::MAJOR < 5 ? opts.except(:optional) : opts]
+    end
+
     # lambda-ize the order, but don't apply the default order_option
     def has_many_without_order_option(opts)
         [lambda { order(opts[:order]) }, opts.except(:order)]
