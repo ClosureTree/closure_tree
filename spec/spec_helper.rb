@@ -2,14 +2,8 @@ $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib')
 
 ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../../Gemfile', __FILE__)
 require 'bundler/setup' if File.exist?(ENV['BUNDLE_GEMFILE'])
-begin
-  require 'rspec'
-rescue LoadError
-  # explciitly requiring rspec in ActiveRecord 5+ tests throws exception
-end
-require 'active_record'
+
 require 'database_cleaner'
-require 'closure_tree'
 require 'closure_tree/test/matcher'
 require 'tmpdir'
 require 'timecop'

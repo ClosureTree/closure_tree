@@ -1,3 +1,5 @@
+require 'closure_tree'
+
 module ClosureTree
   module Test
     module Matcher

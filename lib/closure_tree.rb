@@ -1,4 +1,4 @@
-require 'active_support'
+require 'active_record'
 
 module ClosureTree
   extend ActiveSupport::Autoload
