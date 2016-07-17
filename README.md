@@ -26,8 +26,8 @@ closure_tree has some great features:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
 * __Support for [concurrency](#concurrency)__ (using [with_advisory_lock](https://github.com/mceachen/with_advisory_lock))
-* __Support for ActiveRecord 4.1, 4.2 and 5.0.alpha__
-* __Support for Ruby 2.0, 2.1, 2.2 and JRuby 9000__
+* __Support for ActiveRecord 4.1, 4.2 and 5.0__
+* __Support for Ruby 2.0, 2.1, 2.2, 2.3.1 and JRuby 9000__
 * Support for reparenting children (and all their descendants)
 * Support for [single-table inheritance (STI)](#sti) within the hierarchy
 * ```find_or_create_by_path``` for [building out heterogeneous hierarchies quickly and conveniently](#find_or_create_by_path)
@@ -547,10 +547,11 @@ end
 
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
 
-* Ruby 2.0 (and sometimes head)
-* Ruby 2.2 (and sometimes head)
+* Ruby 2.0
+* Ruby 2.2
+* Ruby 2.3.1 (and sometimes head)
 * jRuby 9000 (and sometimes head)
-* The latest ActiveRecord 4.1, 4.2, and master branch
+* The latest ActiveRecord 4.1, 4.2, 5.0 and master branch
 * Concurrency tests for MySQL and PostgreSQL. SQLite is tested in a single-threaded environment.
 
 Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to

@@ -1,5 +1,5 @@
 database_folder = "#{File.dirname(__FILE__)}/../db"
-database_adapter = ENV['DB'] ||= 'mysql'
+database_adapter = ENV['DB'] ||= 'postgresql'
 
 def sqlite?
   ENV['DB'] == 'sqlite'

@@ -2,10 +2,7 @@
 
 source "https://rubygems.org"
 
-gem "activerecord", "~> 5.0.0.rc1"
-gem "actionpack", "~> 5.0.0.rc1"
-gem "railties", "~> 5.0.0.rc1"
-gem "rspec-rails", ">= 3.5.0.beta4"
+gem "activerecord", "~> 5.0.0"
 
 platforms :ruby, :rbx do
   gem "mysql2"
