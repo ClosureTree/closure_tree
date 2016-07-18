@@ -284,6 +284,7 @@ When you include ```has_closure_tree``` in your model, you can provide a hash to
     * ```:nullify``` will simply set the parent column to null. Each child node will be considered a "root" node. This is the default.
     * ```:delete_all``` will delete all descendant nodes (which circumvents the destroy hooks)
     * ```:destroy``` will destroy all descendant nodes (which runs the destroy hooks on each child node)
+    * ```nil``` does nothing with descendant nodes
 * ```:name_column``` used by #```find_or_create_by_path```, #```find_by_path```, and ```ancestry_path``` instance methods. This is primarily useful if the model only has one required field (like a "tag").
 * ```:order``` used to set up [deterministic ordering](#deterministic-ordering)
 * ```:touch``` delegates to the `belongs_to` annotation for the parent, so `touch`ing cascades to all children (the performance of this for deep trees isn't currently optimal).
