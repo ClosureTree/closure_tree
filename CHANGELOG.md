@@ -1,7 +1,10 @@
 # Changelog
 
-### 6.0.1
+### 6.1.0
 
+* Added official support for ActiveRecord 5.0! Thanks to [Abdelkader Boudih](https://github.com/seuros),
+  [Jay Fredlund](https://github.com/jayfredlund), Veselin Stoyanov, and
+  [Aaron Russell](https://github.com/aaronrussell) for all the PRs.
 * Add `database_less` configuration to not raise an error during build step when
   database is unavailable which is a common case in some PaaS like
   (Heroku, Catalyze, ..., etc).
