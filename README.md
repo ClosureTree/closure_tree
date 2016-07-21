@@ -513,6 +513,18 @@ after do
 end
 ```
 
+### `bundle install` says `Gem::Ext::BuildError: ERROR: Failed to build gem native extension`
+
+When building from source, the `mysql2`, `pg`, and `sqlite` gems need their native client libraries
+installed on your system. Note that this error isn't specific to ClosureTree.
+
+On Ubuntu/Debian systems, run:
+
+```
+sudo apt-get install libpq-dev libsqlite3-dev libmysqlclient-dev
+bundle install
+```
+
 ## Testing with Closure Tree
 
 Closure tree comes with some RSpec2/3 matchers which you may use for your tests:
