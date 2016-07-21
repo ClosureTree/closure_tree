@@ -564,12 +564,9 @@ end
 
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
 
-* Ruby 2.0
-* Ruby 2.2
-* Ruby 2.3.1 (and sometimes head)
-* jRuby 9000 (and sometimes head)
-* The latest ActiveRecord 4.1, 4.2, 5.0 and master branch
-* Concurrency tests for MySQL and PostgreSQL. SQLite is tested in a single-threaded environment.
+* Ruby 2.0, 2.2, 2.3.1
+* ActiveRecord 4.1, 4.2, and 5.0
+* PostgreSQL, MySQL, and SQLite. Concurrency tests are only run with MySQL and PostgreSQL.
 
 Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
 run the test matrix locally.
@@ -580,7 +577,7 @@ See the [change log](https://github.com/mceachen/closure_tree/blob/master/CHANGE
 
 ## Thanks to
 
-* The more than 30 engineers around the world that have contributed their time and code to this gem
+* The 45+ engineers around the world that have contributed their time and code to this gem
   (see the [changelog](https://github.com/mceachen/closure_tree/blob/master/CHANGELOG.md)!)
 * https://github.com/collectiveidea/awesome_nested_set
 * https://github.com/patshaughnessy/class_factory
