@@ -1,6 +1,6 @@
 appraise 'activerecord-4.1' do
   gem 'activerecord', '~> 4.1.0'
-  gem 'foreigner', :git => 'https://github.com/matthuhiggins/foreigner.git'
+  gem 'foreigner'
   platforms :ruby, :rbx do
     gem 'mysql2', '~> 0.3.20'
   end
@@ -12,6 +12,11 @@ appraise 'activerecord-4.2' do
   platforms :ruby, :rbx do
     gem 'mysql2', '~> 0.3.20'
   end
+end
+
+appraise 'activerecord-5.0-foreigner' do
+  gem 'activerecord', '~> 5.0.0'
+  gem 'foreigner'
 end
 
 appraise 'activerecord-5.0' do

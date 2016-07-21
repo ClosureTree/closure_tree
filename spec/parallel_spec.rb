@@ -1,16 +1,17 @@
 require 'spec_helper'
 
 # We don't need to run the expensive parallel tests for every combination of prefix/suffix.
-# Those affect SQL generation, not parallelism
+# Those affect SQL generation, not parallelism.
+# SQLite doesn't support concurrency reliably, either.
 def run_parallel_tests?
-  ActiveRecord::Base.table_name_prefix.empty? &&
+  !sqlite? &&
+    ActiveRecord::Base.table_name_prefix.empty? &&
     ActiveRecord::Base.table_name_suffix.empty?
 end
 
 def max_threads
   5
 end
-
 
 class WorkerBase
   extend Forwardable
@@ -106,7 +107,7 @@ describe 'Concurrent creation' do
     run_workers
     # duplication from at least one iteration:
     expect(Tag.where(name: @names).size).to be > @iterations
-  end unless sqlite? # sqlite throws errors from concurrent access
+  end
 
   class SiblingPrependerWorker < WorkerBase
     def before_work
@@ -117,50 +118,6 @@ describe 'Concurrent creation' do
     def work
       @target.prepend_sibling @sibling
     end
-  end
-
-  # TODO: this test should be rewritten to be proper producer-consumer code
-  xit 'fails to deadlock from parallel sibling churn' do
-    # target should be non-trivially long to maximize time spent in hierarchy maintenance
-    target = Tag.find_or_create_by_path(('a'..'z').to_a + ('A'..'Z').to_a)
-    expected_children = (1..100).to_a.map { |ea| "root ##{ea}" }
-    children_to_add = expected_children.dup
-    added_children = []
-    children_to_delete = []
-    deleted_children = []
-    creator_threads = @workers.times.map do
-      Thread.new do
-        while children_to_add.present?
-          name = children_to_add.shift
-          unless name.nil?
-            Tag.transaction { target.find_or_create_by_path(name) }
-            children_to_delete << name
-            added_children << name
-          end
-        end
-      end
-    end
-    run_destruction = true
-    destroyer_threads = @workers.times.map do
-      Thread.new do
-        begin
-          victim_name = children_to_delete.shift
-          if victim_name
-            Tag.transaction do
-              victim = target.children.where(name: victim_name).first
-              victim.destroy
-              deleted_children << victim_name
-            end
-          else
-            sleep rand # wait for more victims
-          end
-        end while run_destruction || !children_to_delete.empty?
-      end
-    end
-    creator_threads.each(&:join)
-    destroyer_threads.each(&:join)
-    expect(added_children).to match(expected_children)
-    expect(deleted_children).to match(expected_children)
   end
 
   it 'fails to deadlock while simultaneously deleting items from the same hierarchy' do
@@ -176,7 +133,7 @@ describe 'Concurrent creation' do
     end
     User.connection.reconnect!
     expect(User.all).to be_empty
-  end unless sqlite? # sqlite throws errors from concurrent access
+  end
 
   class SiblingPrependerWorker < WorkerBase
     def before_work
@@ -198,6 +155,5 @@ describe 'Concurrent creation' do
 
     # The only non-root node should be "root":
     expect(Label.all.select { |ea| ea.root? }).to eq([@target.parent])
-  end unless sqlite? # sqlite throws errors from concurrent access
-
+  end
 end if run_parallel_tests?

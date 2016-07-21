@@ -527,7 +527,7 @@ bundle install
 
 ### Object destroy fails with MySQL 5.7+
 
-A bug was introduced in the query optimizer. [See the workaround here](https://github.com/mceachen/closure_tree/issues/206).
+A bug was introduced in MySQL's query optimizer. [See the workaround here](https://github.com/mceachen/closure_tree/issues/206).
 
 ## Testing with Closure Tree
 
