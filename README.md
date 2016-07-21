@@ -525,6 +525,10 @@ sudo apt-get install libpq-dev libsqlite3-dev libmysqlclient-dev
 bundle install
 ```
 
+### Object destroy fails with MySQL 5.7+
+
+A bug was introduced in the query optimizer. [See the workaround here](https://github.com/mceachen/closure_tree/issues/206).
+
 ## Testing with Closure Tree
 
 Closure tree comes with some RSpec2/3 matchers which you may use for your tests:
