@@ -33,3 +33,5 @@ matrix:
       gemfile: gemfiles/activerecord_4.1.gemfile
     - rvm: 2.0
       gemfile: gemfiles/activerecord_5.0.gemfile
+    - rvm: 2.0
+      gemfile: gemfiles/activerecord_5.0_foreigner.gemfile
