@@ -468,7 +468,12 @@ Yup! [Ilya Bodrov](https://github.com/bodrovis) wrote [Nested Comments with Rail
 
 ### Does this work well with ```#default_scope```?
 
-No. Please see [issue 86](https://github.com/mceachen/closure_tree/issues/86) for details.
+**No.** Please see [issue 86](https://github.com/mceachen/closure_tree/issues/86) for details.
+
+### Can I update parentage with `update_attribute`?
+
+**No.** `update_attribute` skips the validation hook that is required for maintaining the 
+hierarchy table.
 
 ### Does this gem support multiple parents?
 
