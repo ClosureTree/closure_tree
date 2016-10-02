@@ -58,6 +58,7 @@ class User < ActiveRecord::Base
     :hierarchy_table_name => 'referral_hierarchies'
 
   has_many :contracts, inverse_of: :user
+  belongs_to :group # Can't use and don't need inverse_of here when using has_closure_tree_root.
 
   def indirect_contracts
     Contract.where(:user_id => descendant_ids)

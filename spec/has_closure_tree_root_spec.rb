@@ -9,6 +9,7 @@ describe "has_closure_tree_root" do
   let!(:user4) { User.create!(email: "4@example.com", group_id: group.id) }
   let!(:user5) { User.create!(email: "5@example.com", group_id: group.id) }
   let!(:user6) { User.create!(email: "6@example.com", group_id: group.id) }
+  let!(:group_reloaded) { group.class.find(group.id) } # Ensures were starting fresh.
 
   before do
     # The tree (contract types in parens)
@@ -37,13 +38,9 @@ describe "has_closure_tree_root" do
   context "with basic config" do
     let!(:group) { Group.create!(name: "TheGroup") }
 
-    before do
-      group = Group.first # Ensure we're starting fresh
-    end
-
     it "loads all nodes and associations in a constant number of queries" do
       expect do
-        root = group.root_user_including_tree(contracts: :contract_type)
+        root = group_reloaded.root_user_including_tree(contracts: :contract_type)
         expect(root.children[0].email).to eq "2@example.com"
         expect(root.children[0].parent.children[1].email).to eq "3@example.com"
         expect(root.children[1].contracts.map(&:contract_type).map(&:name)).to eq %w(Type1 Type2)
@@ -53,9 +50,17 @@ describe "has_closure_tree_root" do
       end.to_not exceed_query_limit(4) # Without this feature, this is 15, and scales with number of nodes.
     end
 
+    it "eager loads inverse association to group" do
+      expect do
+        root = group_reloaded.root_user_including_tree
+        expect(root.group).to eq group
+        expect(root.children[0].group).to eq group
+      end.to_not exceed_query_limit(2)
+    end
+
     it "works if eager load association map is not given" do
       expect do
-        root = group.root_user_including_tree
+        root = group_reloaded.root_user_including_tree
         expect(root.children[0].email).to eq "2@example.com"
         expect(root.children[0].parent.children[1].children[0].email).to eq "5@example.com"
       end.to_not exceed_query_limit(2)
@@ -74,7 +79,7 @@ describe "has_closure_tree_root" do
 
       it "should error" do
         expect do
-          root = group.root_user_including_tree(contracts: :contract_type)
+          root = group_reloaded.root_user_including_tree(contracts: :contract_type)
         end.to raise_error(ClosureTree::MultipleRootError)
       end
     end
@@ -84,7 +89,7 @@ describe "has_closure_tree_root" do
     let(:group) { Grouping.create!(name: "TheGrouping") }
 
     it "should still work" do
-      root = group.root_person_including_tree(contracts: :contract_type)
+      root = group_reloaded.root_person_including_tree(contracts: :contract_type)
       expect(root.children[0].email).to eq "2@example.com"
     end
   end
@@ -94,7 +99,7 @@ describe "has_closure_tree_root" do
 
     it "should error" do
       expect do
-        root = group.root_user_including_tree(contracts: :contract_type)
+        root = group_reloaded.root_user_including_tree(contracts: :contract_type)
       end.to raise_error(NameError)
     end
   end
@@ -104,7 +109,7 @@ describe "has_closure_tree_root" do
 
     it "should error" do
       expect do
-        root = group.root_user_including_tree(contracts: :contract_type)
+        root = group_reloaded.root_user_including_tree(contracts: :contract_type)
       end.to raise_error(ActiveRecord::StatementInvalid)
     end
   end

@@ -29,16 +29,23 @@ module ClosureTree
         id_hash = {}
         parent_col_id = temp_root.class._ct.options[:parent_column_name]
 
+        # Lookup inverse belongs_to association reflection on target class.
+        inverse = temp_root.class.reflections.values.detect do |r|
+          r.macro == :belongs_to && r.klass == self.class
+        end
+
+        # Fetch all descendants in constant number of queries.
+        # This is the last query-triggering statement in the method.
         temp_root.self_and_descendants.includes(assoc_map).each do |node|
           id_hash[node.id] = node
           parent_node = id_hash[node[parent_col_id]]
 
-          # Preload parent association
+          # Pre-assign parent association
           parent_assoc = node.association(:parent)
           parent_assoc.loaded!
           parent_assoc.target = parent_node
 
-          # Preload children association as empty for now,
+          # Pre-assign children association as empty for now,
           # children will be added in subsequent loop iterations
           children_assoc = node.association(:children)
           children_assoc.loaded!
@@ -48,6 +55,13 @@ module ClosureTree
           else
             # Capture the root we're going to use
             root = node
+          end
+
+          # Pre-assign inverse association back to this class, if it exists on target class.
+          if inverse
+            inverse_assoc = node.association(inverse.name)
+            inverse_assoc.loaded!
+            inverse_assoc.target = self
           end
         end
 
