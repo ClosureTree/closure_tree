@@ -4,6 +4,7 @@ module ClosureTree
   extend ActiveSupport::Autoload
 
   autoload :HasClosureTree
+  autoload :HasClosureTreeRoot
   autoload :Support
   autoload :HierarchyMaintenance
   autoload :Model
@@ -25,4 +26,5 @@ end
 
 ActiveSupport.on_load :active_record do
   ActiveRecord::Base.send :extend, ClosureTree::HasClosureTree
+  ActiveRecord::Base.send :extend, ClosureTree::HasClosureTreeRoot
 end

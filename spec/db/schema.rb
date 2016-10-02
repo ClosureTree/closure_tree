@@ -43,9 +43,26 @@ ActiveRecord::Schema.define(:version => 0) do
   add_index "tag_hierarchies", [:ancestor_id, :descendant_id, :generations], :unique => true, :name => "tag_anc_desc_idx"
   add_index "tag_hierarchies", [:descendant_id], :name => "tag_desc_idx"
 
+  create_table "groups" do |t|
+    t.string "name", null: false
+  end
+
+  create_table "groupings" do |t|
+    t.string "name", null: false
+  end
+
+  create_table "user_sets" do |t|
+    t.string "name", null: false
+  end
+
+  create_table "teams" do |t|
+    t.string "name", null: false
+  end
+
   create_table "users" do |t|
     t.string "email"
     t.integer "referrer_id"
+    t.integer "group_id"
     t.timestamps null: false
   end
 
@@ -53,6 +70,11 @@ ActiveRecord::Schema.define(:version => 0) do
 
   create_table "contracts" do |t|
     t.integer "user_id", :null => false
+    t.integer "contract_type_id"
+  end
+
+  create_table "contract_types" do |t|
+    t.string "name", :null => false
   end
 
   create_table "referral_hierarchies", :id => false do |t|
