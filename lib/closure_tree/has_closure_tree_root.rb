@@ -15,7 +15,23 @@ module ClosureTree
       has_one assoc_name, -> { where(parent: nil) }, options
 
       # Fetches the association, eager loading all children and given associations
-      define_method("#{assoc_name}_including_tree") do |assoc_map = nil|
+      define_method("#{assoc_name}_including_tree") do |assoc_map_or_reload = nil, assoc_map = nil|
+        reload = false
+        if assoc_map_or_reload.is_a?(::Hash)
+          assoc_map = assoc_map_or_reload
+        else
+          reload = assoc_map_or_reload
+        end
+
+        unless reload
+          # Memoize
+          @closure_tree_roots ||= {}
+          @closure_tree_roots[assoc_name] ||= {}
+          if @closure_tree_roots[assoc_name].has_key?(assoc_map)
+            return @closure_tree_roots[assoc_name][assoc_map]
+          end
+        end
+
         roots = options[:class_name].constantize.where(parent: nil, options[:foreign_key] => id).to_a
 
         return nil if roots.empty?
@@ -65,7 +81,7 @@ module ClosureTree
           end
         end
 
-        root
+        @closure_tree_roots[assoc_name][assoc_map] = root
       end
     end
   end

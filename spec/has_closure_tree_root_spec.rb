@@ -50,6 +50,22 @@ describe "has_closure_tree_root" do
       end.to_not exceed_query_limit(4) # Without this feature, this is 15, and scales with number of nodes.
     end
 
+    it "memoizes by assoc_map" do
+      group_reloaded.root_user_including_tree.email = "x"
+      expect(group_reloaded.root_user_including_tree.email).to eq "x"
+      group_reloaded.root_user_including_tree(contracts: :contract_type).email = "y"
+      expect(group_reloaded.root_user_including_tree(contracts: :contract_type).email).to eq "y"
+      expect(group_reloaded.root_user_including_tree.email).to eq "x"
+    end
+
+    it "doesn't memoize if true argument passed" do
+      group_reloaded.root_user_including_tree.email = "x"
+      expect(group_reloaded.root_user_including_tree(true).email).to eq "1@example.com"
+      group_reloaded.root_user_including_tree(contracts: :contract_type).email = "y"
+      expect(group_reloaded.root_user_including_tree(true, contracts: :contract_type).email).
+        to eq "1@example.com"
+    end
+
     it "eager loads inverse association to group" do
       expect do
         root = group_reloaded.root_user_including_tree
