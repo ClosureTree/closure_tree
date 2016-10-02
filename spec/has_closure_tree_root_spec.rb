@@ -14,7 +14,7 @@ describe "has_closure_tree_root" do
   before do
     # The tree (contract types in parens)
     #
-    #                    U1(1)
+    #                   U1(1)
     #                  /    \
     #              U2(1)   U3(1&2)
     #             /        /     \
