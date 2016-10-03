@@ -35,13 +35,30 @@ end
 class DestroyedTag < ActiveRecord::Base
 end
 
+class Group < ActiveRecord::Base
+  has_closure_tree_root :root_user
+end
+
+class Grouping < ActiveRecord::Base
+  has_closure_tree_root :root_person, class_name: "User", foreign_key: :group_id
+end
+
+class UserSet < ActiveRecord::Base
+  has_closure_tree_root :root_user, class_name: "Useur"
+end
+
+class Team < ActiveRecord::Base
+  has_closure_tree_root :root_user, class_name: "User", foreign_key: :grp_id
+end
+
 class User < ActiveRecord::Base
   acts_as_tree :parent_column_name => "referrer_id",
     :name_column => 'email',
     :hierarchy_class_name => 'ReferralHierarchy',
     :hierarchy_table_name => 'referral_hierarchies'
 
-  has_many :contracts
+  has_many :contracts, inverse_of: :user
+  belongs_to :group # Can't use and don't need inverse_of here when using has_closure_tree_root.
 
   def indirect_contracts
     Contract.where(:user_id => descendant_ids)
@@ -53,7 +70,12 @@ class User < ActiveRecord::Base
 end
 
 class Contract < ActiveRecord::Base
-  belongs_to :user
+  belongs_to :user, inverse_of: :contracts
+  belongs_to :contract_type, inverse_of: :contracts
+end
+
+class ContractType < ActiveRecord::Base
+  has_many :contracts, inverse_of: :contract_type
 end
 
 class Label < ActiveRecord::Base
