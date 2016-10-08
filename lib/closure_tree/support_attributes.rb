@@ -1,12 +1,11 @@
 require 'forwardable'
 module ClosureTree
   module SupportAttributes
-
     extend Forwardable
     def_delegators :model_class, :connection, :transaction, :table_name, :base_class, :inheritance_column, :column_names
 
     def advisory_lock_name
-      "ClosureTree::#{base_class.name}"
+      Digest::SHA1.hexdigest("ClosureTree::#{base_class.name}")[0..32]
     end
 
     def quoted_table_name
