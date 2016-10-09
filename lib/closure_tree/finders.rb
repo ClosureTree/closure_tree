@@ -39,7 +39,7 @@ module ClosureTree
           SELECT descendant_id
           FROM #{_ct.quoted_hierarchy_table_name}
           WHERE ancestor_id = #{_ct.quote(self.id)}
-          GROUP BY 1
+          GROUP BY descendant_id
           HAVING MAX(#{_ct.quoted_hierarchy_table_name}.generations) = #{generation_level.to_i}
         ) AS descendants ON (#{_ct.quoted_table_name}.#{_ct.base_class.primary_key} = descendants.descendant_id)
       SQL
@@ -74,7 +74,7 @@ module ClosureTree
           INNER JOIN (
             SELECT ancestor_id
             FROM #{_ct.quoted_hierarchy_table_name}
-            GROUP BY 1
+            GROUP BY ancestor_id
             HAVING MAX(#{_ct.quoted_hierarchy_table_name}.generations) = 0
           ) AS leaves ON (#{_ct.quoted_table_name}.#{primary_key} = leaves.ancestor_id)
         SQL
@@ -100,7 +100,7 @@ module ClosureTree
           INNER JOIN (
             SELECT ancestor_id, descendant_id
             FROM #{_ct.quoted_hierarchy_table_name}
-            GROUP BY 1, 2
+            GROUP BY ancestor_id, descendant_id
             HAVING MAX(generations) = #{generation_level.to_i}
           ) AS descendants ON (
             #{_ct.quoted_table_name}.#{primary_key} = descendants.descendant_id

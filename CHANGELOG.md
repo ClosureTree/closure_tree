@@ -1,5 +1,12 @@
 # Changelog
 
+### 6.2.0
+
+* Fix for [MySQL lock lengths](https://github.com/mceachen/closure_tree/issues/231).
+   Thanks to [Liam](https://github.com/hut8)!
+* [Tom Smyth](https://github.com/hooverlunch) added [eager tree loading](https://github.com/mceachen/closure_tree/pull/232)
+* Merged [PR 200](https://github.com/mceachen/closure_tree/pull/200) which may or may not add support to SQLServer 2008 (but this is not a supported RDBMS).
+
 ### 6.1.0
 
 * Added official support for ActiveRecord 5.0! Thanks to [Abdelkader Boudih](https://github.com/seuros),
