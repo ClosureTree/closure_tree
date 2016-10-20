@@ -57,7 +57,7 @@ for a description of different tree storage algorithms.
 
 Note that closure_tree only supports ActiveRecord 4.1 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
 
-1.  Add `gem 'closure_tree'` to your Gemfile 
+1.  Add `gem 'closure_tree'` to your Gemfile
 
 2.  Run `bundle install`
 
@@ -74,7 +74,7 @@ Note that closure_tree only supports ActiveRecord 4.1 and later, and has test co
     ```
 
     Make sure you check out the [large number options](#available-options) that `has_closure_tree` accepts.
-    
+
     **IMPORTANT: Make sure you add `has_closure_tree` _after_ `attr_accessible` and
     `self.table_name =` lines in your model.**
 
@@ -114,9 +114,9 @@ NOTE: Run `rails g closure_tree:config` to create an initializer with extra
 
 ## Warning
 
-As stated above, using multiple hierarchy gems (like `ancestry` or `nested set`) on the same model 
+As stated above, using multiple hierarchy gems (like `ancestry` or `nested set`) on the same model
 will most likely result in pain, suffering, hair loss, tooth decay, heel-related ailments, and gingivitis.
-Assume things will break. 
+Assume things will break.
 
 ## Usage
 
@@ -168,7 +168,7 @@ child1.ancestry_path
 
 You can `find` as well as `find_or_create` by "ancestry paths".
 
-If you provide an array of strings to these methods, they reference the `name` column in your 
+If you provide an array of strings to these methods, they reference the `name` column in your
 model, which can be overridden with the `:name_column` option provided to `has_closure_tree`.
 
 ```ruby
@@ -254,6 +254,45 @@ Without this option, ```hash_tree``` will load the entire contents of that table
 server may not be happy trying to do this.
 
 HT: [ancestry](https://github.com/stefankroes/ancestry#arrangement) and [elhoyos](https://github.com/mceachen/closure_tree/issues/11)
+
+### Eager loading
+
+Since most of closure_tree's methods (e.g. `children`) return regular `ActiveRecord` scopes, you can use the `includes` method for eager loading, e.g.
+
+```ruby
+comment.children.includes(:author)
+```
+
+However, note that the above approach only eager loads the requested associations for the immediate children of `comment`. If you want to walk through the entire tree, you may still end up making many queries and loading duplicate copies of objects.
+
+In some cases, a viable alternative is the following:
+
+```ruby
+comment.self_and_descendants.includes(:author)
+```
+
+This would load authors for `comment` and all its descendants in a constant number of queries. However, the return value is an array of `Comment`s, and the tree structure is thus lost, which makes it difficult to walk the tree using elegant recursive algorithms.
+
+A third option is to use `has_closure_tree_root` on the model that is composed by the closure_tree model (e.g. a `Post` may be composed by a tree of `Comment`s). So in `post.rb`, you would do:
+
+```ruby
+# app/models/post.rb
+has_closure_tree_root :root_comment
+```
+
+This gives you a plain `has_one` association (`root_comment`) to the root `Comment` (i.e. that with null `parent_id`).
+
+It also gives you a method called `root_comment_including_tree`, which you can invoke as follows:
+
+```ruby
+a_post.root_comment_including_tree(:author)
+```
+
+The result of this call will be the root `Comment` with all descendants _and_ associations loaded in a constant number of queries. Inverse associations are also setup on all nodes, so as you walk the tree, calling `children` or `parent` on any node will _not_ trigger any further queries and no duplicate copies of objects are loaded into memory.
+
+The class and foreign key of `root_comment` are assumed to be `Comment` and `post_id`, respectively. These can be overridden in the usual way.
+
+The same caveat stated above with `hash_tree` also applies here: this method will load the entire tree into memory. If the tree is very large, this may be a bad idea, in which case using the eager loading methods above may be preferred.
 
 ### Graph visualization
 
@@ -472,7 +511,7 @@ Yup! [Ilya Bodrov](https://github.com/bodrovis) wrote [Nested Comments with Rail
 
 ### Can I update parentage with `update_attribute`?
 
-**No.** `update_attribute` skips the validation hook that is required for maintaining the 
+**No.** `update_attribute` skips the validation hook that is required for maintaining the
 hierarchy table.
 
 ### Does this gem support multiple parents?
