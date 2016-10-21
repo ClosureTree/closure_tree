@@ -71,6 +71,7 @@ ActiveRecord::Schema.define(:version => 0) do
   create_table "contracts" do |t|
     t.integer "user_id", :null => false
     t.integer "contract_type_id"
+    t.string "title"
   end
 
   create_table "contract_types" do |t|
