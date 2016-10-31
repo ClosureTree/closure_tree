@@ -7,7 +7,7 @@ and tracking user referrals.
 
 [![Build Status](https://secure.travis-ci.org/mceachen/closure_tree.png?branch=master)](http://travis-ci.org/mceachen/closure_tree)
 [![Gem Version](https://badge.fury.io/rb/closure_tree.png)](http://rubygems.org/gems/closure_tree)
-[![Code Climate](https://codeclimate.com/github/mceachen/closure_tree.png)](https://codeclimate.com/github/mceachen/closure_tree)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/fa5a8ae2193d42adb30b4256732a757d)](https://www.codacy.com/app/matthew-github/closure_tree)
 [![Dependency Status](https://gemnasium.com/mceachen/closure_tree.png)](https://gemnasium.com/mceachen/closure_tree)
 
 Dramatically more performant than
