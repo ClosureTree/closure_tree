@@ -530,9 +530,15 @@ sudo apt-get install libpq-dev libsqlite3-dev libmysqlclient-dev
 bundle install
 ```
 
-### Object destroy fails with MySQL 5.7+
+### Object destroy fails with MySQL v5.7+
 
 A bug was introduced in MySQL's query optimizer. [See the workaround here](https://github.com/mceachen/closure_tree/issues/206).
+
+### Hierarchy maintenance errors from MySQL v5.7.9-v5.7.10
+
+Upgrade to MySQL 5.7.12 or later if you see [this issue](https://github.com/mceachen/closure_tree/issues/190):
+
+    Mysql2::Error: You can't specify target table '*_hierarchies' for update in FROM clause
 
 ## Testing with Closure Tree
 
