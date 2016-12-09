@@ -476,6 +476,10 @@ Yup! [Ilya Bodrov](https://github.com/bodrovis) wrote [Nested Comments with Rail
 **No.** `update_attribute` skips the validation hook that is required for maintaining the 
 hierarchy table.
 
+### Can I assign a parent to multiple children with  ```#update_all```?
+
+**No.** Please see [issue 197](https://github.com/mceachen/closure_tree/issues/197) for details.
+
 ### Does this gem support multiple parents?
 
 No. This gem's API is based on the assumption that each node has either 0 or 1 parent.
