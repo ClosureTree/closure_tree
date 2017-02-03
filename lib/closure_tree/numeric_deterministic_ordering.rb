@@ -89,9 +89,12 @@ module ClosureTree
       child_node.order_value = -1
       child_node.parent = self
       child_node._ct_skip_sort_order_maintenance!
-      child_node.save
-      _ct_reorder_children
-      child_node.reload
+      if child_node.save
+        _ct_reorder_children
+        child_node.reload
+      else
+        child_node
+      end
     end
 
     def append_sibling(sibling_node)
