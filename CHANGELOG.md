@@ -2,8 +2,9 @@
 
 ### 6.3.0
 
-* `prepend_child` [handles invalid items properly now](https://github.com/mceachen/closure_tree/issues/249). 
+* `prepend_child` [handles invalid children properly now](https://github.com/mceachen/closure_tree/issues/249).
   Thanks [Amit Saxena](https://github.com/amitsaxena)!
+* Dropped official support for jruby and ruby 2.0 (no code was changed)
 
 ### 6.2.0
 
