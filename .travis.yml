@@ -4,7 +4,6 @@ language: ruby
 rvm:
   - 2.3.1
   - 2.2.5
-  - 2.0
 # these haven't been passing for a while:
 #  - jruby-head
 #  - rbx
@@ -28,12 +27,3 @@ matrix:
     - gemfile: gemfiles/activerecord_edge.gemfile
     - rvm: jruby-head
     - rvm: rbx
-
-  # rails 5+ requires ruby >= 2.2:
-  exclude:
-    - rvm: 2.0
-      gemfile: gemfiles/activerecord_5.0_foreigner.gemfile
-    - rvm: 2.0
-      gemfile: gemfiles/activerecord_5.0.gemfile
-    - rvm: 2.0
-      gemfile: gemfiles/activerecord_edge.gemfile
