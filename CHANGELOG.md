@@ -1,5 +1,10 @@
 # Changelog
 
+### 6.4.0
+
+* Merged [PR 236](https://github.com/mceachen/closure_tree/pull/236) which adds documentation for `has_closure_tree_root`.
+* Added ruby 2.4 and dropped Rails 4.1 from the build matrix.
+
 ### 6.3.0
 
 * `prepend_child` [handles invalid children properly now](https://github.com/mceachen/closure_tree/issues/249).
