@@ -26,17 +26,35 @@ describe "has_closure_tree_root" do
     user3.children << user5
     user3.children << user6
 
-    user1.contracts.create!(contract_type: ct1)
-    user2.contracts.create!(contract_type: ct1)
-    user3.contracts.create!(contract_type: ct1)
-    user3.contracts.create!(contract_type: ct2)
-    user4.contracts.create!(contract_type: ct2)
-    user5.contracts.create!(contract_type: ct1)
-    user6.contracts.create!(contract_type: ct2)
+    user1.contracts.create!(title: "Contract 1", contract_type: ct1)
+    user2.contracts.create!(title: "Contract 2", contract_type: ct1)
+    user3.contracts.create!(title: "Contract 3", contract_type: ct1)
+    user3.contracts.create!(title: "Contract 4", contract_type: ct2)
+    user4.contracts.create!(title: "Contract 5", contract_type: ct2)
+    user5.contracts.create!(title: "Contract 6", contract_type: ct1)
+    user6.contracts.create!(title: "Contract 7", contract_type: ct2)
   end
 
   context "with basic config" do
     let!(:group) { Group.create!(name: "TheGroup") }
+
+    it "loads all nodes in a constant number of queries" do
+      expect do
+        root = group_reloaded.root_user_including_tree
+        expect(root.children[0].email).to eq "2@example.com"
+        expect(root.children[0].parent.children[1].email).to eq "3@example.com"
+      end.to_not exceed_query_limit(2)
+    end
+
+    it "loads all nodes plus single association in a constant number of queries" do
+      expect do
+        root = group_reloaded.root_user_including_tree(:contracts)
+        expect(root.children[0].email).to eq "2@example.com"
+        expect(root.children[0].parent.children[1].email).to eq "3@example.com"
+        expect(root.children[0].children[0].contracts[0].user.
+          parent.parent.children[1].children[1].contracts[0].title).to eq "Contract 7"
+      end.to_not exceed_query_limit(3)
+    end
 
     it "loads all nodes and associations in a constant number of queries" do
       expect do
@@ -64,6 +82,10 @@ describe "has_closure_tree_root" do
       group_reloaded.root_user_including_tree(contracts: :contract_type).email = "y"
       expect(group_reloaded.root_user_including_tree(true, contracts: :contract_type).email).
         to eq "1@example.com"
+    end
+
+    it "works if true passed on first call" do
+      expect(group_reloaded.root_user_including_tree(true).email).to eq "1@example.com"
     end
 
     it "eager loads inverse association to group" do

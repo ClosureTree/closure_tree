@@ -15,18 +15,16 @@ module ClosureTree
       has_one assoc_name, -> { where(parent: nil) }, options
 
       # Fetches the association, eager loading all children and given associations
-      define_method("#{assoc_name}_including_tree") do |assoc_map_or_reload = nil, assoc_map = nil|
+      define_method("#{assoc_name}_including_tree") do |*args|
         reload = false
-        if assoc_map_or_reload.is_a?(::Hash)
-          assoc_map = assoc_map_or_reload
-        else
-          reload = assoc_map_or_reload
-        end
+        reload = args.shift if args && (args.first == true || args.first == false)
+        assoc_map = args
+        assoc_map = [nil] if assoc_map.blank?
 
+        # Memoize
+        @closure_tree_roots ||= {}
+        @closure_tree_roots[assoc_name] ||= {}
         unless reload
-          # Memoize
-          @closure_tree_roots ||= {}
-          @closure_tree_roots[assoc_name] ||= {}
           if @closure_tree_roots[assoc_name].has_key?(assoc_map)
             return @closure_tree_roots[assoc_name][assoc_map]
           end
@@ -52,7 +50,7 @@ module ClosureTree
 
         # Fetch all descendants in constant number of queries.
         # This is the last query-triggering statement in the method.
-        temp_root.self_and_descendants.includes(assoc_map).each do |node|
+        temp_root.self_and_descendants.includes(*assoc_map).each do |node|
           id_hash[node.id] = node
           parent_node = id_hash[node[parent_col_id]]
 
