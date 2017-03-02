@@ -619,8 +619,8 @@ end
 
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
 
-* Ruby 2.0, 2.2, 2.3.1
-* ActiveRecord 4.1, 4.2, and 5.0
+* Ruby 2.2, 2.3
+* ActiveRecord 4.2 and 5.0
 * PostgreSQL, MySQL, and SQLite. Concurrency tests are only run with MySQL and PostgreSQL.
 
 Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
