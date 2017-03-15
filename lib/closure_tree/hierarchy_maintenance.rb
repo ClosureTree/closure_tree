@@ -53,7 +53,7 @@ module ClosureTree
       _ct.with_advisory_lock do
         delete_hierarchy_references
         if _ct.options[:dependent] == :nullify
-          self.class.find(self.id).children.each { |c| c.rebuild! }
+          self.class.find(self.id).children.find_each { |c| c.rebuild! }
         end
       end
       true # don't prevent destruction
@@ -79,7 +79,7 @@ module ClosureTree
           _ct_reorder_siblings if !called_by_rebuild
         end
 
-        children.each { |c| c.rebuild!(true) }
+        children.find_each { |c| c.rebuild!(true) }
 
         _ct_reorder_children if _ct.order_is_numeric? && children.present?
       end
@@ -110,7 +110,7 @@ module ClosureTree
       def rebuild!
         _ct.with_advisory_lock do
           hierarchy_class.delete_all # not destroy_all -- we just want a simple truncate.
-          roots.each { |n| n.send(:rebuild!) } # roots just uses the parent_id column, so this is safe.
+          roots.find_each { |n| n.send(:rebuild!) } # roots just uses the parent_id column, so this is safe.
         end
         nil
       end
