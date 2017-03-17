@@ -1,5 +1,10 @@
 # Changelog
 
+### 6.5.0
+
+* Merged [PR 258](https://github.com/mceachen/closure_tree/pull/258) which improves hierarchy maintenance with large trees.
+  Thanks, [Nikolay Bekirov](https://github.com/nbekirov)!
+
 ### 6.4.0
 
 * Merged [PR 236](https://github.com/mceachen/closure_tree/pull/236) which adds documentation for `has_closure_tree_root`.
