@@ -10,8 +10,13 @@ module ClosureTree
     end
 
     def _ct_reorder_prior_siblings_if_parent_changed
-      if attribute_changed?(_ct.parent_column_name) && !@was_new_record
-        was_parent_id = attribute_was(_ct.parent_column_name)
+      as_5_1 = ActiveSupport.version >= Gem::Version.new('5.1.0')
+      change_method = as_5_1 ? :saved_change_to_attribute? : :attribute_changed?
+
+      if public_send(change_method, _ct.parent_column_name) && !@was_new_record
+        attribute_method = as_5_1 ? :attribute_before_last_save : :attribute_was
+
+        was_parent_id = public_send(attribute_method, _ct.parent_column_name)
         _ct.reorder_with_parent_id(was_parent_id)
       end
     end
