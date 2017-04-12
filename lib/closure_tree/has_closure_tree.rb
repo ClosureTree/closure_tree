@@ -29,6 +29,8 @@ module ClosureTree
 
       include ClosureTree::DeterministicOrdering if _ct.order_option?
       include ClosureTree::NumericDeterministicOrdering if _ct.order_is_numeric?
+
+      connection_pool.release_connection
     rescue StandardError => e
       raise e unless ClosureTree.configuration.database_less
     end
