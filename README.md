@@ -499,6 +499,15 @@ end
 Note that you *will eventually have data corruption* if you disable advisory locks, write to your
 database with multiple threads, and don't provide an alternative mutex.
 
+## I18n
+
+You can customize error messages using [I18n](http://guides.rubyonrails.org/i18n.html):
+
+```yaml
+en-US:
+  closure_tree:
+    loop_error: Your descendant cannot be your parent!
+```
 
 ## FAQ
 
