@@ -2,8 +2,18 @@
 
 ### 6.5.0
 
-* Merged [PR 258](https://github.com/mceachen/closure_tree/pull/258) which improves hierarchy maintenance with large trees.
-  Thanks, [Nikolay Bekirov](https://github.com/nbekirov)!
+Closure Tree is now tested against Rails 5.1, just passed 50 contributors and
+1000 stars on github! 🎉!
+
+* ActiveSupport 5.1 deprecation warnings were addressed in [PR
+  262](https://github.com/mceachen/closure_tree/pull/262). Thanks, [Charles
+  Pence](https://github.com/cpence)!
+* Merged [PR 258](https://github.com/mceachen/closure_tree/pull/258) which
+  improves hierarchy maintenance with large trees. Thanks, [Nikolay
+  Bekirov](https://github.com/nbekirov)!
+* A database connection was leaked at startup, fixed in [PR
+  263](https://github.com/mceachen/closure_tree/pull/263). Thanks, [Andrey
+  Novikov](https://github.com/Envek)!
 
 ### 6.4.0
 

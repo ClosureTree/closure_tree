@@ -27,8 +27,7 @@ closure_tree has some great features:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
 * __Support for [concurrency](#concurrency)__ (using [with_advisory_lock](https://github.com/mceachen/with_advisory_lock))
-* __Support for ActiveRecord 4.2 and 5.0__
-* __Support for Ruby 2.2 and 2.3__
+* __Tested against ActiveRecord 4.2, 5.0, and 5.1, with  Ruby 2.2 and 2.3__
 * Support for reparenting children (and all their descendants)
 * Support for [single-table inheritance (STI)](#sti) within the hierarchy
 * ```find_or_create_by_path``` for [building out heterogeneous hierarchies quickly and conveniently](#find_or_create_by_path)
@@ -629,7 +628,7 @@ end
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
 
 * Ruby 2.2, 2.3
-* ActiveRecord 4.2 and 5.0
+* ActiveRecord 4.2, 5.0, and 5.1
 * PostgreSQL, MySQL, and SQLite. Concurrency tests are only run with MySQL and PostgreSQL.
 
 Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
