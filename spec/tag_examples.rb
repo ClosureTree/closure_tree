@@ -379,6 +379,11 @@ shared_examples_for Tag do
         expect(tag_class.where(:name => 'C').to_a).to match_array([a1c, a2c])
         expect(tag_class.with_ancestor(a1c.parent.parent).where(:name => 'C').to_a).to eq([a1c])
       end
+      it 'works with ActiveRecord_AssociationRelation param' do
+        b = tag_class.find_or_create_by_path %w(A B)
+        a = b.parent
+        expect(tag_class.with_ancestor(b.ancestors)).not_to be_empty
+      end
     end
 
     context 'paths' do
