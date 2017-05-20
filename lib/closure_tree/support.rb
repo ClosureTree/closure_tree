@@ -70,9 +70,9 @@ module ClosureTree
 
     def scope_with_order(scope, additional_order_by = nil)
       if order_option?
-        scope.order(*([additional_order_by, order_by].compact))
+        scope.reorder(*([additional_order_by, order_by].compact))
       else
-        additional_order_by ? scope.order(additional_order_by) : scope
+        additional_order_by ? scope.reorder(additional_order_by) : scope
       end
     end
 
