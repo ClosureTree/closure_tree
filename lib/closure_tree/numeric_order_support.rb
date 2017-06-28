@@ -44,7 +44,8 @@ module ClosureTree
             FROM #{quoted_table_name}
             WHERE #{where_eq(parent_column_name, parent_id)} #{min_where}
           ) AS t
-          WHERE #{quoted_table_name}.#{quoted_id_column_name} = t.id
+          WHERE #{quoted_table_name}.#{quoted_id_column_name} = t.id and
+                #{quoted_table_name}.#{quoted_order_column(false)} is distinct from t.seq + #{minimum_sort_order_value.to_i - 1}
         SQL
       end
 
