@@ -1,6 +1,6 @@
 # Closure Tree
 
-__Important: please [vote on the future of ClosureTree](https://github.com/mceachen/closure_tree/issues/277)!__
+__Important: please [vote on the future of ClosureTree](https://github.com/ClosureTree/closure_tree/issues/277)!__
 
 ### Closure_tree lets your ActiveRecord models act as nodes in a [tree data structure](http://en.wikipedia.org/wiki/Tree_%28data_structure%29)
 
@@ -8,10 +8,9 @@ Common applications include modeling hierarchical data, like tags, threaded comm
 and tracking user referrals.
 
 [![Join the chat at https://gitter.im/closure_tree/Lobby](https://badges.gitter.im/closure_tree/Lobby.svg)](https://gitter.im/closure_tree/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://api.travis-ci.org/mceachen/closure_tree.svg?branch=master)](http://travis-ci.org/mceachen/closure_tree)
+[![Build Status](https://api.travis-ci.org/ClosureTree/closure_tree.svg?branch=master)](http://travis-ci.org/ClosureTree/closure_tree)
 [![Gem Version](https://badge.fury.io/rb/closure_tree.svg)](https://badge.fury.io/rb/closure_tree)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/fa5a8ae2193d42adb30b4256732a757d)](https://www.codacy.com/app/matthew-github/closure_tree)
-[![Dependency Status](https://gemnasium.com/badges/github.com/mceachen/closure_tree.svg)](https://gemnasium.com/github.com/mceachen/closure_tree)
+[![Dependency Status](https://gemnasium.com/badges/github.com/ClosureTree/closure_tree.svg)](https://gemnasium.com/github.com/ClosureTree/closure_tree)
 
 Dramatically more performant than
 [ancestry](https://github.com/stefankroes/ancestry) and
@@ -28,7 +27,7 @@ closure_tree has some great features:
 * __Best-in-class mutation performance__:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
-* __Support for [concurrency](#concurrency)__ (using [with_advisory_lock](https://github.com/mceachen/with_advisory_lock))
+* __Support for [concurrency](#concurrency)__ (using [with_advisory_lock](https://github.com/ClosureTree/with_advisory_lock))
 * __Tested against ActiveRecord 4.2, 5.0, and 5.1, with  Ruby 2.2 and 2.3__
 * Support for reparenting children (and all their descendants)
 * Support for [single-table inheritance (STI)](#sti) within the hierarchy
@@ -255,7 +254,7 @@ b.hash_tree(:limit_depth => 2)
 Without this option, ```hash_tree``` will load the entire contents of that table into RAM. Your
 server may not be happy trying to do this.
 
-HT: [ancestry](https://github.com/stefankroes/ancestry#arrangement) and [elhoyos](https://github.com/mceachen/closure_tree/issues/11)
+HT: [ancestry](https://github.com/stefankroes/ancestry#arrangement) and [elhoyos](https://github.com/ClosureTree/closure_tree/issues/11)
 
 ### Eager loading
 
@@ -306,13 +305,13 @@ File.open("example.dot", "w") { |f| f.write(Tag.root.to_dot_digraph) }
 ```
 Then, in a shell, ```dot -Tpng example.dot > example.png```, which produces:
 
-![Example tree](https://raw.github.com/mceachen/closure_tree/master/img/example.png)
+![Example tree](https://raw.github.com/ClosureTree/closure_tree/master/img/example.png)
 
 If you want to customize the label value, override the ```#to_digraph_label``` instance method in your model.
 
 Just for kicks, this is the test tree I used for proving that preordered tree traversal was correct:
 
-![Preordered test tree](https://raw.github.com/mceachen/closure_tree/master/img/preorder.png)
+![Preordered test tree](https://raw.github.com/ClosureTree/closure_tree/master/img/preorder.png)
 
 ### Available options
 
@@ -485,7 +484,7 @@ Several methods, especially ```#rebuild``` and ```#find_or_create_by_path```, ca
 
 Database row-level locks work correctly with PostgreSQL, but MySQL's row-level locking is broken, and
 erroneously reports deadlocks where there are none. To work around this, and have a consistent implementation
-for both MySQL and PostgreSQL, [with_advisory_lock](https://github.com/mceachen/with_advisory_lock)
+for both MySQL and PostgreSQL, [with_advisory_lock](https://github.com/ClosureTree/with_advisory_lock)
 is used automatically to ensure correctness.
 
 If you are already managing concurrency elsewhere in your application, and want to disable the use
@@ -518,7 +517,7 @@ Yup! [Ilya Bodrov](https://github.com/bodrovis) wrote [Nested Comments with Rail
 
 ### Does this work well with ```#default_scope```?
 
-**No.** Please see [issue 86](https://github.com/mceachen/closure_tree/issues/86) for details.
+**No.** Please see [issue 86](https://github.com/ClosureTree/closure_tree/issues/86) for details.
 
 ### Can I update parentage with `update_attribute`?
 
@@ -527,7 +526,7 @@ hierarchy table.
 
 ### Can I assign a parent to multiple children with  ```#update_all```?
 
-**No.** Please see [issue 197](https://github.com/mceachen/closure_tree/issues/197) for details.
+**No.** Please see [issue 197](https://github.com/ClosureTree/closure_tree/issues/197) for details.
 
 ### Does this gem support multiple parents?
 
@@ -586,11 +585,11 @@ bundle install
 
 ### Object destroy fails with MySQL v5.7+
 
-A bug was introduced in MySQL's query optimizer. [See the workaround here](https://github.com/mceachen/closure_tree/issues/206).
+A bug was introduced in MySQL's query optimizer. [See the workaround here](https://github.com/ClosureTree/closure_tree/issues/206).
 
 ### Hierarchy maintenance errors from MySQL v5.7.9-v5.7.10
 
-Upgrade to MySQL 5.7.12 or later if you see [this issue](https://github.com/mceachen/closure_tree/issues/190):
+Upgrade to MySQL 5.7.12 or later if you see [this issue](https://github.com/ClosureTree/closure_tree/issues/190):
 
     Mysql2::Error: You can't specify target table '*_hierarchies' for update in FROM clause
 
@@ -627,7 +626,7 @@ end
 
 ## Testing
 
-Closure tree is [tested under every valid combination](http://travis-ci.org/#!/mceachen/closure_tree) of
+Closure tree is [tested under every valid combination](http://travis-ci.org/#!/ClosureTree/closure_tree) of
 
 * Ruby 2.2, 2.3
 * ActiveRecord 4.2, 5.0, and 5.1
@@ -638,12 +637,12 @@ run the test matrix locally.
 
 ## Change log
 
-See the [change log](https://github.com/mceachen/closure_tree/blob/master/CHANGELOG.md).
+See the [change log](https://github.com/ClosureTree/closure_tree/blob/master/CHANGELOG.md).
 
 ## Thanks to
 
 * The 45+ engineers around the world that have contributed their time and code to this gem
-  (see the [changelog](https://github.com/mceachen/closure_tree/blob/master/CHANGELOG.md)!)
+  (see the [changelog](https://github.com/ClosureTree/closure_tree/blob/master/CHANGELOG.md)!)
 * https://github.com/collectiveidea/awesome_nested_set
 * https://github.com/patshaughnessy/class_factory
 * JetBrains, which provides an [open-source license](http://www.jetbrains.com/ruby/buy/buy.jsp#openSource) to
