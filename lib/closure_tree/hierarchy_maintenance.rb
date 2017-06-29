@@ -112,10 +112,28 @@ module ClosureTree
       # Note that the hierarchy table will be truncated.
       def rebuild!
         _ct.with_advisory_lock do
-          hierarchy_class.delete_all # not destroy_all -- we just want a simple truncate.
+          cleanup!
           roots.find_each { |n| n.send(:rebuild!) } # roots just uses the parent_id column, so this is safe.
         end
         nil
+      end
+
+      def cleanup!
+        ids_to_delete = []
+
+        hierarchy_table = hierarchy_class.arel_table
+
+        [:descendant_id, :ancestor_id].each do |foreign_key|
+          arel_join = hierarchy_table.join(arel_table, Arel::Nodes::OuterJoin)
+                                     .on(arel_table[primary_key].eq(hierarchy_table[foreign_key]))
+                                     .join_sources
+
+          where_condition = {}
+          where_condition[table_name] = {}
+          where_condition[table_name][primary_key] = nil
+
+          hierarchy_class.joins(arel_join).where(where_condition).destroy_all
+        end
       end
     end
   end
