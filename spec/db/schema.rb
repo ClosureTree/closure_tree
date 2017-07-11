@@ -5,7 +5,7 @@ ActiveRecord::Schema.define(:version => 0) do
   create_table "tags" do |t|
     t.string "name"
     t.string "title"
-    t.integer "parent_id"
+    t.references "parent"
     t.integer "sort_order"
     t.timestamps null: false
   end
@@ -13,8 +13,8 @@ ActiveRecord::Schema.define(:version => 0) do
   add_foreign_key(:tags, :tags, :column => 'parent_id')
 
   create_table "tag_hierarchies", :id => false do |t|
-    t.integer "ancestor_id", :null => false
-    t.integer "descendant_id", :null => false
+    t.references "ancestor", :null => false
+    t.references "descendant", :null => false
     t.integer "generations", :null => false
   end
 
@@ -61,7 +61,7 @@ ActiveRecord::Schema.define(:version => 0) do
 
   create_table "users" do |t|
     t.string "email"
-    t.integer "referrer_id"
+    t.references "referrer"
     t.integer "group_id"
     t.timestamps null: false
   end
@@ -69,8 +69,8 @@ ActiveRecord::Schema.define(:version => 0) do
   add_foreign_key(:users, :users, :column => 'referrer_id')
 
   create_table "contracts" do |t|
-    t.integer "user_id", :null => false
-    t.integer "contract_type_id"
+    t.references "user", :null => false
+    t.references "contract_type"
     t.string "title"
   end
 
@@ -79,8 +79,8 @@ ActiveRecord::Schema.define(:version => 0) do
   end
 
   create_table "referral_hierarchies", :id => false do |t|
-    t.integer "ancestor_id", :null => false
-    t.integer "descendant_id", :null => false
+    t.references "ancestor", :null => false
+    t.references "descendant", :null => false
     t.integer "generations", :null => false
   end
 
@@ -91,14 +91,14 @@ ActiveRecord::Schema.define(:version => 0) do
     t.string "name"
     t.string "type"
     t.integer "column_whereby_ordering_is_inferred"
-    t.integer "mother_id"
+    t.references "mother"
   end
 
   add_foreign_key(:labels, :labels, :column => 'mother_id')
 
   create_table "label_hierarchies", :id => false do |t|
-    t.integer "ancestor_id", :null => false
-    t.integer "descendant_id", :null => false
+    t.references "ancestor", :null => false
+    t.references "descendant", :null => false
     t.integer "generations", :null => false
   end
 
@@ -107,28 +107,28 @@ ActiveRecord::Schema.define(:version => 0) do
 
   create_table "cuisine_types" do |t|
     t.string "name"
-    t.integer "parent_id"
+    t.references "parent"
   end
 
   create_table "cuisine_type_hierarchies", :id => false do |t|
-    t.integer "ancestor_id", :null => false
-    t.integer "descendant_id", :null => false
+    t.references "ancestor", :null => false
+    t.references "descendant", :null => false
     t.integer "generations", :null => false
   end
 
   create_table "namespace_types" do |t|
     t.string "name"
-    t.integer "parent_id"
+    t.references "parent"
   end
 
   create_table "namespace_type_hierarchies", :id => false do |t|
-    t.integer "ancestor_id", :null => false
-    t.integer "descendant_id", :null => false
+    t.references "ancestor", :null => false
+    t.references "descendant", :null => false
     t.integer "generations", :null => false
   end
 
   create_table "metal" do |t|
-    t.integer "parent_id"
+    t.references "parent"
     t.string "metal_type"
     t.string "value"
     t.string "description"
@@ -138,8 +138,8 @@ ActiveRecord::Schema.define(:version => 0) do
   add_foreign_key(:metal, :metal, :column => 'parent_id')
 
   create_table "metal_hierarchies", :id => false do |t|
-    t.integer "ancestor_id", :null => false
-    t.integer "descendant_id", :null => false
+    t.references "ancestor", :null => false
+    t.references "descendant", :null => false
     t.integer "generations", :null => false
   end
 
@@ -148,15 +148,15 @@ ActiveRecord::Schema.define(:version => 0) do
 
   create_table 'menu_items' do |t|
     t.string 'name'
-    t.integer 'parent_id'
+    t.references 'parent'
     t.timestamps null: false
   end
 
   add_foreign_key(:menu_items, :menu_items, :column => 'parent_id')
 
   create_table 'menu_item_hierarchies', :id => false do |t|
-    t.integer 'ancestor_id', :null => false
-    t.integer 'descendant_id', :null => false
+    t.references 'ancestor', :null => false
+    t.references 'descendant', :null => false
     t.integer 'generations', :null => false
   end
 
