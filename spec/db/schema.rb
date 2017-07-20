@@ -137,7 +137,7 @@ ActiveRecord::Schema.define(:version => 0) do
 
   add_foreign_key(:metal, :metal, :column => 'parent_id')
 
-  create_table "metal_hierarchies" do |t|
+  create_table "metal_hierarchies", :id => false do |t|
     t.integer "ancestor_id", :null => false
     t.integer "descendant_id", :null => false
     t.integer "generations", :null => false

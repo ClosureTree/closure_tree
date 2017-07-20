@@ -121,23 +121,18 @@ module ClosureTree
       def cleanup!
         hierarchy_table = hierarchy_class.arel_table
 
-        query = hierarchy_class
-        alias_tables = []
         [:descendant_id, :ancestor_id].each do |foreign_key|
           alias_name = foreign_key.to_s.split('_').first + "s"
           alias_table = Arel::Table.new(table_name).alias(alias_name)
-          alias_tables << alias_table
           arel_join = hierarchy_table.join(alias_table, Arel::Nodes::OuterJoin)
                                      .on(alias_table[primary_key].eq(hierarchy_table[foreign_key]))
                                      .join_sources
 
-          query = query.joins(arel_join)
-        end
+          lonely_childs = hierarchy_class.joins(arel_join).where(alias_table[primary_key].eq(nil))
+          ids = lonely_childs.pluck(foreign_key)
 
-        query.where(
-          alias_tables.first[primary_key].eq(nil)
-          .or(alias_tables.second[primary_key].eq(nil))
-        ).destroy_all
+          hierarchy_class.where(hierarchy_table[foreign_key].in(ids)).delete_all
+        end
       end
     end
   end
