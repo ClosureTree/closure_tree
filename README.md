@@ -389,6 +389,18 @@ class WhereTag < Tag ; end
 class WhatTag < Tag ; end
 ```
 
+Note that if you call `rebuild!` on any of the subclasses, the complete Tag hierarchy will be emptied, thus taking the hiearchies of all other subclasses with it (issue #275). However, only the hierarchies for the class `rebuild!` was called on will be rebuilt, leaving the other subclasses without hierarchy entries.
+
+You can work around that by overloading the `rebuild!` class method in all your STI subclasses and call the super classes `rebuild!` method:
+```ruby
+class WhatTag < Tag
+  def self.rebuild!
+    Tag.rebuild!
+  end
+end
+```
+This way, the complete hierarchy including all subclasses will be rebuilt.
+
 ## Deterministic ordering
 
 By default, children will be ordered by your database engine, which may not be what you want.
