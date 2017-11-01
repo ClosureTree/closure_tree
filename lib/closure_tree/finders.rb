@@ -112,6 +112,7 @@ module ClosureTree
 
       # Find the node whose +ancestry_path+ is +path+
       def find_by_path(path, attributes = {}, parent_id = nil)
+        return nil if path.blank?
         path = _ct.build_ancestry_attr_path(path, attributes)
         if path.size > _ct.max_join_tables
           return _ct.find_by_large_path(path, attributes, parent_id)

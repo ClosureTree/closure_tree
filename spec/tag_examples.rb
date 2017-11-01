@@ -72,6 +72,42 @@ shared_examples_for Tag do
         expect(tag_class.leaves).to eq([@tag])
       end
 
+      it 'should not be found by passing find_by_path an array of blank strings' do
+        expect(tag_class.find_by_path([''])).to be_nil
+      end
+
+      it 'should not be found by passing find_by_path an empty array' do
+        expect(tag_class.find_by_path([])).to be_nil
+      end
+
+      it 'should not be found by passing find_by_path nil' do
+        expect(tag_class.find_by_path(nil)).to be_nil
+      end
+
+      it 'should not be found by passing find_by_path an empty string' do
+        expect(tag_class.find_by_path('')).to be_nil
+      end
+
+      it 'should not be found by passing find_by_path an array of nils' do
+        expect(tag_class.find_by_path([nil])).to be_nil
+      end
+
+      it 'should not be found by passing find_by_path an array with an additional blank string' do
+        expect(tag_class.find_by_path([@tag.name, ''])).to be_nil
+      end
+
+      it 'should not be found by passing find_by_path an array with an additional nil' do
+        expect(tag_class.find_by_path([@tag.name, nil])).to be_nil
+      end
+
+      it 'should be found by passing find_by_path an array with its name' do
+        expect(tag_class.find_by_path([@tag.name])).to eq @tag
+      end
+
+      it 'should be found by passing find_by_path its name' do
+        expect(tag_class.find_by_path(@tag.name)).to eq @tag
+      end
+
       context 'with child' do
         before do
           @child = tag_class.create!(name: 'tag 2')
