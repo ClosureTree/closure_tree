@@ -1,5 +1,6 @@
 require 'closure_tree/active_record_support'
 require 'forwardable'
+require 'rails/generators'
 require 'rails/generators/active_record'
 require 'rails/generators/named_base'
 
@@ -38,6 +39,13 @@ module ClosureTree
           target_class._ct
         else
           fail "Please RTFM and add the `has_closure_tree` (or `acts_as_tree`) annotation to #{class_name} before creating the migration."
+        end
+      end
+
+      def migration_version
+        major = ActiveRecord::VERSION::MAJOR
+        if major >= 5
+          "[#{major}.#{ActiveRecord::VERSION::MINOR}]"
         end
       end
 

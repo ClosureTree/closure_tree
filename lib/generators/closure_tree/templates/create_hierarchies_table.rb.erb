@@ -1,4 +1,4 @@
-class <%= migration_class_name %> < ActiveRecord::Migration
+class <%= migration_class_name %> < ActiveRecord::Migration<%= migration_version %>
   def change
     create_table :<%= migration_name %>, id: false do |t|
       t.<%= primary_key_type %> :ancestor_id, null: false
