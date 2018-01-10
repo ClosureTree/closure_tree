@@ -13,7 +13,7 @@ module ClosureTree
         touch: _ct.options[:touch],
         optional: true)
 
-      order_by_generations = "#{_ct.quoted_hierarchy_table_name}.generations asc"
+      order_by_generations = Arel.sql("#{_ct.quoted_hierarchy_table_name}.generations ASC")
 
       has_many :children, *_ct.has_many_with_order_option(
         class_name: _ct.model_class.to_s,
