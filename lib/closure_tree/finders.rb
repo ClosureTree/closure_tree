@@ -41,7 +41,7 @@ module ClosureTree
           WHERE ancestor_id = #{_ct.quote(self.id)}
           GROUP BY descendant_id
           HAVING MAX(#{_ct.quoted_hierarchy_table_name}.generations) = #{generation_level.to_i}
-        ) AS descendants ON (#{_ct.quoted_table_name}.#{_ct.base_class.primary_key} = descendants.descendant_id)
+        ) #{ _ct.t_alias_keyword } descendants ON (#{_ct.quoted_table_name}.#{_ct.base_class.primary_key} = descendants.descendant_id)
       SQL
       _ct.scope_with_order(s)
     end
@@ -76,7 +76,7 @@ module ClosureTree
             FROM #{_ct.quoted_hierarchy_table_name}
             GROUP BY ancestor_id
             HAVING MAX(#{_ct.quoted_hierarchy_table_name}.generations) = 0
-          ) AS leaves ON (#{_ct.quoted_table_name}.#{primary_key} = leaves.ancestor_id)
+          ) #{ _ct.t_alias_keyword } leaves ON (#{_ct.quoted_table_name}.#{primary_key} = leaves.ancestor_id)
         SQL
         _ct.scope_with_order(s.readonly(false))
       end
@@ -96,13 +96,13 @@ module ClosureTree
             SELECT #{primary_key} as root_id
             FROM #{_ct.quoted_table_name}
             WHERE #{_ct.quoted_parent_column_name} IS NULL
-          ) AS roots ON (1 = 1)
+          ) #{ _ct.t_alias_keyword }  roots ON (1 = 1)
           INNER JOIN (
             SELECT ancestor_id, descendant_id
             FROM #{_ct.quoted_hierarchy_table_name}
             GROUP BY ancestor_id, descendant_id
             HAVING MAX(generations) = #{generation_level.to_i}
-          ) AS descendants ON (
+          ) #{ _ct.t_alias_keyword }  descendants ON (
             #{_ct.quoted_table_name}.#{primary_key} = descendants.descendant_id
             AND roots.root_id = descendants.ancestor_id
           )
@@ -122,7 +122,7 @@ module ClosureTree
         path.reverse.each_with_index do |ea, idx|
           next_joined_table = "p#{idx}"
           scope = scope.joins(<<-SQL.strip_heredoc)
-            INNER JOIN #{_ct.quoted_table_name} AS #{next_joined_table}
+            INNER JOIN #{_ct.quoted_table_name} #{ _ct.t_alias_keyword } #{next_joined_table}
               ON #{next_joined_table}.#{_ct.quoted_id_column_name} =
  #{connection.quote_table_name(last_joined_table)}.#{_ct.quoted_parent_column_name}
           SQL
