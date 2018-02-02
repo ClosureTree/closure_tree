@@ -65,7 +65,7 @@ module ClosureTree
         node_score = "(1 + anc.#{_ct.quoted_order_column(false)}) * " +
           "power(#{h['total_descendants']}, #{h['max_depth'].to_i + 1} - #{depth_column})"
 
-        "sum(#{node_score})"
+        Arel.sql("SUM(#{node_score})")
       end
 
       def roots_and_descendants_preordered
