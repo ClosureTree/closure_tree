@@ -88,7 +88,7 @@ Note that closure_tree only supports ActiveRecord 4.2 and later, and has test co
     ```ruby
     class AddParentIdToTag < ActiveRecord::Migration
       def change
-        add_column :tag, :parent_id, :integer
+        add_column :tags, :parent_id, :integer
       end
     end
     ```
