@@ -90,6 +90,15 @@ module ClosureTree
         _ct.scope_with_order(scope)
       end
 
+      def with_descendant(*descendants)
+        descendant_ids = descendants.map { |ea| ea.is_a?(ActiveRecord::Base) ? ea._ct_id : ea }
+        scope = descendant_ids.blank? ? all : joins(:descendant_hierarchies).
+          where("#{_ct.hierarchy_table_name}.descendant_id" => descendant_ids).
+          where("#{_ct.hierarchy_table_name}.generations > 0").
+          readonly(false)
+        _ct.scope_with_order(scope)
+      end
+
       def find_all_by_generation(generation_level)
         s = joins(<<-SQL.strip_heredoc)
           INNER JOIN (
