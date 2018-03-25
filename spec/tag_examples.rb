@@ -417,6 +417,35 @@ shared_examples_for Tag do
       end
     end
 
+    context 'with_descendant' do
+      it 'works with no rows' do
+        expect(tag_class.with_descendant.to_a).to be_empty
+      end
+
+      it 'finds only parents' do
+        c = tag_class.find_or_create_by_path %w(A B C)
+        a, b = c.parent.parent, c.parent
+        spurious_tags = tag_class.find_or_create_by_path %w(D E)
+        expect(tag_class.with_descendant(c).to_a).to eq([a, b])
+      end
+
+      it 'limits subsequent where clauses' do
+        ac1 = tag_class.create(name: 'A')
+        ac2 = tag_class.create(name: 'A')
+
+        c1 = tag_class.find_or_create_by_path %w(B C1)
+        ac1.children << c1.parent
+
+        c2 = tag_class.find_or_create_by_path %w(B C2)
+        ac2.children << c2.parent
+
+        # different paths!
+        expect(ac1).not_to eq(ac2)
+        expect(tag_class.where(:name => 'A').to_a).to match_array([ac1, ac2])
+        expect(tag_class.with_descendant(c1).where(:name => 'A').to_a).to eq([ac1])
+      end
+    end
+
     context 'paths' do
       context 'with grandchild' do
         before do
