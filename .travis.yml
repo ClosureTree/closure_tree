@@ -2,9 +2,11 @@ cache: bundler
 sudo: false
 language: ruby
 rvm:
-  - 2.4.0
-  - 2.3.3
-  - 2.2.7
+  - 2.6.0
+  - 2.5.0
+  - 2.4.3
+  - 2.3.6
+  - 2.2.9
 # these haven't been passing for a while:
 #  - jruby-head
 #  - rbx
@@ -28,3 +30,4 @@ matrix:
     - gemfile: gemfiles/activerecord_edge.gemfile
     - rvm: jruby-head
     - rvm: rbx
+    - rvm: 2.6.0
