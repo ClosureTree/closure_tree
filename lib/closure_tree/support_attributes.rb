@@ -113,7 +113,7 @@ module ClosureTree
 
     # table_name alias keyword , like "AS". When used on table name alias, Oracle Database don't support used 'AS'
     def t_alias_keyword
-      (ActiveRecord::Base.connection.adapter_name.to_sym == :OracleEnhanced) ? "" : :AS
+      (ActiveRecord::Base.connection.adapter_name.to_sym == :OracleEnhanced) ? "" : "AS"
     end
   end
 end
