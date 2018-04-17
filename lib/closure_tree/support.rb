@@ -82,12 +82,15 @@ module ClosureTree
 
     # lambda-ize the order, but don't apply the default order_option
     def has_many_without_order_option(opts)
-        [lambda { order(opts[:order]) }, opts.except(:order)]
+      [lambda { order(opts[:order].call) }, opts.except(:order)]
     end
 
     def has_many_with_order_option(opts)
       order_options = [opts[:order], order_by].compact
-      [lambda { order(order_options) }, opts.except(:order)]
+      [lambda {
+        order_options = order_options.map { |o| o.is_a?(Proc) ? o.call : o }
+        order(order_options)
+      }, opts.except(:order)]
     end
 
     def ids_from(scope)
