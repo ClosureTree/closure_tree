@@ -14,7 +14,7 @@ module ClosureTree
             ON #{quoted_table_name}.#{model_class.primary_key} = generation_depth.descendant_id
         SQL
         scope_with_order(scope.joins(generation_depth), 'generation_depth.depth')
-      end
+    end
 
     def hash_tree(tree_scope, limit_depth = nil)
       limited_scope = limit_depth ? tree_scope.where("#{quoted_hierarchy_table_name}.generations <= #{limit_depth - 1}") : tree_scope
