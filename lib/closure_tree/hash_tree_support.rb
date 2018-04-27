@@ -10,7 +10,7 @@ module ClosureTree
             FROM #{quoted_hierarchy_table_name}
             GROUP BY descendant_id
             #{having_clause}
-          ) AS generation_depth
+          ) #{ t_alias_keyword } generation_depth
             ON #{quoted_table_name}.#{model_class.primary_key} = generation_depth.descendant_id
         SQL
         scope_with_order(scope.joins(generation_depth), 'generation_depth.depth')

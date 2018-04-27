@@ -102,7 +102,7 @@ module ClosureTree
               FROM #{_ct.quoted_hierarchy_table_name}
               WHERE ancestor_id = #{_ct.quote(id)}
                  OR descendant_id = #{_ct.quote(id)}
-            ) AS x )
+            ) #{ _ct.t_alias_keyword } x )
         SQL
       end
     end
