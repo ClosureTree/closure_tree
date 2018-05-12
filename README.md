@@ -74,7 +74,7 @@ Note that closure_tree only supports ActiveRecord 4.2 and later, and has test co
     end
     ```
 
-    Make sure you check out the [large number options](#available-options) that `has_closure_tree` accepts.
+    Make sure you check out the [large number of options](#available-options) that `has_closure_tree` accepts.
 
     **IMPORTANT: Make sure you add `has_closure_tree` _after_ `attr_accessible` and
     `self.table_name =` lines in your model.**
