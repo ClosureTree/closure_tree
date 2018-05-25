@@ -17,13 +17,7 @@ module ClosureTree
     end
 
     def order_is_numeric?
-      # skip if database is not connected.
-      return false unless ::ActiveRecord::Base.connected?
-
-      # The table might not exist yet (in the case of ActiveRecord::Observer use, see issue 32)
-      return false if !order_option? || !model_class.table_exists?
-      c = model_class.columns_hash[order_column]
-      c && c.type == :integer
+      options[:numeric_order]
     end
 
     def subclass?
