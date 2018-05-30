@@ -1,5 +1,6 @@
 module ClosureTree
   class MultipleRootError < StandardError; end
+  class RootOrderingDisabledError < StandardError; end
 
   module HasClosureTreeRoot
 

@@ -65,10 +65,15 @@ module ClosureTree
         node_score = "(1 + anc.#{_ct.quoted_order_column(false)}) * " +
           "power(#{h['total_descendants']}, #{h['max_depth'].to_i + 1} - #{depth_column})"
 
-        Arel.sql("SUM(#{node_score})")
+        # We want the NULLs to be first in case we are not ordering roots and they have NULL order.
+        Arel.sql("SUM(#{node_score}) IS NULL DESC, SUM(#{node_score})")
       end
 
       def roots_and_descendants_preordered
+        if _ct.dont_order_roots
+          raise ClosureTree::RootOrderingDisabledError.new("Root ordering is disabled on this model")
+        end
+
         join_sql = <<-SQL.strip_heredoc
           JOIN #{_ct.quoted_hierarchy_table_name} anc_hier
             ON anc_hier.descendant_id = #{_ct.quoted_table_name}.#{_ct.quoted_id_column_name}
@@ -112,6 +117,10 @@ module ClosureTree
 
     def add_sibling(sibling, add_after = true)
       fail "can't add self as sibling" if self == sibling
+
+      if _ct.dont_order_roots && parent.nil?
+        raise ClosureTree::RootOrderingDisabledError.new("Root ordering is disabled on this model")
+      end
 
       # Make sure self isn't dirty, because we're going to call reload:
       save
