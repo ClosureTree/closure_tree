@@ -134,6 +134,31 @@ module ClosureTree
       _ct.ids_from(siblings)
     end
 
+    # node's parent is this record
+    def parent_of?(node)
+      self == node.parent
+    end
+
+    # node's root is this record
+    def root_of?(node)
+      self == node.root
+    end
+
+    # node's ancestors include this record
+    def ancestor_of?(node)
+      node.ancestors.include? self
+    end
+
+    # node is record's ancestor
+    def descendant_of?(node)
+      self.ancestors.include? node
+    end
+
+    # node is record's parent
+    def child_of?(node)
+      self.parent == node
+    end
+
     # Alias for appending to the children collection.
     # You can also add directly to the children collection, if you'd prefer.
     def add_child(child_node)
