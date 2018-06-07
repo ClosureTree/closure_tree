@@ -551,4 +551,41 @@ describe Label do
       expect(tree[@b]).to eq({})
     end
   end
+
+  context 'relationship between nodes' do
+    before do
+      create_label_tree
+    end
+
+    it "checks parent of node" do
+      expect(@a1.parent_of?(@b1)).to be_truthy
+      expect(@c2.parent_of?(@d2)).to be_truthy      
+      expect(@c1.parent_of?(@b1)).to be_falsey
+    end
+
+    it "checks children of node" do
+      expect(@d1.child_of?(@c1)).to be_truthy
+      expect(@c2.child_of?(@b1)).to be_truthy      
+      expect(@c3.child_of?(@b1)).to be_falsey
+    end
+
+    it "checks root of node" do
+      expect(@a1.root_of?(@d1)).to be_truthy
+      expect(@a1.root_of?(@c2)).to be_truthy
+      expect(@a2.root_of?(@c2)).to be_falsey
+    end
+
+    it "checks ancestor of node" do
+      expect(@a1.ancestor_of?(@d1)).to be_truthy
+      expect(@b1.ancestor_of?(@d1)).to be_truthy
+      expect(@b1.ancestor_of?(@c3)).to be_falsey      
+    end
+
+    it "checks descendant of node" do
+      expect(@c1.descendant_of?(@a1)).to be_truthy
+      expect(@d2.descendant_of?(@a1)).to be_truthy
+      expect(@b1.descendant_of?(@a2)).to be_falsey      
+    end
+  end
+
 end
