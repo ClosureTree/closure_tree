@@ -346,15 +346,19 @@ When you include ```has_closure_tree``` in your model, you can provide a hash to
 
 * ```tag.root``` returns the root for this node
 * ```tag.root?``` returns true if this is a root node
+* ```tag.root_of?(node)``` returns true if current node is root of another one
 * ```tag.child?``` returns true if this is a child node. It has a parent.
 * ```tag.leaf?``` returns true if this is a leaf node. It has no children.
 * ```tag.leaves``` is scoped to all leaf nodes in self_and_descendants.
 * ```tag.depth``` returns the depth, or "generation", for this node in the tree. A root node will have a value of 0.
 * ```tag.parent``` returns the node's immediate parent. Root nodes will return nil.
+* ```tag.parent_of?(node)``` returns true if current node is parent of another one
 * ```tag.children``` is a ```has_many``` of immediate children (just those nodes whose parent is the current node).
 * ```tag.child_ids``` is an array of the IDs of the children.
+* ```tag.child_of?(node)``` returns true if current node is child of another one
 * ```tag.ancestors``` is a ordered scope of [ parent, grandparent, great grandparent, … ]. Note that the size of this array will always equal ```tag.depth```.
 * ```tag.ancestor_ids``` is an array of the IDs of the ancestors.
+* ```tag.ancestor_of?(node)``` returns true if current node is ancestor of another one
 * ```tag.self_and_ancestors``` returns a scope containing self, parent, grandparent, great grandparent, etc.
 * ```tag.self_and_ancestors_ids``` returns IDs containing self, parent, grandparent, great grandparent, etc.
 * ```tag.siblings``` returns a scope containing all nodes with the same parent as ```tag```, excluding self.
@@ -362,6 +366,7 @@ When you include ```has_closure_tree``` in your model, you can provide a hash to
 * ```tag.self_and_siblings``` returns a scope containing all nodes with the same parent as ```tag```, including self.
 * ```tag.descendants``` returns a scope of all children, childrens' children, etc., excluding self ordered by depth.
 * ```tag.descendant_ids``` returns an array of the IDs of the descendants.
+* ```tag.descendant_of?(node)``` returns true if current node is descendant of another one
 * ```tag.self_and_descendants``` returns a scope of self, all children, childrens' children, etc., ordered by depth.
 * ```tag.self_and_descendant_ids``` returns IDs of self, all children, childrens' children, etc., ordered by depth.
 * ```tag.hash_tree``` returns an [ordered, nested hash](#nested-hashes) that can be depth-limited.
