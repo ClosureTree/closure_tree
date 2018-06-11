@@ -75,6 +75,10 @@ module ClosureTree
       options[:order]
     end
 
+    def dont_order_roots
+      options[:dont_order_roots] || false
+    end
+
     def nulls_last_order_by
       "-#{quoted_order_column} #{order_by_order(reverse = true)}"
     end

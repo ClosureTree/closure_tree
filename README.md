@@ -494,6 +494,25 @@ root.reload.children.pluck(:name)
 => ["b", "c", "a"]
 ```
 
+### Ordering Roots
+
+With numeric ordering, root nodes are, by default, assigned order values globally across the whole database
+table. So for instance if you have 5 nodes with no parent, they will be ordered 0 through 4 by default.
+If your model represents many separate trees and you have a lot of records, this can cause performance
+problems, and doesn't really make much sense.
+
+You can disable this default behavior by passing `dont_order_roots: true` as an option to your delcaration:
+
+```
+has_closure_tree order: 'sort_order', numeric_order: true, dont_order_roots: true
+```
+
+In this case, calling `prepend_sibling` and `append_sibling` on a root node or calling
+`roots_and_descendants_preordered` on the model will raise a `RootOrderingDisabledError`.
+
+The `dont_order_roots` option will be ignored unless `numeric_order` is set to true.
+
+
 ## Concurrency
 
 Several methods, especially ```#rebuild``` and ```#find_or_create_by_path```, cannot run concurrently correctly.

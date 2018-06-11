@@ -289,6 +289,50 @@ describe Label do
     end
   end
 
+  context "doesn't order roots when requested" do
+    before :each do
+      @root1 = LabelWithoutRootOrdering.create!(:name => 'root1')
+      @root2 = LabelWithoutRootOrdering.create!(:name => 'root2')
+      @a, @b, @c, @d, @e = ('a'..'e').map { |ea| LabelWithoutRootOrdering.new(:name => ea) }
+      @root1.children << @a
+      @root1.append_child(@c)
+      @root1.prepend_child(@d)
+
+      # Reload is needed here and below because order values may have been adjusted in the DB during
+      # prepend_child, append_sibling, etc.
+      [@a, @c, @d].each(&:reload)
+
+      @a.append_sibling(@b)
+      [@a, @c, @d, @b].each(&:reload)
+      @d.prepend_sibling(@e)
+    end
+
+    it 'order_values properly' do
+      expect(@root1.reload.order_value).to be_nil
+      orders_and_names = @root1.children.reload.map { |ea| [ea.name, ea.order_value] }
+      expect(orders_and_names).to eq([['e', 0], ['d', 1], ['a', 2], ['b', 3], ['c', 4]])
+    end
+
+    it 'raises on prepending and appending to root' do
+      expect { @root1.prepend_sibling(@f) }.to raise_error(ClosureTree::RootOrderingDisabledError)
+      expect { @root1.append_sibling(@f) }.to raise_error(ClosureTree::RootOrderingDisabledError)
+    end
+
+    it 'returns empty array for siblings_before and after' do
+      expect(@root1.siblings_before).to eq([])
+      expect(@root1.siblings_after).to eq([])
+    end
+
+    it 'returns expected result for self_and_descendants_preordered' do
+      expect(@root1.self_and_descendants_preordered.to_a).to eq([@root1, @e, @d, @a, @b, @c])
+    end unless sqlite? # sqlite doesn't have a power function.
+
+    it 'raises on roots_and_descendants_preordered' do
+      expect { LabelWithoutRootOrdering.roots_and_descendants_preordered }.to raise_error(
+        ClosureTree::RootOrderingDisabledError)
+    end
+  end
+
   describe 'code in the readme' do
     it 'creates STI label hierarchies' do
       child = Label.find_or_create_by_path([
@@ -341,17 +385,7 @@ describe Label do
     root = Label.create(:name => "root")
     a = Label.create(:name => "a", :parent => root)
     b = Label.create(:name => "b", :parent => root)
-    expect(a.order_value).to eq(0)
-    expect(b.order_value).to eq(1)
-    #c = Label.create(:name => "c")
 
-    # should the order_value for roots be set?
-    expect(root.order_value).not_to be_nil
-    expect(root.order_value).to eq(0)
-
-    # order_value should never be nil on a child.
-    expect(a.order_value).not_to be_nil
-    expect(a.order_value).to eq(0)
     # Add a child to root at end of children.
     root.children << b
     expect(b.parent).to eq(root)
@@ -395,28 +429,41 @@ describe Label do
   end
 
   context "order_value must be set" do
+    shared_examples_for "correct order_value" do
+      before do
+        @root = model.create(name: 'root')
+        @a, @b, @c = %w(a b c).map { |n| @root.children.create(name: n) }
+      end
 
-    before do
-      @root = Label.create(name: 'root')
-      @a, @b, @c = %w(a b c).map { |n| @root.children.create(name: n) }
+      it 'should set order_value on roots' do
+        expect(@root.order_value).to eq(expected_root_order_value)
+      end
+
+      it 'should set order_value with siblings' do
+        expect(@a.order_value).to eq(0)
+        expect(@b.order_value).to eq(1)
+        expect(@c.order_value).to eq(2)
+      end
+
+      it 'should reset order_value when a node is moved to another location' do
+        root2 = model.create(name: 'root2')
+        root2.add_child @b
+        expect(@a.order_value).to eq(0)
+        expect(@b.order_value).to eq(0)
+        expect(@c.reload.order_value).to eq(1)
+      end
     end
 
-    it 'should set order_value on roots' do
-      expect(@root.order_value).to eq(0)
+    context "with normal model" do
+      let(:model) { Label }
+      let(:expected_root_order_value) { 0 }
+      it_behaves_like "correct order_value"
     end
 
-    it 'should set order_value with siblings' do
-      expect(@a.order_value).to eq(0)
-      expect(@b.order_value).to eq(1)
-      expect(@c.order_value).to eq(2)
-    end
-
-    it 'should reset order_value when a node is moved to another location' do
-      root2 = Label.create(name: 'root2')
-      root2.add_child @b
-      expect(@a.order_value).to eq(0)
-      expect(@b.order_value).to eq(0)
-      expect(@c.reload.order_value).to eq(1)
+    context "without root ordering" do
+      let(:model) { LabelWithoutRootOrdering }
+      let(:expected_root_order_value) { nil }
+      it_behaves_like "correct order_value"
     end
   end
 
