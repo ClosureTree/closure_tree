@@ -2,10 +2,9 @@
 
 source "https://rubygems.org"
 
-gem "activerecord", :github => "rails/rails"
-gem "arel", :github => "rails/arel"
+gem "activerecord", github: "rails/rails"
 
-platforms :ruby, :rbx do
+platforms :ruby do
   gem "mysql2"
   gem "pg"
   gem "sqlite3"
@@ -17,4 +16,4 @@ platforms :jruby do
   gem "activerecord-jdbcsqlite3-adapter"
 end
 
-gemspec :path => "../"
+gemspec path: "../"

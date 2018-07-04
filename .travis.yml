@@ -3,13 +3,10 @@ sudo: false
 language: ruby
 rvm:
   - 2.6.0
-  - 2.5.0
-  - 2.4.3
+  - 2.5.1
+  - 2.4.4
   - 2.3.6
-  - 2.2.9
-# these haven't been passing for a while:
-#  - jruby-head
-#  - rbx
+  - 2.2.10
 
 gemfile:
   - gemfiles/activerecord_5.2.gemfile

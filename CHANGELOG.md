@@ -1,5 +1,26 @@
 # Changelog
 
+### 7.0.0
+Closure Tree is now tested against Rails 5.2
+
+- Postpone configuration (database introspection)[PR 264](https://github.com/ClosureTree/closure_tree/pull/264)
+- Fix "tree.find_by_path([])" [PR 288](https://github.com/ClosureTree/closure_tree/pull/288)
+- Fixed generator specs and added migration version [PR 292](https://github.com/ClosureTree/closure_tree/pull/292)
+- Eliminate deprecation warnings in ActiveRecord 5.2 [PR 296](https://github.com/ClosureTree/closure_tree/pull/296)
+- When using 'oracle_enhanced', remove 'AS' on the table_name alias. [PR 298](https://github.com/ClosureTree/closure_tree/pull/298)
+- README update [PR 301](https://github.com/ClosureTree/closure_tree/pull/301)
+- Add `with_descendant` finder [PR 302](https://github.com/ClosureTree/closure_tree/pull/302)
+- Fix pg version for rails prior 5.1 [PR 303](https://github.com/ClosureTree/closure_tree/pull/303)
+- Test on Rails 5.2 & fix mysql for older Rails [PR 304](https://github.com/ClosureTree/closure_tree/pull/304)
+- Test with ActiveRecord 5.2.0 [PR 307](https://github.com/ClosureTree/closure_tree/pull/307)
+- README update [PR 310](https://github.com/ClosureTree/closure_tree/pull/310)
+- FactoryBot linter failing for a model that uses closure_tree [PR 311](https://github.com/ClosureTree/closure_tree/pull/311)
+- Added dont_order_roots option [PR 312](https://github.com/ClosureTree/closure_tree/pull/312)
+- Added instance methods to determine the relationship between 2 nodes [PR 314](https://github.com/ClosureTree/closure_tree/pull/314)
+- Add an instance method to check the relationship between 2 nodes: #family_of? [PR 319](https://github.com/ClosureTree/closure_tree/pull/319)
+- Remove options restrictions on has_closure_tree_root [PR 321](https://github.com/ClosureTree/closure_tree/pull/321)
+- Fix uninitialized variable warnings [PR 323](https://github.com/ClosureTree/closure_tree/pull/323)
+
 ### 6.6.0
 
 Closure Tree is now tested against Rails 5.1, and just passed 50 contributors and

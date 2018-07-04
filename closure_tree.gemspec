@@ -12,12 +12,15 @@ Gem::Specification.new do |gem|
   gem.description = gem.summary
   gem.license     = 'MIT'
 
-  gem.files       = `git ls-files`.split($INPUT_RECORD_SEPARATOR)
+  gem.files         = `git ls-files`.split($/).reject do |f|
+    f.match(%r{^(spec|img|gemfiles)})
+  end
+
   gem.test_files  = gem.files.grep(%r{^spec/})
   gem.required_ruby_version = '>= 2.0.0'
 
-  gem.add_runtime_dependency 'activerecord', '>= 4.1.0'
-  gem.add_runtime_dependency 'with_advisory_lock', '>= 3.0.0'
+  gem.add_runtime_dependency 'activerecord', '>= 4.2.10'
+  gem.add_runtime_dependency 'with_advisory_lock', '>= 4.0.0'
 
   gem.add_development_dependency 'appraisal'
   gem.add_development_dependency 'database_cleaner'
