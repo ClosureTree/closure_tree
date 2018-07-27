@@ -369,6 +369,7 @@ When you include ```has_closure_tree``` in your model, you can provide a hash to
 * ```tag.descendant_of?(node)``` returns true if current node is descendant of another one
 * ```tag.self_and_descendants``` returns a scope of self, all children, childrens' children, etc., ordered by depth.
 * ```tag.self_and_descendant_ids``` returns IDs of self, all children, childrens' children, etc., ordered by depth.
+* ```tag.family_of?``` returns true if current node and another one have a same root.
 * ```tag.hash_tree``` returns an [ordered, nested hash](#nested-hashes) that can be depth-limited.
 * ```tag.find_by_path(path)``` returns the node whose name path *from ```tag```* is ```path```. See (#find_or_create_by_path).
 * ```tag.find_or_create_by_path(path)``` returns the node whose name path *from ```tag```* is ```path```, and will create the node if it doesn't exist already.See (#find_or_create_by_path).
