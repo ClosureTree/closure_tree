@@ -5,12 +5,7 @@ module ClosureTree
   module HasClosureTreeRoot
 
     def has_closure_tree_root(assoc_name, options = {})
-      options.assert_valid_keys(
-        :class_name,
-        :foreign_key
-      )
-
-      options[:class_name] ||= assoc_name.to_s.sub(/\Aroot_/, "").classify
+       options[:class_name] ||= assoc_name.to_s.sub(/\Aroot_/, "").classify
       options[:foreign_key] ||= self.name.underscore << "_id"
 
       has_one assoc_name, -> { where(parent: nil) }, options
