@@ -159,6 +159,11 @@ module ClosureTree
       self.parent == node
     end
 
+    # node and record have a same root
+    def family_of?(node)
+      self.root == node.root
+    end
+
     # Alias for appending to the children collection.
     # You can also add directly to the children collection, if you'd prefer.
     def add_child(child_node)

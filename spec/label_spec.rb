@@ -633,6 +633,14 @@ describe Label do
       expect(@d2.descendant_of?(@a1)).to be_truthy
       expect(@b1.descendant_of?(@a2)).to be_falsey      
     end
+
+    it "checks descendant of node" do
+      expect(@b1.family_of?(@b1)).to be_truthy
+      expect(@a1.family_of?(@c1)).to be_truthy
+      expect(@d3.family_of?(@a2)).to be_truthy
+      expect(@c1.family_of?(@d2)).to be_truthy
+      expect(@c3.family_of?(@a1)).to be_falsey
+    end
   end
 
 end
