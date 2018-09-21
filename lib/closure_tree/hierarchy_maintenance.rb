@@ -20,7 +20,7 @@ module ClosureTree
     end
 
     def _ct_validate
-      if !@_ct_skip_cycle_detection &&
+      if !(defined? @_ct_skip_cycle_detection) &&
         !new_record? && # don't validate for cycles if we're a new record
         changes[_ct.parent_column_name] && # don't validate for cycles if we didn't change our parent
         parent.present? && # don't validate if we're root
@@ -64,7 +64,7 @@ module ClosureTree
 
     def rebuild!(called_by_rebuild = false)
       _ct.with_advisory_lock do
-        delete_hierarchy_references unless @was_new_record
+        delete_hierarchy_references unless (defined? @was_new_record) && @was_new_record
         hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
         unless root?
           _ct.connection.execute <<-SQL.strip_heredoc
