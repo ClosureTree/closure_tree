@@ -341,7 +341,7 @@ When you include ```has_closure_tree``` in your model, you can provide a hash to
 * ```Tag.find_or_create_by_path(path, attributes)``` returns the node whose name path is ```path```, and will create the node if it doesn't exist already.See (#find_or_create_by_path).
 * ```Tag.find_all_by_generation(generation_level)``` returns the descendant nodes who are ```generation_level``` away from a root. ```Tag.find_all_by_generation(0)``` is equivalent to ```Tag.roots```.
 * ```Tag.with_ancestor(ancestors)``` scopes to all descendants whose ancestor is in the given list.
-
+* ```Tag.lowest_common_ancestor(descendants)``` finds the lowest common ancestor of the descendants.
 ### Instance methods
 
 * ```tag.root``` returns the root for this node

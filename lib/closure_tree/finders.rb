@@ -99,6 +99,19 @@ module ClosureTree
         _ct.scope_with_order(scope)
       end
 
+      def lowest_common_ancestor(*descendants)
+        descendants = descendants.first if descendants.length == 1 && descendants.first.respond_to?(:each)
+        ancestor_id = hierarchy_class
+          .where(descendant_id: descendants)
+          .group(:ancestor_id)
+          .having("COUNT(ancestor_id) = #{descendants.count}")
+          .order(Arel.sql('MIN(generations) ASC'))
+          .limit(1)
+          .pluck(:ancestor_id).first
+
+        find_by(primary_key => ancestor_id) if ancestor_id
+      end
+
       def find_all_by_generation(generation_level)
         s = joins(<<-SQL.strip_heredoc)
           INNER JOIN (

@@ -446,6 +446,97 @@ shared_examples_for Tag do
       end
     end
 
+    context 'lowest_common_ancestor' do
+      let!(:t1) { tag_class.create!(name: 't1') }
+      let!(:t11) { tag_class.create!(name: 't11', parent: t1) }
+      let!(:t111) { tag_class.create!(name: 't111', parent: t11) }
+      let!(:t112) { tag_class.create!(name: 't112', parent: t11) }
+      let!(:t12) { tag_class.create!(name: 't12', parent: t1) }
+      let!(:t121) { tag_class.create!(name: 't121', parent: t12) }
+      let!(:t2) { tag_class.create!(name: 't2') }
+      let!(:t21) { tag_class.create!(name: 't21', parent: t2) }
+      let!(:t211) { tag_class.create!(name: 't211', parent: t21) }
+
+      it 'finds the parent for siblings' do
+        expect(tag_class.lowest_common_ancestor(t112, t111)).to eq t11
+        expect(tag_class.lowest_common_ancestor(t12, t11)).to eq t1
+
+        expect(tag_class.lowest_common_ancestor([t112, t111])).to eq t11
+        expect(tag_class.lowest_common_ancestor([t12, t11])).to eq t1
+
+        expect(tag_class.lowest_common_ancestor(tag_class.where(name: ['t112', 't111']))).to eq t11
+        expect(tag_class.lowest_common_ancestor(tag_class.where(name: ['t12', 't11']))).to eq t1
+      end
+
+      it 'finds the grandparent for cousins' do
+        expect(tag_class.lowest_common_ancestor(t112, t111, t121)).to eq t1
+        expect(tag_class.lowest_common_ancestor([t112, t111, t121])).to eq t1
+        expect(tag_class.lowest_common_ancestor(tag_class.where(name: ['t112', 't111', 't121']))).to eq t1
+      end
+
+      it 'finds the parent/grandparent for aunt-uncle/niece-nephew' do
+        expect(tag_class.lowest_common_ancestor(t12, t112)).to eq t1
+        expect(tag_class.lowest_common_ancestor([t12, t112])).to eq t1
+        expect(tag_class.lowest_common_ancestor(tag_class.where(name: ['t12', 't112']))).to eq t1
+      end
+
+      it 'finds the self/parent for parent/child' do
+        expect(tag_class.lowest_common_ancestor(t12, t121)).to eq t12
+        expect(tag_class.lowest_common_ancestor(t1, t12)).to eq t1
+
+        expect(tag_class.lowest_common_ancestor([t12, t121])).to eq t12
+        expect(tag_class.lowest_common_ancestor([t1, t12])).to eq t1
+
+        expect(tag_class.lowest_common_ancestor(tag_class.where(name: ['t12', 't121']))).to eq t12
+        expect(tag_class.lowest_common_ancestor(tag_class.where(name: ['t1', 't12']))).to eq t1
+      end
+
+      it 'finds the self/grandparent for grandparent/grandchild' do
+        expect(tag_class.lowest_common_ancestor(t211, t2)).to eq t2
+        expect(tag_class.lowest_common_ancestor(t111, t1)).to eq t1
+
+        expect(tag_class.lowest_common_ancestor([t211, t2])).to eq t2
+        expect(tag_class.lowest_common_ancestor([t111, t1])).to eq t1
+
+        expect(tag_class.lowest_common_ancestor(tag_class.where(name: ['t211', 't2']))).to eq t2
+        expect(tag_class.lowest_common_ancestor(tag_class.where(name: ['t111', 't1']))).to eq t1
+      end
+
+      it 'finds the grandparent for a whole extended family' do
+        expect(tag_class.lowest_common_ancestor(t1, t11, t111, t112, t12, t121)).to eq t1
+        expect(tag_class.lowest_common_ancestor(t2, t21, t211)).to eq t2
+
+        expect(tag_class.lowest_common_ancestor([t1, t11, t111, t112, t12, t121])).to eq t1
+        expect(tag_class.lowest_common_ancestor([t2, t21, t211])).to eq t2
+
+        expect(tag_class.lowest_common_ancestor(tag_class.where(name: ['t1', 't11', 't111', 't112', 't12', 't121']))).to eq t1
+        expect(tag_class.lowest_common_ancestor(tag_class.where(name: ['t2', 't21', 't211']))).to eq t2
+      end
+
+      it 'is nil for no items' do
+        expect(tag_class.lowest_common_ancestor).to be_nil
+        expect(tag_class.lowest_common_ancestor([])).to be_nil
+        expect(tag_class.lowest_common_ancestor(tag_class.none)).to be_nil
+      end
+
+      it 'is nil if there are no common ancestors' do
+        expect(tag_class.lowest_common_ancestor(t111, t211)).to be_nil
+        expect(tag_class.lowest_common_ancestor([t111, t211])).to be_nil
+        expect(tag_class.lowest_common_ancestor(tag_class.where(name: ['t111', 't211']))).to be_nil
+      end
+
+      it 'is itself for single item' do
+        expect(tag_class.lowest_common_ancestor(t111)).to eq t111
+        expect(tag_class.lowest_common_ancestor(t2)).to eq t2
+
+        expect(tag_class.lowest_common_ancestor([t111])).to eq t111
+        expect(tag_class.lowest_common_ancestor([t2])).to eq t2
+
+        expect(tag_class.lowest_common_ancestor(tag_class.where(name: 't111'))).to eq t111
+        expect(tag_class.lowest_common_ancestor(tag_class.where(name: 't2'))).to eq t2
+      end
+    end
+
     context 'paths' do
       context 'with grandchild' do
         before do
