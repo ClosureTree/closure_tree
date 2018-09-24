@@ -109,7 +109,7 @@ module ClosureTree
           .limit(1)
           .pluck(:ancestor_id).first
 
-        unscoped.find(ancestor_id) if ancestor_id
+        default_scoped(unscoped).find_by(primary_key => ancestor_id) if ancestor_id
       end
 
       def find_all_by_generation(generation_level)
