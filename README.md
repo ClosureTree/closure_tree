@@ -1,7 +1,5 @@
 # Closure Tree
 
-__Important: please [vote on the future of ClosureTree](https://github.com/ClosureTree/closure_tree/issues/277)!__
-
 ### Closure_tree lets your ActiveRecord models act as nodes in a [tree data structure](http://en.wikipedia.org/wiki/Tree_%28data_structure%29)
 
 Common applications include modeling hierarchical data, like tags, threaded comments, page graphs in CMSes,
