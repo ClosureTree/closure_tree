@@ -143,9 +143,6 @@ ActiveRecord::Schema.define(:version => 0) do
     t.integer "generations", :null => false
   end
 
-  add_foreign_key(:metal_hierarchies, :metal, :column => 'ancestor_id')
-  add_foreign_key(:metal_hierarchies, :metal, :column => 'descendant_id')
-
   create_table 'menu_items' do |t|
     t.string 'name'
     t.references 'parent'
