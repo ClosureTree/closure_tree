@@ -146,7 +146,7 @@ module ClosureTree
     def find_by_large_path(path, attributes = {}, parent_id = nil)
       next_parent_id = parent_id
       child = nil
-      path.in_groups(max_join_tables, false).each do |subpath|
+      path.in_groups_of(max_join_tables, false).each do |subpath|
         child = model_class.find_by_path(subpath, attributes, next_parent_id)
         return nil if child.nil?
         next_parent_id = child._ct_id
