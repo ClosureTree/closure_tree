@@ -8,7 +8,6 @@ and tracking user referrals.
 [![Join the chat at https://gitter.im/closure_tree/Lobby](https://badges.gitter.im/closure_tree/Lobby.svg)](https://gitter.im/closure_tree/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://api.travis-ci.org/ClosureTree/closure_tree.svg?branch=master)](http://travis-ci.org/ClosureTree/closure_tree)
 [![Gem Version](https://badge.fury.io/rb/closure_tree.svg)](https://badge.fury.io/rb/closure_tree)
-[![Dependency Status](https://gemnasium.com/badges/github.com/ClosureTree/closure_tree.svg)](https://gemnasium.com/github.com/ClosureTree/closure_tree)
 
 Dramatically more performant than
 [ancestry](https://github.com/stefankroes/ancestry) and
