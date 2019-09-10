@@ -2,9 +2,8 @@ cache: bundler
 sudo: false
 language: ruby
 rvm:
-  - 2.6.0
-  - 2.5.1
-  - 2.4.4
+  - 2.6.3
+  - 2.5.5
 
 gemfile:
   - gemfiles/activerecord_5.2.gemfile
@@ -27,6 +26,6 @@ script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rake --trace spec:a
 matrix:
   allow_failures:
     - gemfile: gemfiles/activerecord_edge.gemfile
-    - rvm: jruby-head
-    - rvm: rbx
-    - rvm: 2.6.0
+  exclude:
+  - rvm: 2.5.5
+    gemfile: gemfiles/activerecord_edge.gemfile
