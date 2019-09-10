@@ -6,6 +6,7 @@ rvm:
   - 2.5.5
 
 gemfile:
+  - gemfiles/activerecord_6.0.gemfile
   - gemfiles/activerecord_5.2.gemfile
   - gemfiles/activerecord_5.1.gemfile
   - gemfiles/activerecord_5.0.gemfile
@@ -25,7 +26,8 @@ script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rake --trace spec:a
 
 matrix:
   allow_failures:
-    - gemfile: gemfiles/activerecord_edge.gemfile
+  - gemfile: gemfiles/activerecord_edge.gemfile
+  - gemfile: gemfiles/activerecord_6.0.gemfile
   exclude:
   - rvm: 2.5.5
     gemfile: gemfiles/activerecord_edge.gemfile
