@@ -4,7 +4,7 @@ appraise 'activerecord-4.2' do
   platforms :ruby do
     gem 'mysql2', "< 0.5"
     gem 'pg', "~> 0.21"
-    gem 'sqlite3'
+    gem 'sqlite3', '~> 1.3.13'
   end
 
   platforms :jruby do
@@ -19,7 +19,7 @@ appraise 'activerecord-5.0' do
   platforms :ruby do
     gem 'mysql2'
     gem 'pg'
-    gem 'sqlite3'
+    gem 'sqlite3', '~> 1.3.13'
   end
 
   platforms :jruby do
@@ -34,7 +34,7 @@ appraise 'activerecord-5.1' do
   platforms :ruby do
     gem 'mysql2'
     gem 'pg'
-    gem 'sqlite3'
+    gem 'sqlite3', '~> 1.3.13'
   end
 
   platforms :jruby do
