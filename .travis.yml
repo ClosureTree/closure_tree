@@ -5,8 +5,6 @@ rvm:
   - 2.6.0
   - 2.5.1
   - 2.4.4
-  - 2.3.6
-  - 2.2.10
 
 gemfile:
   - gemfiles/activerecord_5.2.gemfile
