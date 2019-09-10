@@ -18,6 +18,10 @@ env:
   - DB=mysql
   - DB=postgresql
 
+services:
+  - mysql
+  - postgresql
+
 script: WITH_ADVISORY_LOCK_PREFIX=$TRAVIS_JOB_ID bundle exec rake --trace spec:all
 
 matrix:
