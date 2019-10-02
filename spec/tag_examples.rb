@@ -781,11 +781,13 @@ shared_examples_for Tag do
     end
 
     it 'finds_by_path for very deep trees' do
-      expect(tag_class._ct).to receive(:max_join_tables).at_least(1).and_return(3)
-      path = (1..20).to_a.map { |ea| ea.to_s }
+      expect(tag_class._ct).to receive(:max_join_tables).at_least(1).and_return(20)
+      path = (1..70).to_a.map { |ea| ea.to_s }
       subject = tag_class.find_or_create_by_path(path)
       expect(subject.ancestry_path).to eq(path)
-      expect(tag_class.find_by_path(path)).to eq(subject)
+      expect(count_queries do
+        expect(tag_class.find_by_path(path)).to eq(subject)
+      end).to eq(4)
       root = subject.root
       expect(root.find_by_path(path[1..-1])).to eq(subject)
     end

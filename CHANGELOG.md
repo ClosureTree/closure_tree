@@ -1,5 +1,9 @@
 # Changelog
 
+### 7.1.0
+
+- Optimize the grouping behavior when finding by large path [PR 347](https://github.com/ClosureTree/closure_tree/pull/347)
+
 ### 7.0.0
 Closure Tree is now tested against Rails 5.2
 
