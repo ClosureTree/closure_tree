@@ -34,7 +34,7 @@ module ClosureTree
     end
 
     def find_all_by_generation(generation_level)
-      s = _ct.base_class.joins(<<-SQL.strip_heredoc)
+      s = _ct.base_class.joins(<<-SQL.squish)
         INNER JOIN (
           SELECT descendant_id
           FROM #{_ct.quoted_hierarchy_table_name}
@@ -70,7 +70,7 @@ module ClosureTree
       end
 
       def leaves
-        s = joins(<<-SQL.strip_heredoc)
+        s = joins(<<-SQL.squish)
           INNER JOIN (
             SELECT ancestor_id
             FROM #{_ct.quoted_hierarchy_table_name}
@@ -113,7 +113,7 @@ module ClosureTree
       end
 
       def find_all_by_generation(generation_level)
-        s = joins(<<-SQL.strip_heredoc)
+        s = joins(<<-SQL.squish)
           INNER JOIN (
             SELECT #{primary_key} as root_id
             FROM #{_ct.quoted_table_name}
@@ -143,7 +143,7 @@ module ClosureTree
         last_joined_table = _ct.table_name
         path.reverse.each_with_index do |ea, idx|
           next_joined_table = "p#{idx}"
-          scope = scope.joins(<<-SQL.strip_heredoc)
+          scope = scope.joins(<<-SQL.squish)
             INNER JOIN #{_ct.quoted_table_name} #{ _ct.t_alias_keyword } #{next_joined_table}
               ON #{next_joined_table}.#{_ct.quoted_id_column_name} =
  #{connection.quote_table_name(last_joined_table)}.#{_ct.quoted_parent_column_name}

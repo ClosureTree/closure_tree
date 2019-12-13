@@ -4,7 +4,7 @@ module ClosureTree
         # Deepest generation, within limit, for each descendant
         # NOTE: Postgres requires HAVING clauses to always contains aggregate functions (!!)
         having_clause = limit_depth ? "HAVING MAX(generations) <= #{limit_depth - 1}" : ''
-        generation_depth = <<-SQL.strip_heredoc
+        generation_depth = <<-SQL.squish
           INNER JOIN (
             SELECT descendant_id, MAX(generations) as depth
             FROM #{quoted_hierarchy_table_name}
