@@ -13,3 +13,4 @@ tmp/
 *.lock
 tmp/
 .ruby-*
+*.iml
