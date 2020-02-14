@@ -51,7 +51,7 @@ module ClosureTree
 
       # If node is nil, order the whole tree.
       def _ct_sum_order_by(node = nil)
-        stats_sql = <<-SQL.strip_heredoc
+        stats_sql = <<-SQL.squish
           SELECT
             count(*) as total_descendants,
             max(generations) as max_depth
@@ -74,7 +74,7 @@ module ClosureTree
           raise ClosureTree::RootOrderingDisabledError.new("Root ordering is disabled on this model")
         end
 
-        join_sql = <<-SQL.strip_heredoc
+        join_sql = <<-SQL.squish
           JOIN #{_ct.quoted_hierarchy_table_name} anc_hier
             ON anc_hier.descendant_id = #{_ct.quoted_table_name}.#{_ct.quoted_id_column_name}
           JOIN #{_ct.quoted_table_name} anc

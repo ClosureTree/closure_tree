@@ -67,7 +67,7 @@ module ClosureTree
         delete_hierarchy_references unless (defined? @was_new_record) && @was_new_record
         hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
         unless root?
-          _ct.connection.execute <<-SQL.strip_heredoc
+          _ct.connection.execute <<-SQL.squish
             INSERT INTO #{_ct.quoted_hierarchy_table_name}
               (ancestor_id, descendant_id, generations)
             SELECT x.ancestor_id, #{_ct.quote(_ct_id)}, x.generations + 1
@@ -94,7 +94,7 @@ module ClosureTree
         # It shouldn't affect performance of postgresql.
         # See http://dev.mysql.com/doc/refman/5.0/en/subquery-errors.html
         # Also: PostgreSQL doesn't support INNER JOIN on DELETE, so we can't use that.
-        _ct.connection.execute <<-SQL.strip_heredoc
+        _ct.connection.execute <<-SQL.squish
           DELETE FROM #{_ct.quoted_hierarchy_table_name}
           WHERE descendant_id IN (
             SELECT DISTINCT descendant_id

@@ -1,5 +1,4 @@
 require 'active_record'
-require 'active_support/core_ext/string/strip'
 
 module ClosureTree
   extend ActiveSupport::Autoload
