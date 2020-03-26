@@ -6,7 +6,7 @@ module ClosureTree
 
     included do
 
-      belongs_to :parent, nil, *_ct.belongs_to_with_optional_option(
+      belongs_to :parent, nil, **_ct.belongs_to_with_optional_option(
         class_name: _ct.model_class.to_s,
         foreign_key: _ct.parent_column_name,
         inverse_of: :children,
@@ -15,11 +15,11 @@ module ClosureTree
 
       order_by_generations = -> { Arel.sql("#{_ct.quoted_hierarchy_table_name}.generations ASC") }
 
-      has_many :children, *_ct.has_many_with_order_option(
+      has_many :children, *_ct.has_many_order_with_option, **{
         class_name: _ct.model_class.to_s,
         foreign_key: _ct.parent_column_name,
         dependent: _ct.options[:dependent],
-        inverse_of: :parent) do
+        inverse_of: :parent } do
           # We have to redefine hash_tree because the activerecord relation is already scoped to parent_id.
           def hash_tree(options = {})
             # we want limit_depth + 1 because we don't do self_and_descendants.
@@ -28,25 +28,21 @@ module ClosureTree
           end
         end
 
-      has_many :ancestor_hierarchies, *_ct.has_many_without_order_option(
+      has_many :ancestor_hierarchies, *_ct.has_many_order_without_option(order_by_generations),
         class_name: _ct.hierarchy_class_name,
-        foreign_key: 'descendant_id',
-        order: order_by_generations)
+        foreign_key: 'descendant_id'
 
-      has_many :self_and_ancestors, *_ct.has_many_without_order_option(
+      has_many :self_and_ancestors, *_ct.has_many_order_without_option(order_by_generations),
         through: :ancestor_hierarchies,
-        source: :ancestor,
-        order: order_by_generations)
+        source: :ancestor
 
-      has_many :descendant_hierarchies, *_ct.has_many_without_order_option(
+      has_many :descendant_hierarchies, *_ct.has_many_order_without_option(order_by_generations),
         class_name: _ct.hierarchy_class_name,
-        foreign_key: 'ancestor_id',
-        order: order_by_generations)
+        foreign_key: 'ancestor_id'
 
-      has_many :self_and_descendants, *_ct.has_many_with_order_option(
+      has_many :self_and_descendants, *_ct.has_many_order_with_option(order_by_generations),
         through: :descendant_hierarchies,
-        source: :descendant,
-        order: order_by_generations)
+        source: :descendant
     end
 
     # Delegate to the Support instance on the class:
