@@ -80,7 +80,7 @@ module ClosureTree
     end
 
     def nulls_last_order_by
-      "-#{quoted_order_column} #{order_by_order(true)}"
+      Arel.sql "-#{quoted_order_column} #{order_by_order(true)}"
     end
 
     def order_by_order(reverse = false)
