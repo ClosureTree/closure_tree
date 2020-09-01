@@ -662,7 +662,7 @@ end
 
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/ClosureTree/closure_tree) of
 
-* Ruby 2.5, 2.6
+* Ruby 2.5, 2.6 and 2.7
 * ActiveRecord 4.2, 5.x and 6.0
 * PostgreSQL, MySQL, and SQLite. Concurrency tests are only run with MySQL and PostgreSQL.
 

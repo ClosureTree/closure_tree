@@ -1,7 +1,8 @@
 cache: bundler
-sudo: false
 language: ruby
+
 rvm:
+  - 2.7.1
   - 2.6.3
   - 2.5.5
 
@@ -31,3 +32,5 @@ matrix:
   exclude:
   - rvm: 2.5.5
     gemfile: gemfiles/activerecord_edge.gemfile
+  - rvm: 2.7.1
+    gemfile: gemfiles/activerecord_4.2.gemfile
