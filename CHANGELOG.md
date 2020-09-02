@@ -1,5 +1,9 @@
 # Changelog
 
+### 7.2.0
+- Ruby 2.7 support
+- Ordering raw SQL argument wrapped with Arel.sql
+
 ### 7.1.0
 Closure Tree is now tested against Rails 6.0
 - Directly require core_ext for String#strip_heredoc[PR 350](https://github.com/ClosureTree/closure_tree/pull/350) 
