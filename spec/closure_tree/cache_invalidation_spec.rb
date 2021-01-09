@@ -1,7 +1,6 @@
 require 'spec_helper'
 
-
-describe 'cache invalidation', cache: true do
+RSpec.describe 'cache invalidation', cache: true do
   before do
     Timecop.travel(10.seconds.ago) do
       #create a long tree with 2 branch

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-shared_examples_for Tag do
+RSpec.shared_examples_for Tag do
 
   let (:tag_class) { described_class }
   let (:tag_hierarchy_class) { described_class.hierarchy_class }

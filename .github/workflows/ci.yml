@@ -1,0 +1,96 @@
+---
+name: CI
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  rspec:
+    runs-on: ubuntu-20.04
+
+    services:
+      postgres:
+        image: 'postgres:13'
+        ports: ['5432:5432']
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: closure_tree
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - '3.0'
+          - '2.7'
+          - '2.6'
+          - '2.5'
+        rails:
+          - activerecord_6.1
+          - activerecord_6.0
+          - activerecord_5.2
+          - activerecord_5.1
+          - activerecord_5.0
+          - activerecord_4.2
+          - activerecord_edge
+        adapter:
+          - sqlite3
+          - mysql2
+          - postgresql
+        exclude:
+          - ruby: '2.7'
+            rails: activerecord_4.2
+          - ruby: '3.0'
+            rails: activerecord_4.2
+          - ruby: '3.0'
+            rails: activerecord_5.0
+          - ruby: '3.0'
+            rails: activerecord_5.1
+          - ruby: '3.0'
+            rails: activerecord_5.2
+          - ruby: '2.5'
+            rails: activerecord_edge
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Set DB Adapter
+        env:
+          RAILS_VERSION: ${{ matrix.rails }}
+          DB_ADAPTER: ${{ matrix.adapter }}
+
+        # See: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md#mysql
+        run: |
+          if [ "${DB_ADAPTER}" = "mysql2" ]; then
+            sudo systemctl start mysql.service
+            mysql -u root -proot -e 'create database closure_tree;'
+          fi
+
+      - name: Bundle
+        env:
+          RAILS_VERSION: ${{ matrix.rails }}
+          DB_ADAPTER: ${{ matrix.adapter }}
+          BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
+        run: |
+          gem install bundler
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+
+      - name: RSpec
+        env:
+          RAILS_VERSION: ${{ matrix.rails }}
+          DB_ADAPTER: ${{ matrix.adapter }}
+          BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
+          WITH_ADVISORY_LOCK_PREFIX: ${{ github.run_id }}
+        run: bin/rake --trace spec:all

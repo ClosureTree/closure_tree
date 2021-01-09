@@ -41,7 +41,7 @@ def create_preorder_tree(suffix = "", &block)
   end
 end
 
-describe Label do
+RSpec.describe Label do
   context "destruction" do
     it "properly destroys descendents created with find_or_create_by_path" do
       c = Label.find_or_create_by_path %w(a b c)
@@ -606,13 +606,13 @@ describe Label do
 
     it "checks parent of node" do
       expect(@a1.parent_of?(@b1)).to be_truthy
-      expect(@c2.parent_of?(@d2)).to be_truthy      
+      expect(@c2.parent_of?(@d2)).to be_truthy
       expect(@c1.parent_of?(@b1)).to be_falsey
     end
 
     it "checks children of node" do
       expect(@d1.child_of?(@c1)).to be_truthy
-      expect(@c2.child_of?(@b1)).to be_truthy      
+      expect(@c2.child_of?(@b1)).to be_truthy
       expect(@c3.child_of?(@b1)).to be_falsey
     end
 
@@ -625,13 +625,13 @@ describe Label do
     it "checks ancestor of node" do
       expect(@a1.ancestor_of?(@d1)).to be_truthy
       expect(@b1.ancestor_of?(@d1)).to be_truthy
-      expect(@b1.ancestor_of?(@c3)).to be_falsey      
+      expect(@b1.ancestor_of?(@c3)).to be_falsey
     end
 
     it "checks descendant of node" do
       expect(@c1.descendant_of?(@a1)).to be_truthy
       expect(@d2.descendant_of?(@a1)).to be_truthy
-      expect(@b1.descendant_of?(@a2)).to be_falsey      
+      expect(@b1.descendant_of?(@a2)).to be_falsey
     end
 
     it "checks descendant of node" do

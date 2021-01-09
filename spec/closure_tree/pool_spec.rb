@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'Configuration' do
+RSpec.describe 'Configuration' do
   it 'returns connection to the pool after has_closure_tree setup' do
     class TypeDuplicate < ActiveRecord::Base
       self.table_name = "namespace_type#{table_name_suffix}"

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe ClosureTree::HierarchyMaintenance do
+RSpec.describe ClosureTree::HierarchyMaintenance do
   describe '.rebuild!' do
     it 'rebuild tree' do
       20.times do |counter|

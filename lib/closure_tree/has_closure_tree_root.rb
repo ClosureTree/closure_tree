@@ -8,7 +8,7 @@ module ClosureTree
        options[:class_name] ||= assoc_name.to_s.sub(/\Aroot_/, "").classify
       options[:foreign_key] ||= self.name.underscore << "_id"
 
-      has_one assoc_name, -> { where(parent: nil) }, options
+      has_one assoc_name, -> { where(parent: nil) }, **options
 
       # Fetches the association, eager loading all children and given associations
       define_method("#{assoc_name}_including_tree") do |*args|

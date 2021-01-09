@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe "has_closure_tree_root" do
+RSpec.describe "has_closure_tree_root" do
   let!(:ct1) { ContractType.create!(name: "Type1") }
   let!(:ct2) { ContractType.create!(name: "Type2") }
   let!(:user1) { User.create!(email: "1@example.com", group_id: group.id) }

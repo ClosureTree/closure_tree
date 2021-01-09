@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Metal do
+RSpec.describe Metal do
   describe '#find_or_create_by_path' do
     def assert_correctness(grandchild)
       expect(grandchild).to be_a(Metal)

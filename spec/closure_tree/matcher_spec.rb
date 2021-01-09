@@ -1,7 +1,6 @@
 require 'spec_helper'
 
-describe 'ClosureTree::Test::Matcher' do
-
+RSpec.describe 'ClosureTree::Test::Matcher' do
   describe 'be_a_closure_tree' do
     it { expect(UUIDTag).to be_a_closure_tree }
     it { expect(User).to be_a_closure_tree }
@@ -30,5 +29,4 @@ describe 'ClosureTree::Test::Matcher' do
       end
     end
   end
-
 end
