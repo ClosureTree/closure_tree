@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe ClosureTree::Support do
+RSpec.describe ClosureTree::Support do
   let(:sut) { Tag._ct }
   it 'passes through table names without prefix and suffix' do
     expected = 'some_random_table_name'

@@ -45,7 +45,7 @@ class FindOrCreateWorker < WorkerBase
   end
 end
 
-describe 'Concurrent creation' do
+RSpec.describe 'Concurrent creation' do
   before :each do
     @target = nil
     @iterations = 5

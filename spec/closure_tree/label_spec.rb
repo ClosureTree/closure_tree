@@ -41,7 +41,7 @@ def create_preorder_tree(suffix = "", &block)
   end
 end
 
-describe Label do
+RSpec.describe Label do
   context "destruction" do
     it "properly destroys descendents created with find_or_create_by_path" do
       c = Label.find_or_create_by_path %w(a b c)

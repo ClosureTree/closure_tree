@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe "empty db" do
+RSpec.describe "empty db" do
 
   context "empty db" do
     it "should return no entities" do

@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe UUIDTag do
+RSpec.describe UUIDTag do
   it_behaves_like Tag
 end

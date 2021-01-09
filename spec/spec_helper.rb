@@ -51,6 +51,10 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
   end
 
+  # disable monkey patching
+  # see: https://relishapp.com/rspec/rspec-core/v/3-8/docs/configuration/zero-monkey-patching-mode
+  config.disable_monkey_patching!
+
   if sqlite?
     config.before(:suite) do
       ENV['FLOCK_DIR'] = Dir.mktmpdir

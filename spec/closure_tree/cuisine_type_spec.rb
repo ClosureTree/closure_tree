@@ -9,7 +9,7 @@ def assert_lineage(e, m)
   expect(m.self_and_ancestors).to eq([m, e])
 end
 
-describe CuisineType do
+RSpec.describe CuisineType do
   it "finds self and parents when children << is used" do
     e = CuisineType.new(:name => "e")
     m = CuisineType.new(:name => "m")
