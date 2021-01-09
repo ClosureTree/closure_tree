@@ -14,3 +14,4 @@ tmp/
 tmp/
 .ruby-*
 *.iml
+coverage/

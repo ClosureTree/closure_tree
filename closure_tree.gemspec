@@ -31,6 +31,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'rspec-instafail'
   gem.add_development_dependency 'rspec-rails'
   gem.add_development_dependency 'sqlite3'
+  gem.add_development_dependency 'simplecov'
   gem.add_development_dependency 'timecop'
   # gem.add_development_dependency 'byebug'
   # gem.add_development_dependency 'ruby-prof' # <- don't need this normally.

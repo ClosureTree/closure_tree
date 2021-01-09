@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'simplecov'
 require 'database_cleaner'
 require 'closure_tree/test/matcher'
 require 'tmpdir'
@@ -19,6 +20,11 @@ require 'active_support/core_ext/array'
 # Use in specs to skip some tests
 def sqlite?
   ENV.fetch('DB_ADAPTER', 'sqlite3') == 'sqlite3'
+end
+
+# Start Simplecov
+SimpleCov.start do
+  add_filter 'spec/'
 end
 
 # Configure RSpec
