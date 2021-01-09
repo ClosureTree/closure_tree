@@ -1,6 +1,5 @@
 require 'spec_helper'
 
-
 describe 'cache invalidation', cache: true do
   before do
     Timecop.travel(10.seconds.ago) do
