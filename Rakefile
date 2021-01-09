@@ -1,17 +1,10 @@
-begin
-  require 'bundler/setup'
-rescue LoadError
-  puts 'You must `gem install bundler` and `bundle install` to run rake tasks'
-end
+# frozen_string_literal: true
 
-Bundler::GemHelper.install_tasks
+require 'bundler/gem_tasks'
+require 'rspec/core/rake_task'
 
-require "rspec/core/rake_task"
-RSpec::Core::RakeTask.new(:spec) do |task|
-  task.pattern = 'spec/*_spec.rb'
-end
-
-task :default => :spec
+RSpec::Core::RakeTask.new(:spec)
+task default: :spec
 
 namespace :spec do
   desc 'Run all spec variants'
