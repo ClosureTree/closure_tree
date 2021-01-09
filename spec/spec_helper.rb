@@ -14,9 +14,9 @@ rescue LoadError
 end
 
 require 'active_record'
+require 'active_support/core_ext/array'
 
-Thread.abort_on_exception = true
-
+# Use in specs to skip some tests
 def sqlite?
   ENV.fetch('DB_ADAPTER', 'sqlite3') == 'sqlite3'
 end
@@ -55,6 +55,13 @@ RSpec.configure do |config|
     end
   end
 end
+
+# Configure parallel specs
+Thread.abort_on_exception = true
+
+# Configure advisory_lock
+# See: https://github.com/ClosureTree/with_advisory_lock
+ENV['WITH_ADVISORY_LOCK_PREFIX'] ||= SecureRandom.hex
 
 # Configure ActiveRecord
 ActiveRecord::Migration.verbose = false
