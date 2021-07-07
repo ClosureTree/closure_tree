@@ -1,5 +1,9 @@
 # Changelog
 
+
+### 7.3.0
+- Ruby 3.0 support
+
 ### 7.2.0
 - Ruby 2.7 support
 - Ordering raw SQL argument wrapped with Arel.sql
