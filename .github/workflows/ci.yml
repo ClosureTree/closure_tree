@@ -55,6 +55,8 @@ jobs:
             rails: activerecord_5.2
           - ruby: '2.5'
             rails: activerecord_edge
+          - ruby: '2.6'
+            rails: activerecord_edge
 
     steps:
       - name: Checkout
