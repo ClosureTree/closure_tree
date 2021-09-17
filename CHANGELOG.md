@@ -1,5 +1,11 @@
 # Changelog
 
+## [7.4.0](https://github.com/ClosureTree/closure_tree/tree/7.4.0)
+
+[Full Changelog](https://github.com/ClosureTree/closure_tree/compare/v7.3.0...7.4.0)
+
+- fix: hierarchy model with namespace should inherit from the superclass of basic model [\#384](https://github.com/ClosureTree/closure_tree/pull/384) ([shawndodo](https://github.com/shawndodo))
+- Add with\_descendant to readme [\#381](https://github.com/ClosureTree/closure_tree/pull/381) ([mattvague](https://github.com/mattvague))
 
 ### 7.3.0
 - Ruby 3.0 support
