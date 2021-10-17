@@ -2,6 +2,8 @@
 
 source "https://rubygems.org"
 
+gem "bump", "~> 0.10.0"
+gem "github_changelog_generator", "~> 1.16"
 gem "activerecord", github: "rails/rails"
 
 platforms :ruby do

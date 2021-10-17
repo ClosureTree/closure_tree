@@ -33,5 +33,5 @@ GitHubChangelogGenerator::RakeTask.new :changelog do |config|
   config.project = 'closure_tree'
   config.issues = false
   config.future_release = '5.2.0'
-  config.since_tag = 'v7.3.0'
+  config.since_tag = 'v7.4.0'
 end
