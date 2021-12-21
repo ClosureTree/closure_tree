@@ -15,7 +15,7 @@ end
 class UUIDTag < ActiveRecord::Base
   self.primary_key = :uuid
   before_create :set_uuid
-  has_closure_tree dependent: :destroy, order: 'name', parent_column_name: 'parent_uuid'
+  has_closure_tree dependent: :destroy, order: 'name', parent_column_name: 'parent_uuid', counter_cache: true
   before_destroy :add_destroyed_tag
 
   def set_uuid

@@ -11,7 +11,9 @@ module ClosureTree
         foreign_key: _ct.parent_column_name,
         inverse_of: :children,
         touch: _ct.options[:touch],
-        optional: true)
+        optional: true,
+        counter_cache: _ct.options[:counter_cache],
+      )
 
       order_by_generations = -> { Arel.sql("#{_ct.quoted_hierarchy_table_name}.generations ASC") }
 

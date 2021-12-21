@@ -11,7 +11,8 @@ module ClosureTree
         :dont_order_roots,
         :numeric_order,
         :touch,
-        :with_advisory_lock
+        :with_advisory_lock,
+        :counter_cache
       )
 
       class_attribute :_ct

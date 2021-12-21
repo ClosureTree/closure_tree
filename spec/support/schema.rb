@@ -27,6 +27,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.string "title"
     t.string "parent_uuid"
     t.integer "sort_order"
+    t.integer "uuid_tags_count", default: 0, null: false
     t.timestamps null: false
   end
 
