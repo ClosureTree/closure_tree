@@ -162,6 +162,26 @@ child1.ancestry_path
 => ["Grandparent", "Parent", "First Child"]
 ```
 
+### Counter cache
+
+It's possible to use Rails' counter cache option for the `parent` relationship by adding the `counter_cache: true` option to `has_closure_tree`.
+
+```ruby
+class Tag < ApplicationRecord
+  has_closure_tree counter_cache: true
+end
+```
+
+You will need to generate one additional migration:
+
+```ruby
+class AddTagsCountToTag < ActiveRecord::Migration
+  def change
+    add_column :tags, :tags_count, :integer, null: false, default: 0
+  end
+end
+```
+
 ### find_or_create_by_path
 
 You can `find` as well as `find_or_create` by "ancestry paths".
