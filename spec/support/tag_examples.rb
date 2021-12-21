@@ -23,6 +23,11 @@ RSpec.shared_examples_for Tag do
       expected_parent_column_name = tag_class == UUIDTag ? 'parent_uuid' : 'parent_id'
       expect(tag_class._ct.parent_column_name).to eq(expected_parent_column_name)
     end
+
+    it 'should counter_cache parent relationship' do
+      expected_counter_cache = tag_class == UUIDTag ? true : nil
+      expect(tag_class._ct.options[:counter_cache]).to be expected_counter_cache
+    end
   end
 
   describe 'from empty db' do
