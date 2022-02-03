@@ -11,7 +11,8 @@ module ClosureTree
         :dont_order_roots,
         :numeric_order,
         :touch,
-        :with_advisory_lock
+        :with_advisory_lock,
+        :database
       )
 
       class_attribute :_ct
@@ -20,7 +21,7 @@ module ClosureTree
       # Auto-inject the hierarchy table
       # See https://github.com/patshaughnessy/class_factory/blob/master/lib/class_factory/class_factory.rb
       class_attribute :hierarchy_class
-      self.hierarchy_class = _ct.hierarchy_class_for_model
+      self.hierarchy_class = _ct.hierarchy_class_for_model(options[:database])
 
       # tests fail if you include Model before HierarchyMaintenance wtf
       include ClosureTree::HierarchyMaintenance
