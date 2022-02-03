@@ -21,7 +21,7 @@ module ClosureTree
       # Auto-inject the hierarchy table
       # See https://github.com/patshaughnessy/class_factory/blob/master/lib/class_factory/class_factory.rb
       class_attribute :hierarchy_class
-      self.hierarchy_class = _ct.hierarchy_class_for_model(options[:database])
+      self.hierarchy_class = _ct.hierarchy_class_for_model(options)
 
       # tests fail if you include Model before HierarchyMaintenance wtf
       include ClosureTree::HierarchyMaintenance
