@@ -1,5 +1,9 @@
 # Changelog
 
+### 8.0.0
+
+- Drop support to EOL ruby and rails
+
 ## [7.4.0](https://github.com/ClosureTree/closure_tree/tree/7.4.0)
 
 [Full Changelog](https://github.com/ClosureTree/closure_tree/compare/v7.3.0...7.4.0)

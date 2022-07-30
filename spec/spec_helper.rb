@@ -8,12 +8,6 @@ require 'timecop'
 require 'forwardable'
 require 'parallel'
 
-begin
-  require 'foreigner'
-rescue LoadError
-  #Foreigner is not needed in ActiveRecord 4.2+
-end
-
 require 'active_record'
 require 'active_support/core_ext/array'
 
@@ -112,7 +106,6 @@ when 'mysql2'
 end
 
 ActiveRecord::Base.establish_connection(config)
-Foreigner.load if defined?(Foreigner)
 
 # Require our gem
 require 'closure_tree'
