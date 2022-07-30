@@ -5,9 +5,9 @@ require_relative 'lib/closure_tree/version'
 Gem::Specification.new do |gem|
   gem.name        = 'closure_tree'
   gem.version     = ::ClosureTree::VERSION
-  gem.authors     = ['Matthew McEachen']
-  gem.email       = ['matthew-github@mceachen.org']
-  gem.homepage    = 'http://mceachen.github.io/closure_tree/'
+  gem.authors     = ['Matthew McEachen', 'Abdelkader Boudih']
+  gem.email       = %w[matthew+github@mceachen.org terminale@gmail.com]
+  gem.homepage    = 'https://github.com/ClosureTree/closure_tree/'
 
   gem.summary     = %q(Easily and efficiently make your ActiveRecord model support hierarchies)
   gem.description = gem.summary
