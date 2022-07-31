@@ -36,6 +36,7 @@ RSpec.configure do |config|
   end
 
   DatabaseCleaner.strategy = :truncation
+  DatabaseCleaner.allow_remote_database_url = true
 
   config.before do
     DatabaseCleaner.start
@@ -72,41 +73,23 @@ ActiveRecord::Migration.verbose = false
 ActiveRecord::Base.table_name_prefix = ENV['DB_PREFIX'].to_s
 ActiveRecord::Base.table_name_suffix = ENV['DB_SUFFIX'].to_s
 
-adapter = ENV.fetch('DB_ADAPTER', 'sqlite3')
-
-config = {
-  adapter:           adapter,
-  database:          'closure_tree',
-  encoding:          'utf8',
-  pool:              50,
-  timeout:           5000,
-  reaping_frequency: 1000,
-  min_messages:      'ERROR',
+ActiveRecord::Base.configurations = {
+  default_env: {
+    url: ENV.fetch('DATABASE_URL', "sqlite3::memory:"),
+    properties: { allowPublicKeyRetrieval: true } # for JRuby madness
+  }
 }
-
-config =
-  case adapter
-  when 'postgresql'
-    config.merge(host: '127.0.0.1', port: 5432, username: 'postgres', password: 'postgres')
-  when 'mysql2'
-    config.merge(host: '127.0.0.1', port: 3306, username: 'root', password: 'root')
-  when 'sqlite3'
-    config.merge(database: ':memory:')
-  end
-
-case adapter
-when 'postgresql'
-  # We need to switch on 'postgres' DB to destroy 'closure_tree' DB
-  ActiveRecord::Base.establish_connection(config.merge(database: 'postgres', schema_search_path: 'public'))
-  ActiveRecord::Base.connection.recreate_database(config[:database], config)
-
-when 'mysql2'
-  ActiveRecord::Base.establish_connection(config)
-  ActiveRecord::Base.connection.recreate_database(config[:database], { charset: 'utf8', collation: 'utf8_unicode_ci' })
+def env_db
+  @env_db ||= if ActiveRecord::Base.respond_to?(:connection_db_config)
+                ActiveRecord::Base.connection_db_config.adapter
+              else
+                ActiveRecord::Base.connection_config[:adapter]
+              end.to_sym
 end
 
-ActiveRecord::Base.establish_connection(config)
-
+ActiveRecord::Base.establish_connection
+ActiveRecord::Base.connection.recreate_database("closure_tree_test")
+puts "Testing with #{env_db} database, ActiveRecord #{ActiveRecord.gem_version} and #{RUBY_ENGINE} #{RUBY_ENGINE_VERSION} as #{RUBY_VERSION}"
 # Require our gem
 require 'closure_tree'
 

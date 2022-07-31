@@ -2,13 +2,13 @@
 name: CI
 
 on:
-  - push
-  - pull_request
+  pull_request:
+    branches:
+      - master
 
 jobs:
   rspec:
     runs-on: ubuntu-latest
-
     services:
       mysql:
         image: mysql/mysql-server:8.0.30
@@ -43,9 +43,9 @@ jobs:
           - activerecord_6.0
           - activerecord_edge
         adapter:
-          - sqlite3
-          - mysql2
-          - postgresql
+          - 'sqlite3:///:memory:'
+          - mysql2://root:root@0/closure_tree_test
+          - postgres://closure_tree:closure_tree@0/closure_tree_test
 
     steps:
       - name: Checkout
@@ -66,4 +66,4 @@ jobs:
           DB_ADAPTER: ${{ matrix.adapter }}
           BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
           WITH_ADVISORY_LOCK_PREFIX: ${{ github.run_id }}
-        run: bin/rake --trace spec:all
+        run: bin/rake

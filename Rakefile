@@ -35,3 +35,5 @@ GitHubChangelogGenerator::RakeTask.new :changelog do |config|
   config.future_release = '5.2.0'
   config.since_tag = 'v7.4.0'
 end
+
+task :default => "spec:all"
