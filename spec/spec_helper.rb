@@ -8,23 +8,39 @@ require 'timecop'
 require 'forwardable'
 require 'parallel'
 
-begin
-  require 'foreigner'
-rescue LoadError
-  #Foreigner is not needed in ActiveRecord 4.2+
-end
-
 require 'active_record'
 require 'active_support/core_ext/array'
 
-# Use in specs to skip some tests
-def sqlite?
-  ENV.fetch('DB_ADAPTER', 'sqlite3') == 'sqlite3'
-end
 
 # Start Simplecov
 SimpleCov.start do
   add_filter 'spec/'
+end
+
+ActiveRecord::Base.configurations = {
+  default_env: {
+    url: ENV.fetch('DATABASE_URL', "sqlite3::memory:"),
+    properties: { allowPublicKeyRetrieval: true } # for JRuby madness
+  }
+}
+
+# Configure ActiveRecord
+ActiveRecord::Migration.verbose = false
+ActiveRecord::Base.table_name_prefix = ENV['DB_PREFIX'].to_s
+ActiveRecord::Base.table_name_suffix = ENV['DB_SUFFIX'].to_s
+ActiveRecord::Base.establish_connection
+
+def env_db
+  @env_db ||= if ActiveRecord::Base.respond_to?(:connection_db_config)
+                ActiveRecord::Base.connection_db_config.adapter
+              else
+                ActiveRecord::Base.connection_config[:adapter]
+              end.to_sym
+end
+
+# Use in specs to skip some tests
+def sqlite?
+  env_db == :sqlite3
 end
 
 # Configure RSpec
@@ -35,13 +51,13 @@ RSpec.configure do |config|
   config.fail_fast = false
 
   config.order = :random
-  Kernel.srand config.seed
 
   config.expect_with :rspec do |c|
     c.syntax = :expect
   end
 
   DatabaseCleaner.strategy = :truncation
+  DatabaseCleaner.allow_remote_database_url = true
 
   config.before do
     DatabaseCleaner.start
@@ -73,47 +89,8 @@ Thread.abort_on_exception = true
 # See: https://github.com/ClosureTree/with_advisory_lock
 ENV['WITH_ADVISORY_LOCK_PREFIX'] ||= SecureRandom.hex
 
-# Configure ActiveRecord
-ActiveRecord::Migration.verbose = false
-ActiveRecord::Base.table_name_prefix = ENV['DB_PREFIX'].to_s
-ActiveRecord::Base.table_name_suffix = ENV['DB_SUFFIX'].to_s
-
-adapter = ENV.fetch('DB_ADAPTER', 'sqlite3')
-
-config = {
-  adapter:           adapter,
-  database:          'closure_tree',
-  encoding:          'utf8',
-  pool:              50,
-  timeout:           5000,
-  reaping_frequency: 1000,
-  min_messages:      'ERROR',
-}
-
-config =
-  case adapter
-  when 'postgresql'
-    config.merge(host: '127.0.0.1', port: 5432, username: 'postgres', password: 'postgres')
-  when 'mysql2'
-    config.merge(host: '127.0.0.1', port: 3306, username: 'root', password: 'root')
-  when 'sqlite3'
-    config.merge(database: ':memory:')
-  end
-
-case adapter
-when 'postgresql'
-  # We need to switch on 'postgres' DB to destroy 'closure_tree' DB
-  ActiveRecord::Base.establish_connection(config.merge(database: 'postgres', schema_search_path: 'public'))
-  ActiveRecord::Base.connection.recreate_database(config[:database], config)
-
-when 'mysql2'
-  ActiveRecord::Base.establish_connection(config)
-  ActiveRecord::Base.connection.recreate_database(config[:database], { charset: 'utf8', collation: 'utf8_unicode_ci' })
-end
-
-ActiveRecord::Base.establish_connection(config)
-Foreigner.load if defined?(Foreigner)
-
+ActiveRecord::Base.connection.recreate_database("closure_tree_test") unless sqlite?
+puts "Testing with #{env_db} database, ActiveRecord #{ActiveRecord.gem_version} and #{RUBY_ENGINE} #{RUBY_ENGINE_VERSION} as #{RUBY_VERSION}"
 # Require our gem
 require 'closure_tree'
 

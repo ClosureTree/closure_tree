@@ -32,7 +32,7 @@ module ClosureTree
     end
 
     def hierarchy_class_for_model
-      parent_class = ActiveSupport::VERSION::MAJOR >= 6 ? model_class.module_parent : model_class.parent
+      parent_class = model_class.module_parent
       hierarchy_class = parent_class.const_set(short_hierarchy_class_name, Class.new(model_class.superclass))
       use_attr_accessible = use_attr_accessible?
       include_forbidden_attributes_protection = include_forbidden_attributes_protection?
@@ -77,10 +77,6 @@ module ClosureTree
       else
         additional_order_by ? scope.order(additional_order_by) : scope
       end
-    end
-
-    def belongs_to_with_optional_option(opts)
-      ActiveRecord::VERSION::MAJOR < 5 ? opts.except(:optional) : opts
     end
 
     # lambda-ize the order, but don't apply the default order_option

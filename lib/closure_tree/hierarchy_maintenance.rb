@@ -35,13 +35,10 @@ module ClosureTree
     end
 
     def _ct_after_save
-      as_5_1 = ActiveSupport.version >= Gem::Version.new('5.1.0')
-      changes_method = as_5_1 ? :saved_changes : :changes
-
-      if public_send(changes_method)[_ct.parent_column_name] || @was_new_record
+      if public_send(:saved_changes)[_ct.parent_column_name] || @was_new_record
         rebuild!
       end
-      if public_send(changes_method)[_ct.parent_column_name] && !@was_new_record
+      if public_send(:saved_changes)[_ct.parent_column_name] && !@was_new_record
         # Resetting the ancestral collections addresses
         # https://github.com/mceachen/closure_tree/issues/68
         ancestor_hierarchies.reload

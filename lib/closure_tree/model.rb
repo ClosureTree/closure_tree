@@ -6,12 +6,12 @@ module ClosureTree
 
     included do
 
-      belongs_to :parent, nil, **_ct.belongs_to_with_optional_option(
+      belongs_to :parent, nil,
         class_name: _ct.model_class.to_s,
         foreign_key: _ct.parent_column_name,
         inverse_of: :children,
         touch: _ct.options[:touch],
-        optional: true)
+        optional: true
 
       order_by_generations = -> { Arel.sql("#{_ct.quoted_hierarchy_table_name}.generations ASC") }
 

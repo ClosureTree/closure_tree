@@ -53,7 +53,7 @@ for a description of different tree storage algorithms.
 
 ## Installation
 
-Note that closure_tree only supports ActiveRecord 4.2 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
+Note that closure_tree only supports ActiveRecord 6.0 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
 
 1.  Add `gem 'closure_tree'` to your Gemfile
 
@@ -663,8 +663,8 @@ end
 
 Closure tree is [tested under every valid combination](http://travis-ci.org/#!/ClosureTree/closure_tree) of
 
-* Ruby 2.5, 2.6 and 2.7
-* ActiveRecord 4.2, 5.x and 6.0
+* Ruby 2.7+
+* ActiveRecord 6.0+
 * PostgreSQL, MySQL, and SQLite. Concurrency tests are only run with MySQL and PostgreSQL.
 
 Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
