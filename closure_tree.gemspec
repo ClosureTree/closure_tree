@@ -27,6 +27,8 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'database_cleaner'
   gem.add_development_dependency 'generator_spec'
   gem.add_development_dependency 'parallel'
+  gem.add_development_dependency 'minitest'
+  gem.add_development_dependency 'minitest-reporters'
   gem.add_development_dependency 'rspec-instafail'
   gem.add_development_dependency 'rspec-rails'
   gem.add_development_dependency 'simplecov'

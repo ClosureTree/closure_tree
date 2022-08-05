@@ -2,12 +2,13 @@
 
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
+require 'rake/testtask'
 
 RSpec::Core::RakeTask.new(:spec) do |task|
   task.pattern = 'spec/closure_tree/*_spec.rb'
 end
 
-task default: :spec
+task default: [:spec, :test]
 
 namespace :spec do
   desc 'Run all spec variants'
@@ -25,6 +26,13 @@ namespace :spec do
   RSpec::Core::RakeTask.new(:generators) do |task|
     task.pattern = 'spec/generators/*_spec.rb'
   end
+end
+
+Rake::TestTask.new do |t|
+  t.libs.push 'lib'
+  t.libs.push 'test'
+  t.pattern = 'test/**/*_test.rb'
+  t.verbose = true
 end
 
 require 'github_changelog_generator/task'
