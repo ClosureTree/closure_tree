@@ -661,14 +661,27 @@ end
 
 ## Testing
 
-Closure tree is [tested under every valid combination](http://travis-ci.org/#!/ClosureTree/closure_tree) of
+Closure tree is [tested under every valid combination](https://github.com/ClosureTree/closure_tree/blob/master/.github/workflows/ci.yml) of
 
 * Ruby 2.7+
 * ActiveRecord 6.0+
 * PostgreSQL, MySQL, and SQLite. Concurrency tests are only run with MySQL and PostgreSQL.
 
-Assuming you're using [rbenv](https://github.com/sstephenson/rbenv), you can use ```tests.sh``` to
-run the test matrix locally.
+```shell
+$ bundle
+$ appraisal bundle # this will install the matrix of dependencies
+$ appraisal rake # this will run the tests in all combinations
+$ appraisal activerecord-7.0 rake # this will run the tests in AR 7.0 only
+$ appraisal activerecord-7.0 rake spec # this will run rspec in AR 7.0 only
+$ appraisal activerecord-7.0 rake test # this will run minitest in AR 7.0 only
+```
+
+By default the test are run with sqlite3 only. 
+You run test with other databases by passing the database url as environment variable:
+
+```shell
+$ DATABASE_URL=postgres://localhost/my_database appraisal activerecord-7.0 rake test 
+```
 
 ## Change log
 
