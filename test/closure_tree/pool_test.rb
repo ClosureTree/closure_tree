@@ -1,12 +1,14 @@
-require 'spec_helper'
+require 'test_helper'
 
-RSpec.describe 'Configuration' do
+describe "Configuration" do
   it 'returns connection to the pool after has_closure_tree setup' do
     class TypeDuplicate < ActiveRecord::Base
       self.table_name = "namespace_type#{table_name_suffix}"
       has_closure_tree
     end
-    expect(ActiveRecord::Base.connection_pool.active_connection?).to be_falsey # +false+ in AR 4, +nil+ in AR 5
+
+    refute ActiveRecord::Base.connection_pool.active_connection?
+    # +false+ in AR 4, +nil+ in AR 5
   end
 
   it 'returns connection to the pool after has_closure_tree setup with order' do
@@ -14,7 +16,8 @@ RSpec.describe 'Configuration' do
       self.table_name = "#{table_name_prefix}metal#{table_name_suffix}"
       has_closure_tree order: 'sort_order', name_column: 'value'
     end
-    expect(ActiveRecord::Base.connection_pool.active_connection?).to be_falsey
+
+    refute ActiveRecord::Base.connection_pool.active_connection?
   end
 
   it 'returns connection to the pool after has_closure_tree_root setup' do
@@ -22,6 +25,7 @@ RSpec.describe 'Configuration' do
       self.table_name = "#{table_name_prefix}group#{table_name_suffix}"
       has_closure_tree_root :root_user
     end
-    expect(ActiveRecord::Base.connection_pool.active_connection?).to be_falsey
+
+    refute ActiveRecord::Base.connection_pool.active_connection?
   end
 end
