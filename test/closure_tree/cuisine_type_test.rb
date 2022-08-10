@@ -1,15 +1,15 @@
-require 'spec_helper'
+require 'test_helper'
 
 def assert_lineage(e, m)
-  expect(m.parent).to eq(e)
-  expect(m.self_and_ancestors).to eq([m, e])
+  assert_equal e, m.parent
+  assert_equal [m, e], m.self_and_ancestors
 
   # make sure reloading doesn't affect the self_and_ancestors:
   m.reload
-  expect(m.self_and_ancestors).to eq([m, e])
+  assert_equal [m, e], m.self_and_ancestors
 end
 
-RSpec.describe CuisineType do
+describe CuisineType do
   it "finds self and parents when children << is used" do
     e = CuisineType.new(:name => "e")
     m = CuisineType.new(:name => "m")
@@ -25,14 +25,14 @@ RSpec.describe CuisineType do
   end
 
   it "sets the table_name of the hierarchy class properly" do
-    expect(CuisineTypeHierarchy.table_name).to eq(ActiveRecord::Base.table_name_prefix + "cuisine_type_hierarchies" + ActiveRecord::Base.table_name_suffix)
+    assert_equal(ActiveRecord::Base.table_name_prefix + "cuisine_type_hierarchies" + ActiveRecord::Base.table_name_suffix, CuisineTypeHierarchy.table_name)
   end
 
   it 'fixes self_and_ancestors properly on reparenting' do
     a = CuisineType.create! :name => 'a'
     b = CuisineType.create! :name => 'b'
-    expect(b.self_and_ancestors.to_a).to eq([b])
+    assert_equal([b], b.self_and_ancestors.to_a)
     a.children << b
-    expect(b.self_and_ancestors.to_a).to eq([b, a])
+    assert_equal([b, a], b.self_and_ancestors.to_a)
   end
 end
