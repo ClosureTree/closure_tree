@@ -1,18 +1,18 @@
-require 'spec_helper'
+require 'test_helper'
 
-RSpec.describe Metal do
+describe Metal do
   describe '#find_or_create_by_path' do
     def assert_correctness(grandchild)
-      expect(grandchild).to be_a(Metal)
-      expect(grandchild.description).to eq('slag')
+      assert(Metal, grandchild)
+      assert_equal "slag", grandchild.description
       child = grandchild.parent
-      expect(child).to be_a(Unobtanium)
-      expect(child.description).to eq('frames')
-      expect(child.value).to eq('child')
+      assert(Unobtanium, child)
+      assert_equal "frames", child.description
+      assert_equal "child", child.value
       parent = child.parent
-      expect(parent).to be_a(Adamantium)
-      expect(parent.description).to eq('claws')
-      expect(parent.value).to eq('parent')
+      assert(Adamantium, parent)
+      assert_equal "claws", parent.description
+      assert_equal "parent", parent.value
     end
 
     let(:attr_path) do
@@ -45,10 +45,10 @@ RSpec.describe Metal do
 
     it 'maintains the current STI subclass if attributes are not specified' do
       leaf = Unobtanium.find_or_create_by_path(%w(a b c d))
-      expect(leaf).to be_a(Unobtanium)
-      expect(leaf.ancestors.map(&:value)).to eq(%w(c b a))
+      assert(Unobtanium, leaf)
+      assert_equal %w(c b a), leaf.ancestors.map(&:value)
       leaf.ancestors.each do |anc|
-        expect(anc).to be_a(Unobtanium)
+        assert(Unobtanium, anc)
       end
     end
   end
