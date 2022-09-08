@@ -97,7 +97,6 @@ require 'closure_tree'
 # Load test helpers
 require_relative 'support/schema'
 require_relative 'support/models'
-require_relative 'support/tag_examples'
 require_relative 'support/helpers'
 require_relative 'support/exceed_query_limit'
 require_relative 'support/query_counter'
