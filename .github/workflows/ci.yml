@@ -9,8 +9,6 @@ on:
 jobs:
   rspec:
     runs-on: ubuntu-latest
-    env:
-      RAILS_ENV: test
     services:
       mysql:
         image: mysql/mysql-server:8.0.30
@@ -79,6 +77,7 @@ jobs:
           rubygems: latest
         env:
           BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
+          RAILS_ENV: test
 
       - name: RSpec
         env:
