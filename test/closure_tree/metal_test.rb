@@ -1,34 +1,38 @@
+# frozen_string_literal: true
+
 require 'test_helper'
 
 describe Metal do
   describe '#find_or_create_by_path' do
     def assert_correctness(grandchild)
       assert(Metal, grandchild)
-      assert_equal "slag", grandchild.description
+      assert_equal 'slag', grandchild.description
       child = grandchild.parent
       assert(Unobtanium, child)
-      assert_equal "frames", child.description
-      assert_equal "child", child.value
+      assert_equal 'frames', child.description
+      assert_equal 'child', child.value
       parent = child.parent
       assert(Adamantium, parent)
-      assert_equal "claws", parent.description
-      assert_equal "parent", parent.value
+      assert_equal 'claws', parent.description
+      assert_equal 'parent', parent.value
     end
 
     let(:attr_path) do
       [
-        {value: 'parent', description: 'claws', metal_type: 'Adamantium'},
-        {value: 'child', description: 'frames', metal_type: 'Unobtanium'},
-        {value: 'grandchild', description: 'slag', metal_type: 'Metal'}
+        { value: 'parent', description: 'claws', metal_type: 'Adamantium' },
+        { value: 'child', description: 'frames', metal_type: 'Unobtanium' },
+        { value: 'grandchild', description: 'slag', metal_type: 'Metal' }
       ]
     end
 
-    before do
-      # ensure the correct root is used in find_or_create_by_path:
-      [Metal, Adamantium, Unobtanium].each do |metal|
-        metal.find_or_create_by_path(%w(parent child grandchild))
+    if false
+      before do
+        # ensure the correct root is used in find_or_create_by_path:
+        [Metal, Adamantium, Unobtanium].each do |metal|
+          metal.find_or_create_by_path(%w[parent child grandchild])
+        end
       end
-    end if false
+    end
 
     it 'creates children from the proper root' do
       assert_correctness(Metal.find_or_create_by_path(attr_path))
@@ -44,9 +48,9 @@ describe Metal do
     end
 
     it 'maintains the current STI subclass if attributes are not specified' do
-      leaf = Unobtanium.find_or_create_by_path(%w(a b c d))
+      leaf = Unobtanium.find_or_create_by_path(%w[a b c d])
       assert(Unobtanium, leaf)
-      assert_equal %w(c b a), leaf.ancestors.map(&:value)
+      assert_equal %w[c b a], leaf.ancestors.map(&:value)
       leaf.ancestors.each do |anc|
         assert(Unobtanium, anc)
       end

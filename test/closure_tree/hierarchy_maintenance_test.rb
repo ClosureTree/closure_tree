@@ -1,13 +1,15 @@
+# frozen_string_literal: true
+
 require 'test_helper'
 
 describe ClosureTree::HierarchyMaintenance do
   describe '.rebuild!' do
     it 'rebuild tree' do
       20.times do |counter|
-        Metal.create(:value => "Nitro-#{counter}", parent: Metal.all.sample)
+        Metal.create(value: "Nitro-#{counter}", parent: Metal.all.sample)
       end
       hierarchy_count = MetalHierarchy.count
-      assert_operator hierarchy_count, :>, (20*2)-1 # shallowest-possible case, where all children use the first root
+      assert_operator hierarchy_count, :>, (20 * 2) - 1 # shallowest-possible case, where all children use the first root
       MetalHierarchy.delete_all
       Metal.rebuild!
       assert_equal MetalHierarchy.count, hierarchy_count
@@ -16,8 +18,8 @@ describe ClosureTree::HierarchyMaintenance do
 
   describe '.cleanup!' do
     before do
-      @parent = Metal.create(:value => "parent metal")
-      @child = Metal.create(:value => "child metal", parent: @parent)
+      @parent = Metal.create(value: 'parent metal')
+      @child = Metal.create(value: 'child metal', parent: @parent)
       MetalHierarchy.delete_all
       Metal.rebuild!
     end
@@ -39,8 +41,8 @@ describe ClosureTree::HierarchyMaintenance do
       end
 
       it 'should not delete other hierarchies' do
-        other_parent = Metal.create(:value => "other parent metal")
-        other_child = Metal.create(:value => "other child metal", parent: other_parent)
+        other_parent = Metal.create(value: 'other parent metal')
+        other_child = Metal.create(value: 'other child metal', parent: other_parent)
         Metal.rebuild!
 
         @child.delete
