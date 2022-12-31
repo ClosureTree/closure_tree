@@ -5,8 +5,7 @@
 Common applications include modeling hierarchical data, like tags, threaded comments, page graphs in CMSes,
 and tracking user referrals.
 
-[![Join the chat at https://gitter.im/closure_tree/Lobby](https://badges.gitter.im/closure_tree/Lobby.svg)](https://gitter.im/closure_tree/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://api.travis-ci.org/ClosureTree/closure_tree.svg?branch=master)](http://travis-ci.org/ClosureTree/closure_tree)
+[![CI](https://github.com/ClosureTree/closure_tree/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/ClosureTree/closure_tree/actions/workflows/ci.yml)
 [![Gem Version](https://badge.fury.io/rb/closure_tree.svg)](https://badge.fury.io/rb/closure_tree)
 
 Dramatically more performant than
