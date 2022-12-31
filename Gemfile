@@ -4,8 +4,8 @@ source 'https://rubygems.org'
 
 gemspec
 
-group :development do
-  platform :mri do
+platform :mri do
+  group :development do
     gem 'bump', '~> 0.10.0'
     gem 'github_changelog_generator', '~> 1.16'
   end
