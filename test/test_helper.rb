@@ -62,4 +62,5 @@ end
 require 'closure_tree'
 require_relative '../spec/support/schema'
 require_relative '../spec/support/models'
+require_relative '../spec/support/helpers'
 require 'support/tag_examples'
