@@ -8,6 +8,7 @@ require 'securerandom'
 require 'minitest'
 require 'minitest/autorun'
 require 'database_cleaner'
+require 'support/query_counter'
 
 ActiveRecord::Base.configurations = {
   default_env: {
@@ -47,6 +48,8 @@ DatabaseCleaner.strategy = :transaction
 
 module MiniTest
   class Spec
+    include QueryCounter
+
     before :each do
       ENV['FLOCK_DIR'] = Dir.mktmpdir
       DatabaseCleaner.start
@@ -62,5 +65,4 @@ end
 require 'closure_tree'
 require_relative '../spec/support/schema'
 require_relative '../spec/support/models'
-require_relative '../spec/support/helpers'
 require 'support/tag_examples'

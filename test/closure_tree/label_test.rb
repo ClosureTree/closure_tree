@@ -249,17 +249,17 @@ describe Label do
     end
 
     it "self_and_descendants should result in one select" do
-      assert_equal(1, count_queries do
+      assert_database_queries_count(1) do
         a1_array = @a1.self_and_descendants
         assert_equal(%w[a1 b1 c1 c2 d1 d2], a1_array.collect { |ea| ea.name })
-      end)
+      end
     end
 
     it "self_and_ancestors should result in one select" do
-      assert_equal(1, count_queries do
+      assert_database_queries_count(1) do
         d1_array = @d1.self_and_ancestors
         assert_equal(%w[d1 c1 b1 a1], d1_array.collect { |ea| ea.name })
-      end)
+      end
     end
   end
 
