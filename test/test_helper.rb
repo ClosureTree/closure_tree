@@ -9,6 +9,7 @@ require 'minitest'
 require 'minitest/autorun'
 require 'database_cleaner'
 require 'support/query_counter'
+require 'parallel'
 
 ActiveRecord::Base.configurations = {
   default_env: {
@@ -39,8 +40,6 @@ def sqlite?
   env_db == :sqlite3
 end
 
-ENV['WITH_ADVISORY_LOCK_PREFIX'] ||= SecureRandom.hex
-
 ActiveRecord::Base.connection.recreate_database('closure_tree_test') unless sqlite?
 puts "Testing with #{env_db} database, ActiveRecord #{ActiveRecord.gem_version} and #{RUBY_ENGINE} #{RUBY_ENGINE_VERSION} as #{RUBY_VERSION}"
 
@@ -61,6 +60,9 @@ module MiniTest
     end
   end
 end
+
+# Configure parallel tests
+Thread.abort_on_exception = true
 
 require 'closure_tree'
 require_relative '../spec/support/schema'
