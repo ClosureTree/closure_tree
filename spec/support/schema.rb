@@ -34,8 +34,11 @@ ActiveRecord::Schema.define(version: 0) do
     t.string 'name'
   end
 
-  add_index 'tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
-                                                                          name: 'tag_anc_desc_idx'
+  add_index 'tag_hierarchies', %i[ancestor_id descendant_id], unique: true,
+                                                              name: 'tag_anc_desc_uniq_idx'
+
+  add_index 'tag_hierarchies', %i[ancestor_id descendant_id generations], name: 'tag_anc_desc_gene_idx'
+
   add_index 'tag_hierarchies', [:descendant_id], name: 'tag_desc_idx'
 
   create_table 'groups', force: true do |t|

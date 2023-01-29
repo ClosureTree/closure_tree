@@ -6,9 +6,12 @@ class <%= migration_class_name %> < ActiveRecord::Migration<%= migration_version
       t.integer :generations, null: false
     end
 
-    add_index :<%= migration_name %>, [:ancestor_id, :descendant_id, :generations],
+    add_index :<%= migration_name %>, [:ancestor_id, :descendant_id],
       unique: true,
-      name: "<%= file_name %>_anc_desc_idx"
+      name: "<%= file_name %>_anc_desc_uniq_idx"
+
+    add_index :<%= migration_name %>, [:ancestor_id, :descendant_id, :generations],
+      name: "<%= file_name %>_anc_desc_gene_idx"
 
     add_index :<%= migration_name -%>, [:descendant_id],
       name: "<%= file_name %>_desc_idx"
