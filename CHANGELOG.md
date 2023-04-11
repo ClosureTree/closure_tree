@@ -3,6 +3,7 @@
 ### 8.0.0
 
 - Drop support to EOL ruby and rails
+- Reference ancestor_hierarchies in depth instead of ancestors to avoid n+1
 
 ## [7.4.0](https://github.com/ClosureTree/closure_tree/tree/7.4.0)
 
