@@ -11,11 +11,14 @@ module ClosureTree
         foreign_key: _ct.parent_column_name,
         inverse_of: :children,
         touch: _ct.options[:touch],
-        optional: true
+        optional: true,
+        polymorphic: true
 
+      where_for_ancestors = { ancestor_type: _ct.model_class.to_s }
+      where_for_descendants = { descendant_type: _ct.model_class.to_s }
       order_by_generations = -> { Arel.sql("#{_ct.quoted_hierarchy_table_name}.generations ASC") }
 
-      has_many :children, *_ct.has_many_order_with_option, **{
+      has_many :children, *_ct.has_many_order_with_option_and_where({ parent_type: _ct.model_class.to_s }), **{
         class_name: _ct.model_class.to_s,
         foreign_key: _ct.parent_column_name,
         dependent: _ct.options[:dependent],
@@ -28,7 +31,7 @@ module ClosureTree
           end
         end
 
-      has_many :ancestor_hierarchies, *_ct.has_many_order_without_option(order_by_generations),
+      has_many :ancestor_hierarchies, *_ct.has_many_order_without_option_and_where(order_by_generations, where_for_ancestors),
         class_name: _ct.hierarchy_class_name,
         foreign_key: 'descendant_id'
 
@@ -36,13 +39,13 @@ module ClosureTree
         through: :ancestor_hierarchies,
         source: :ancestor
 
-      has_many :descendant_hierarchies, *_ct.has_many_order_without_option(order_by_generations),
+      has_many :descendant_hierarchies, *_ct.has_many_order_without_option_and_where(order_by_generations, where_for_descendants),
         class_name: _ct.hierarchy_class_name,
         foreign_key: 'ancestor_id'
 
       has_many :self_and_descendants, *_ct.has_many_order_with_option(order_by_generations),
         through: :descendant_hierarchies,
-        source: :descendant
+        source: :descendant, source_type: _ct.model_class.to_s
     end
 
     # Delegate to the Support instance on the class:

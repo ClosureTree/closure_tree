@@ -2,11 +2,13 @@ class <%= migration_class_name %> < ActiveRecord::Migration<%= migration_version
   def change
     create_table :<%= migration_name %>, id: false do |t|
       t.<%= primary_key_type %> :ancestor_id, null: false
+      t.string :ancestor_type, null: false
       t.<%= primary_key_type %> :descendant_id, null: false
+      t.string :descendant_type, null: false
       t.integer :generations, null: false
     end
 
-    add_index :<%= migration_name %>, [:ancestor_id, :descendant_id, :generations],
+    add_index :<%= migration_name %>, [:ancestor_id, :ancestor_type, :descendant_id, :descendant_type, :generations],
       unique: true,
       name: "<%= file_name %>_anc_desc_idx"
 

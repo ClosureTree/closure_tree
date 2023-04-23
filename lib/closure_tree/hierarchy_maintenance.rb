@@ -66,10 +66,10 @@ module ClosureTree
         unless root?
           _ct.connection.execute <<-SQL.squish
             INSERT INTO #{_ct.quoted_hierarchy_table_name}
-              (ancestor_id, descendant_id, generations)
-            SELECT x.ancestor_id, #{_ct.quote(_ct_id)}, x.generations + 1
+              (ancestor_id, ancestor_type, descendant_id, descendant_type, generations)
+            SELECT x.ancestor_id, x.ancestor_type, #{_ct.quote(_ct_id)}, x.descendant_type, x.generations + 1
             FROM #{_ct.quoted_hierarchy_table_name} x
-            WHERE x.descendant_id = #{_ct.quote(_ct_parent_id)}
+            WHERE x.descendant_id = #{_ct.quote(_ct_parent_id)} AND x.descendant_type = #{_ct.quote(self.class.to_s)}
           SQL
         end
 
@@ -97,8 +97,8 @@ module ClosureTree
             SELECT DISTINCT descendant_id
             FROM (SELECT descendant_id
               FROM #{_ct.quoted_hierarchy_table_name}
-              WHERE ancestor_id = #{_ct.quote(id)}
-                 OR descendant_id = #{_ct.quote(id)}
+              WHERE (ancestor_id = #{_ct.quote(id)} AND ancestor_type = #{_ct.quote(self.class.to_s)})
+                 OR (descendant_id = #{_ct.quote(id)} AND descendant_type = #{_ct.quote(self.class.to_s)})
             ) #{ _ct.t_alias_keyword } x )
         SQL
       end
@@ -119,13 +119,15 @@ module ClosureTree
         hierarchy_table = hierarchy_class.arel_table
 
         [:descendant_id, :ancestor_id].each do |foreign_key|
-          alias_name = foreign_key.to_s.split('_').first + "s"
+          key_prefix = foreign_key.to_s.split('_')
+          key_as_type = "#{key_prefix}_type".to_sym
+          alias_name = key_prefix.first + "s"
           alias_table = Arel::Table.new(table_name).alias(alias_name)
           arel_join = hierarchy_table.join(alias_table, Arel::Nodes::OuterJoin)
                                      .on(alias_table[primary_key].eq(hierarchy_table[foreign_key]))
                                      .join_sources
 
-          lonely_childs = hierarchy_class.joins(arel_join).where(alias_table[primary_key].eq(nil))
+          lonely_childs = hierarchy_class.joins(arel_join).where(alias_table[primary_key].eq(nil)).where(key_as_type => self.class.to_s)
           ids = lonely_childs.pluck(foreign_key)
 
           hierarchy_class.where(hierarchy_table[foreign_key].in(ids)).delete_all

@@ -36,11 +36,10 @@ module ClosureTree
       hierarchy_class = parent_class.const_set(short_hierarchy_class_name, Class.new(model_class.superclass))
       use_attr_accessible = use_attr_accessible?
       include_forbidden_attributes_protection = include_forbidden_attributes_protection?
-      model_class_name = model_class.to_s
       hierarchy_class.class_eval do
         include ActiveModel::ForbiddenAttributesProtection if include_forbidden_attributes_protection
-        belongs_to :ancestor, class_name: model_class_name
-        belongs_to :descendant, class_name: model_class_name
+        belongs_to :ancestor, polymorphic: true
+        belongs_to :descendant, polymorphic: true
         attr_accessible :ancestor, :descendant, :generations if use_attr_accessible
         def ==(other)
           self.class == other.class && ancestor_id == other.ancestor_id && descendant_id == other.descendant_id
@@ -84,11 +83,23 @@ module ClosureTree
       [lambda { order(order_by_opt.call) }]
     end
 
+    def has_many_order_without_option_and_where(order_by_opt, where_clause)
+      [lambda { where(where_clause).order(order_by_opt.call) }]
+    end
+
     def has_many_order_with_option(order_by_opt=nil)
       order_options = [order_by_opt, order_by].compact
       [lambda {
         order_options = order_options.map { |o| o.is_a?(Proc) ? o.call : o }
         order(order_options)
+      }]
+    end
+
+    def has_many_order_with_option_and_where(order_by_opt=nil, where_clause)
+      order_options = [order_by_opt, order_by].compact
+      [lambda {
+        order_options = order_options.map { |o| o.is_a?(Proc) ? o.call : o }
+        where(where_clause).order(order_options)
       }]
     end
 
