@@ -5,7 +5,6 @@ module ClosureTree
     extend ActiveSupport::Concern
 
     included do
-
       belongs_to :parent, nil,
         class_name: _ct.model_class.to_s,
         foreign_key: _ct.parent_column_name,
@@ -46,6 +45,20 @@ module ClosureTree
       has_many :self_and_descendants, *_ct.has_many_order_with_option(order_by_generations),
         through: :descendant_hierarchies,
         source: :descendant, source_type: _ct.model_class.to_s
+    end
+
+    def poly_children
+      pp hierarchy_class.all.map { |h| h.slice(:ancestor_type, :ancestor_id, :descendant_type, :descendant_id, :generations) }
+
+      foo = hierarchy_class
+        .where(ancestor_id: id, ancestor_type: _ct.model_class.to_s, generations: 1)
+        .map { |h_data| { type: h_data.descendant_type, id: h_data.descendant_id } }
+        .group_by { |h_data| h_data[:type] }
+        .map { |type, h_data_array| type.constantize.where(id: h_data_array.map { |h_data| h_data[:id] }) }
+        .flatten
+
+      p foo
+      foo
     end
 
     # Delegate to the Support instance on the class:

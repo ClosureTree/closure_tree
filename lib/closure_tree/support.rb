@@ -57,8 +57,7 @@ module ClosureTree
       # We need to use the table_name, not something like ct_class.to_s.demodulize + "_hierarchies",
       # because they may have overridden the table name, which is what we want to be consistent with
       # in order for the schema to make sense.
-      tablename = options[:hierarchy_table_name] ||
-        remove_prefix_and_suffix(table_name).singularize + "_hierarchies"
+      tablename = "hierarchies"
 
       ActiveRecord::Base.table_name_prefix + tablename + ActiveRecord::Base.table_name_suffix
     end

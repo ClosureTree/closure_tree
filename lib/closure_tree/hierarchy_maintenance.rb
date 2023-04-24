@@ -67,7 +67,7 @@ module ClosureTree
           _ct.connection.execute <<-SQL.squish
             INSERT INTO #{_ct.quoted_hierarchy_table_name}
               (ancestor_id, ancestor_type, descendant_id, descendant_type, generations)
-            SELECT x.ancestor_id, x.ancestor_type, #{_ct.quote(_ct_id)}, x.descendant_type, x.generations + 1
+            SELECT #{_ct.quote(parent.id)}, #{_ct.quote(parent.class.to_s)}, #{_ct.quote(_ct_id)}, x.descendant_type, x.generations + 1
             FROM #{_ct.quoted_hierarchy_table_name} x
             WHERE x.descendant_id = #{_ct.quote(_ct_parent_id)} AND x.descendant_type = #{_ct.quote(self.class.to_s)}
           SQL
@@ -79,7 +79,7 @@ module ClosureTree
           _ct_reorder_siblings if !called_by_rebuild
         end
 
-        children.find_each { |c| c.rebuild!(true) }
+        children.each { |c| c.rebuild!(true) }
 
         _ct_reorder_children if _ct.order_is_numeric? && children.present?
       end
