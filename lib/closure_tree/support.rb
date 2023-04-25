@@ -32,25 +32,27 @@ module ClosureTree
     end
 
     def hierarchy_class_for_model
-      parent_class = model_class.module_parent
-      hierarchy_class = parent_class.const_set(short_hierarchy_class_name, Class.new(model_class.superclass))
-      use_attr_accessible = use_attr_accessible?
-      include_forbidden_attributes_protection = include_forbidden_attributes_protection?
-      hierarchy_class.class_eval do
-        include ActiveModel::ForbiddenAttributesProtection if include_forbidden_attributes_protection
-        belongs_to :ancestor, polymorphic: true
-        belongs_to :descendant, polymorphic: true
-        attr_accessible :ancestor, :descendant, :generations if use_attr_accessible
-        def ==(other)
-          self.class == other.class && ancestor_id == other.ancestor_id && descendant_id == other.descendant_id
+      @@hierarchy_class_for_model ||= begin
+        parent_class = model_class.module_parent
+        hierarchy_class = parent_class.const_set(short_hierarchy_class_name, Class.new(model_class.superclass))
+        use_attr_accessible = use_attr_accessible?
+        include_forbidden_attributes_protection = include_forbidden_attributes_protection?
+        hierarchy_class.class_eval do
+          include ActiveModel::ForbiddenAttributesProtection if include_forbidden_attributes_protection
+          belongs_to :ancestor, polymorphic: true
+          belongs_to :descendant, polymorphic: true
+          attr_accessible :ancestor, :descendant, :generations if use_attr_accessible
+          def ==(other)
+            self.class == other.class && ancestor_id == other.ancestor_id && descendant_id == other.descendant_id
+          end
+          alias :eql? :==
+          def hash
+            ancestor_id.hash << 31 ^ descendant_id.hash
+          end
         end
-        alias :eql? :==
-        def hash
-          ancestor_id.hash << 31 ^ descendant_id.hash
-        end
+        hierarchy_class.table_name = hierarchy_table_name
+        hierarchy_class
       end
-      hierarchy_class.table_name = hierarchy_table_name
-      hierarchy_class
     end
 
     def hierarchy_table_name
