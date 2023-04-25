@@ -17,7 +17,7 @@ module ClosureTree
     end
 
     def hierarchy_class_name
-      options[:hierarchy_class_name] || model_class.to_s + "Hierarchy"
+      "Hierarchy"
     end
 
     def primary_key_column
