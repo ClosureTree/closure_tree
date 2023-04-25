@@ -66,4 +66,14 @@ RSpec.describe 'Polymorphic methods' do
       root_parent,
     ])
   end
+
+  it 'has a poly_root' do
+    root_parent = Project.create!(name: 'root parent')
+    parent = Project.create!(name: 'parent', parent: root_parent)
+    child = Task.create!(name: 'child', parent: parent)
+    sub_task = Task.create!(name: sub_task, parent: child)
+
+    expect(sub_task.poly_root).to eq(root_parent)
+    expect(child.poly_root).to eq(root_parent)
+  end
 end

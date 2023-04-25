@@ -113,18 +113,8 @@ module ClosureTree
       self_and_ancestors.where(_ct.parent_column_name.to_sym => nil).first
     end
 
-    def polymorphic_root
-      polymorphic_ancestor_lookup = {}
-
-      hierarchy_class.where(descendant_id: self.id).pluck(:ancestor_type, :ancestor_id).each do |ancestor_type, ancestor_id|
-        polymorphic_ancestor_lookup[ancestor_type] ||= []
-        polymorphic_ancestor_lookup[ancestor_type] << ancestor_id
-      end
-
-      polymorphic_ancestor_lookup.keys.each do |ancestor_class|
-        no_parent_ancestor = ancestor_class.constantize.where(id: polymorphic_ancestor_lookup[ancestor_class], parent_id: nil).first
-        return no_parent_ancestor if no_parent_ancestor.present?
-      end
+    def poly_root
+      hierarchy_class.where(descendant: self).order('generations desc').first&.ancestor
     end
 
     def leaves
