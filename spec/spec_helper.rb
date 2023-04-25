@@ -107,6 +107,7 @@ require_relative 'support/query_counter'
 class Organziation < ActiveRecord::Base
   has_closure_tree
 end
+
 class Project < ActiveRecord::Base
   has_closure_tree
 end
