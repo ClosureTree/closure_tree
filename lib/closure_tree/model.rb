@@ -48,17 +48,42 @@ module ClosureTree
     end
 
     def poly_children
-      pp hierarchy_class.all.map { |h| h.slice(:ancestor_type, :ancestor_id, :descendant_type, :descendant_id, :generations) }
+      scope = hierarchy_class.where(ancestor_id: id, ancestor_type: _ct.model_class.to_s, generations: 1)
+      map_and_group_relation(scope, :descendants)
+    end
 
-      foo = hierarchy_class
-        .where(ancestor_id: id, ancestor_type: _ct.model_class.to_s, generations: 1)
-        .map { |h_data| { type: h_data.descendant_type, id: h_data.descendant_id } }
+    def poly_self_and_descendants
+      scope = hierarchy_class.where(ancestor: self)
+      map_and_group_relation(scope, :descendants)
+    end
+
+    def poly_descendants
+      poly_self_and_descendants - [self]
+    end
+
+    def poly_self_and_ancestors
+      scope = hierarchy_class.where(descendant: self)
+      map_and_group_relation(scope, :ancestors)
+    end
+
+    def poly_ancestors
+      poly_self_and_ancestors - [self]
+    end
+
+    def map_and_group_relation(scope, group)
+      scope
+        .map { |h_data| group_by_map(h_data, group) }
         .group_by { |h_data| h_data[:type] }
         .map { |type, h_data_array| type.constantize.where(id: h_data_array.map { |h_data| h_data[:id] }) }
         .flatten
+    end
 
-      p foo
-      foo
+    def group_by_map(h_data, group)
+      if group == :ancestors
+        { type: h_data.ancestor_type, id: h_data.ancestor_id }
+      elsif group == :descendants
+        { type: h_data.descendant_type, id: h_data.descendant_id }
+      end
     end
 
     # Delegate to the Support instance on the class:

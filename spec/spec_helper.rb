@@ -80,7 +80,7 @@ RSpec.configure do |config|
     end
 
     config.after(:suite) do
-      FileUtils.remove_entry_secure ENV['FLOCK_DIR']
+      FileUtils.remove_entry_secure(ENV['FLOCK_DIR'], true)
     end
   end
 end
@@ -103,3 +103,15 @@ require_relative 'support/models'
 require_relative 'support/helpers'
 require_relative 'support/exceed_query_limit'
 require_relative 'support/query_counter'
+
+class Organziation < ActiveRecord::Base
+  has_closure_tree
+end
+
+class Project < ActiveRecord::Base
+  has_closure_tree
+end
+
+class Task < ActiveRecord::Base
+  has_closure_tree
+end

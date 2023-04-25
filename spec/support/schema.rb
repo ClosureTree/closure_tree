@@ -1,6 +1,40 @@
 # frozen_string_literal: true
 
 ActiveRecord::Schema.define(version: 0) do
+  create_table "hierarchies", id: false, force: :cascade do |t|
+    t.integer "ancestor_id", null: false
+    t.string "ancestor_type", null: false
+    t.integer "descendant_id", null: false
+    t.string "descendant_type", null: false
+    t.integer "generations", null: false
+    t.index ["ancestor_id", "ancestor_type", "descendant_id", "descendant_type", "generations"], name: "project_anc_desc_idx", unique: true
+    t.index ["descendant_id"], name: "project_desc_idx"
+  end
+
+  create_table "organizations", force: :cascade do |t|
+    t.string "name"
+    t.bigint "parent_id"
+    t.string "parent_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "projects", force: :cascade do |t|
+    t.string "name"
+    t.bigint "parent_id"
+    t.string "parent_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "tasks", force: :cascade do |t|
+    t.string "name"
+    t.bigint "parent_id"
+    t.string "parent_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table 'tags', force: true do |t|
     t.string 'name'
     t.string 'title'
