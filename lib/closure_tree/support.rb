@@ -23,7 +23,8 @@ module ClosureTree
         :dependent => :nullify, # or :destroy or :delete_all -- see the README
         :name_column => 'name',
         :with_advisory_lock => true,
-        :numeric_order => false
+        :numeric_order => false,
+        :hierarchical_subclasses => [],
       }.merge(options)
       raise ArgumentError, "name_column can't be 'path'" if options[:name_column] == 'path'
       if order_is_numeric?
