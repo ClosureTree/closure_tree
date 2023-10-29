@@ -9,6 +9,10 @@ on:
     branches:
       - master
 
+concurrency:
+  group: ci-${{ github.head_ref }}
+  cancel-in-progress: true
+
 jobs:
   rspec:
     runs-on: ubuntu-latest

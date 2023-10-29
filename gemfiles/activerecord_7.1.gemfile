@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-gem "activerecord", "~> 6.0.0"
+gem "activerecord", "~> 7.1.0"
 
 platforms :mri do
   group :development do
@@ -12,15 +12,10 @@ platforms :mri do
 end
 
 platforms :ruby do
-  gem "mysql2"
-  gem "pg"
   gem "sqlite3"
-end
-
-platforms :jruby do
-  gem "activerecord-jdbcmysql-adapter"
-  gem "activerecord-jdbcpostgresql-adapter"
-  gem "activerecord-jdbcsqlite3-adapter"
+  gem "mysql2"
+  gem "trilogy"
+  gem "pg"
 end
 
 gemspec path: "../"

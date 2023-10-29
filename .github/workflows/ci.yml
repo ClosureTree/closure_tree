@@ -9,6 +9,10 @@ on:
     branches:
       - master
 
+concurrency:
+  group: ci-${{ github.head_ref }}
+  cancel-in-progress: true
+
 jobs:
   rspec:
     runs-on: ubuntu-latest
@@ -44,7 +48,6 @@ jobs:
         rails:
           - activerecord_7.0
           - activerecord_6.1
-          - activerecord_6.0
         adapter:
           - 'sqlite3:///:memory:'
           - mysql2://root:root@0/closure_tree_test
