@@ -45,7 +45,7 @@ puts "Testing with #{env_db} database, ActiveRecord #{ActiveRecord.gem_version} 
 
 DatabaseCleaner.strategy = :transaction
 
-module MiniTest
+module Minitest
   class Spec
     include QueryCounter
 
