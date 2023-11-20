@@ -67,4 +67,3 @@ Thread.abort_on_exception = true
 require 'closure_tree'
 require_relative '../spec/support/schema'
 require_relative '../spec/support/models'
-require 'support/tag_examples'
