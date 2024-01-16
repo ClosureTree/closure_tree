@@ -16,8 +16,9 @@ module QueryCounter
 
   def assert_database_queries_count(expected, &block)
     queries = sql_queries(&block)
-    queries.count.must_equal(
+    assert_equal(
       expected,
+      queries.count,
       "Expected #{expected} queries, but found #{queries.count}:\n#{queries.join("\n")}"
     )
   end

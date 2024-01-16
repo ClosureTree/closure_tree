@@ -16,7 +16,7 @@ ActiveRecord::Schema.define(version: 0) do
   end
 
   create_table 'uuid_tags', id: false, force: :cascade do |t|
-    t.string 'uuid', unique: true
+    t.string 'uuid', primary_key: true
     t.string 'name'
     t.string 'title'
     t.string 'parent_uuid'

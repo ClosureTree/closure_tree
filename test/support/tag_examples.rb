@@ -442,7 +442,7 @@ module TagExamples
           c = @tag_class.find_or_create_by_path %w[A B C]
           a = c.parent.parent
           b = c.parent
-          spurious_tags = @tag_class.find_or_create_by_path %w[D E]
+          _spurious_tags = @tag_class.find_or_create_by_path %w[D E]
           assert_equal [a, b], @tag_class.with_descendant(c).to_a
         end
 
@@ -612,7 +612,7 @@ module TagExamples
         end
 
         it 'finds correctly rooted paths' do
-          decoy = @tag_class.find_or_create_by_path %w[a b c d]
+          _decoy = @tag_class.find_or_create_by_path %w[a b c d]
           b_d = @tag_class.find_or_create_by_path %w[b c d]
           assert_equal b_d, @tag_class.find_by_path(%w[b c d])
           assert_nil @tag_class.find_by_path(%w[c d])

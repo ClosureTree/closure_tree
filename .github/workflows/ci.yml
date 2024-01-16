@@ -8,6 +8,9 @@ on:
   pull_request:
     branches:
       - master
+concurrency:
+  group: ci-${{ github.head_ref }}
+  cancel-in-progress: true
 
 jobs:
   rspec:
@@ -42,9 +45,9 @@ jobs:
           - '3.0'
           - '2.7'
         rails:
+          - activerecord_7.1
           - activerecord_7.0
           - activerecord_6.1
-          - activerecord_6.0
         adapter:
           - 'sqlite3:///:memory:'
           - mysql2://root:root@0/closure_tree_test

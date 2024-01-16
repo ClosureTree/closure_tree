@@ -20,7 +20,7 @@ Gem::Specification.new do |gem|
   gem.test_files  = gem.files.grep(%r{^spec/})
   gem.required_ruby_version = '>= 2.7.7'
 
-  gem.add_runtime_dependency 'activerecord', '>= 6.0.0'
+  gem.add_runtime_dependency 'activerecord', '>= 6.1.0'
   gem.add_runtime_dependency 'with_advisory_lock', '>= 4.0.0'
 
   gem.add_development_dependency 'appraisal'
