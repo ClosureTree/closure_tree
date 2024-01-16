@@ -43,9 +43,9 @@ end
 ActiveRecord::Base.connection.recreate_database('closure_tree_test') unless sqlite?
 puts "Testing with #{env_db} database, ActiveRecord #{ActiveRecord.gem_version} and #{RUBY_ENGINE} #{RUBY_ENGINE_VERSION} as #{RUBY_VERSION}"
 
-DatabaseCleaner.strategy = :transaction
+DatabaseCleaner.strategy = :truncation
 
-module MiniTest
+module Minitest
   class Spec
     include QueryCounter
 
@@ -67,4 +67,3 @@ Thread.abort_on_exception = true
 require 'closure_tree'
 require_relative '../spec/support/schema'
 require_relative '../spec/support/models'
-require 'support/tag_examples'
