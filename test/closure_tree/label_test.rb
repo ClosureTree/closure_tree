@@ -12,7 +12,11 @@ module CorrectOrderValue
       end
 
       it "should set order_value on roots" do
-        assert_equal @expected_root_order_value, @root.order_value
+        if @expected_root_order_value.nil?
+          assert_nil @root.order_value
+        else
+          assert_equal @expected_root_order_value, @root.order_value
+        end
       end
 
       it "should set order_value with siblings" do
@@ -456,7 +460,7 @@ describe Label do
     it "should reorder old-parent siblings when a node moves to another tree" do
       f2 = Label.find_or_create_by_path %w[a2 b2 c2 d2 e2 f2]
       f3 = f2.prepend_sibling(Label.new(name: "f3"))
-      f4 = f2.append_sibling(Label.new(name: "f4"))
+      _f4 = f2.append_sibling(Label.new(name: "f4"))
       @f1.add_sibling(f2)
       assert_equal [0, 1], @f1.self_and_siblings.collect(&:order_value)
       assert_equal [0, 1], f3.self_and_siblings.collect(&:order_value)
