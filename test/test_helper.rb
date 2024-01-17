@@ -8,7 +8,7 @@ require 'support/query_counter'
 require 'parallel'
 
 database_file = SecureRandom.hex
-ActiveRecord::Base.configurations = {
+ActiveRecord::Base.configurations = debug = {
   default_env: {
     url: ENV['DATABASE_URL'].presence || "sqlite3://#{Dir.tmpdir}/#{database_file}.sqlite3",
     properties: { allowPublicKeyRetrieval: true } # for JRuby madness
@@ -19,7 +19,7 @@ ActiveRecord::Base.configurations = {
   }
 }
 
-puts "Testing with #{ActiveRecord::Base.configurations}"
+puts "Testing with #{debug}"
 
 ENV['WITH_ADVISORY_LOCK_PREFIX'] ||= SecureRandom.hex
 

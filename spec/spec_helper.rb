@@ -21,7 +21,7 @@ if RUBY_ENGINE == 'ruby'
 end
 
 database_file = SecureRandom.hex
-ActiveRecord::Base.configurations = {
+ActiveRecord::Base.configurations = debug = {
   default_env: {
     url: ENV['DATABASE_URL'].presence || "sqlite3://#{Dir.tmpdir}/#{database_file}.sqlite3",
     properties: { allowPublicKeyRetrieval: true } # for JRuby madness
@@ -32,7 +32,7 @@ ActiveRecord::Base.configurations = {
   }
 }
 
-puts "Testing with #{ActiveRecord::Base.configurations}"
+puts "Testing with #{debug}"
 
 # Configure ActiveRecord
 ActiveRecord::Migration.verbose = false
