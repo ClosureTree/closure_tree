@@ -9,7 +9,7 @@ on:
     branches:
       - master
 concurrency:
-  group: ci-${{ github.head_ref }}
+  group: ci-${{ github.head_ref }}-truffleruby
   cancel-in-progress: true
 
 jobs:
@@ -42,7 +42,7 @@ jobs:
         ruby:
           - truffleruby
         rails:
-          - activerecord_7.1
+          - activerecord_7.0
           - activerecord_6.1
         adapter:
           - 'sqlite3:///:memory:'
