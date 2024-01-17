@@ -301,13 +301,40 @@ File.open("example.dot", "w") { |f| f.write(Tag.root.to_dot_digraph) }
 ```
 Then, in a shell, ```dot -Tpng example.dot > example.png```, which produces:
 
-![Example tree](https://raw.github.com/ClosureTree/closure_tree/master/img/example.png)
+```mermaid
+graph TD;
+    a --> b;
+    a --> b2;
+    b --> c1;
+    b --> c2;
+    c1 --> d1;
+    c1 --> d2;
+```
 
 If you want to customize the label value, override the ```#to_digraph_label``` instance method in your model.
 
 Just for kicks, this is the test tree I used for proving that preordered tree traversal was correct:
 
-![Preordered test tree](https://raw.github.com/ClosureTree/closure_tree/master/img/preorder.png)
+```mermaid
+graph TD;
+    a --> b;
+    a --> l;
+    b --> c;
+    b --> h;
+    c --> d;
+    c --> e;
+    d --> f;
+    d --> g;
+    h --> i;
+    i --> j;
+    j --> k;
+    l --> m;
+    l --> n;
+    m --> o;
+    n --> p;
+    n --> q;
+    p --> r;
+```
 
 ### Available options
 
