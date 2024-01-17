@@ -8,7 +8,7 @@ describe '#_ct' do
   end
 end
 
-describe "multi database support" do
+describe 'multi database support' do
   it 'should have a different connection for menu items' do
     # These 2 models are in the same database
     assert_equal Tag.connection, Metal.connection
@@ -20,5 +20,4 @@ describe "multi database support" do
     # The hierarchy table is in the same database
     assert_equal MenuItem.connection, MenuItemHierarchy.connection
   end
-
 end

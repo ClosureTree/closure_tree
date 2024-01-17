@@ -19,9 +19,10 @@ ActiveRecord::Base.configurations = {
   }
 }
 
+puts "Testing with #{ActiveRecord::Base.configurations}"
+
 ENV['WITH_ADVISORY_LOCK_PREFIX'] ||= SecureRandom.hex
 
-ActiveRecord::Base.establish_connection
 
 def env_db
   @env_db ||= ActiveRecord::Base.connection_db_config.adapter.to_sym

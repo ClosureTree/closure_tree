@@ -32,6 +32,8 @@ ActiveRecord::Base.configurations = {
   }
 }
 
+puts "Testing with #{ActiveRecord::Base.configurations}"
+
 # Configure ActiveRecord
 ActiveRecord::Migration.verbose = false
 ActiveRecord::Base.table_name_prefix = ENV['DB_PREFIX'].to_s
@@ -39,11 +41,7 @@ ActiveRecord::Base.table_name_suffix = ENV['DB_SUFFIX'].to_s
 ActiveRecord::Base.establish_connection
 
 def env_db
-  @env_db ||= if ActiveRecord::Base.respond_to?(:connection_db_config)
-                ActiveRecord::Base.connection_db_config.adapter
-              else
-                ActiveRecord::Base.connection_config[:adapter]
-              end.to_sym
+  @env_db ||= ActiveRecord::Base.connection_db_config.adapter.to_sym
 end
 
 # Use in specs to skip some tests
