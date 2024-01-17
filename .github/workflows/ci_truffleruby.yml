@@ -45,13 +45,13 @@ jobs:
           - activerecord_7.0
           - activerecord_6.1
         adapter:
-          - 'sqlite3:///:memory:'
+          - '' # SQLite3
           - mysql2://root:root@0/closure_tree_test
           - postgres://closure_tree:closure_tree@0/closure_tree_test
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -66,7 +66,8 @@ jobs:
       - name: RSpec
         env:
           RAILS_VERSION: ${{ matrix.rails }}
-          DB_ADAPTER: ${{ matrix.adapter }}
+          DATABASE_URL: ${{ matrix.adapter }}
+          SECONDARY_DATABASE_URL: ${{ matrix.adapter }}
           BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
           WITH_ADVISORY_LOCK_PREFIX: ${{ github.run_id }}
         run: bin/rake

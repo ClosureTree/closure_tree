@@ -20,9 +20,14 @@ if RUBY_ENGINE == 'ruby'
   end
 end
 
+database_file = SecureRandom.hex
 ActiveRecord::Base.configurations = {
   default_env: {
-    url: ENV.fetch('DATABASE_URL', "sqlite3::memory:"),
+    url: ENV['DATABASE_URL'].presence || "sqlite3://#{Dir.tmpdir}/#{database_file}.sqlite3",
+    properties: { allowPublicKeyRetrieval: true } # for JRuby madness
+  },
+  secondary_env: {
+    url: ENV['SECONDARY_DATABASE_URL'].presence || "sqlite3://#{Dir.tmpdir}/#{database_file}-s.sqlite3",
     properties: { allowPublicKeyRetrieval: true } # for JRuby madness
   }
 }

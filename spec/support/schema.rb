@@ -1,7 +1,17 @@
 # frozen_string_literal: true
 
+class ApplicationRecord < ActiveRecord::Base
+  self.abstract_class = true
+end
+
+class SecondDatabaseRecord < ActiveRecord::Base
+  self.abstract_class = true
+
+  establish_connection :secondary_env
+end
+
 ActiveRecord::Schema.define(version: 0) do
-  create_table 'tags', force: :cascade do |t|
+  connection.create_table 'tags', force: :cascade do |t|
     t.string 'name'
     t.string 'title'
     t.references 'parent'
@@ -126,18 +136,6 @@ ActiveRecord::Schema.define(version: 0) do
     t.integer 'generations', null: false
   end
 
-  create_table 'menu_items', force: :cascade do |t|
-    t.string 'name'
-    t.references 'parent'
-    t.timestamps null: false
-  end
-
-  create_table 'menu_item_hierarchies', id: false, force: :cascade do |t|
-    t.references 'ancestor', null: false
-    t.references 'descendant', null: false
-    t.integer 'generations', null: false
-  end
-
   add_index 'label_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
                                                                             name: 'lh_anc_desc_idx'
   add_index 'label_hierarchies', [:descendant_id], name: 'lh_desc_idx'
@@ -149,9 +147,25 @@ ActiveRecord::Schema.define(version: 0) do
   add_foreign_key(:users, :users, column: 'referrer_id', on_delete: :cascade)
   add_foreign_key(:labels, :labels, column: 'mother_id', on_delete: :cascade)
   add_foreign_key(:metal, :metal, column: 'parent_id', on_delete: :cascade)
-  add_foreign_key(:menu_items, :menu_items, column: 'parent_id', on_delete: :cascade)
-  add_foreign_key(:menu_item_hierarchies, :menu_items, column: 'ancestor_id', on_delete: :cascade)
-  add_foreign_key(:menu_item_hierarchies, :menu_items, column: 'descendant_id', on_delete: :cascade)
   add_foreign_key(:tag_hierarchies, :tags, column: 'ancestor_id', on_delete: :cascade)
   add_foreign_key(:tag_hierarchies, :tags, column: 'descendant_id', on_delete: :cascade)
+end
+
+SecondDatabaseRecord.connection_pool.with_connection do |connection|
+  ActiveRecord::Schema.define(version: 0) do
+    connection.create_table 'menu_items', force: :cascade do |t|
+      t.string 'name'
+      t.references 'parent'
+      t.timestamps null: false
+    end
+
+    connection.create_table 'menu_item_hierarchies', id: false, force: :cascade do |t|
+      t.references 'ancestor', null: false
+      t.references 'descendant', null: false
+      t.integer 'generations', null: false
+    end
+    connection.add_foreign_key(:menu_items, :menu_items, column: 'parent_id', on_delete: :cascade)
+    connection.add_foreign_key(:menu_item_hierarchies, :menu_items, column: 'ancestor_id', on_delete: :cascade)
+    connection.add_foreign_key(:menu_item_hierarchies, :menu_items, column: 'descendant_id', on_delete: :cascade)
+  end
 end

@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-class ApplicationRecord < ActiveRecord::Base
-  self.abstract_class = true
-end
-
 class Tag < ApplicationRecord
   has_closure_tree dependent: :destroy, order: :name
   before_destroy :add_destroyed_tag
@@ -146,6 +142,6 @@ end
 class Unobtanium < Metal
 end
 
-class MenuItem < ApplicationRecord
+class MenuItem < SecondDatabaseRecord
   has_closure_tree touch: true, with_advisory_lock: false
 end
