@@ -7,22 +7,28 @@ require 'database_cleaner'
 require 'support/query_counter'
 require 'parallel'
 
-database_file = SecureRandom.hex
-ActiveRecord::Base.configurations = debug = {
+puts "Using ActiveRecord #{ActiveRecord.gem_version} and #{RUBY_ENGINE} #{RUBY_ENGINE_VERSION} as #{RUBY_VERSION}"
+
+primary_database_url = ENV['DATABASE_URL'].presence || "sqlite3:///tmp/closure_tree_test"
+secondary_database_url = ENV['SECONDARY_DATABASE_URL'].presence || "sqlite3:///tmp/closure_tree_test-s"
+
+puts "Using primary database #{primary_database_url}"
+puts "Using secondary database #{secondary_database_url}"
+
+ActiveRecord::Base.configurations = {
   default_env: {
-    url: ENV['DATABASE_URL'].presence || "sqlite3://#{Dir.tmpdir}/#{database_file}.sqlite3",
-    properties: { allowPublicKeyRetrieval: true } # for JRuby madness
-  },
-  secondary_env: {
-    url: ENV['SECONDARY_DATABASE_URL'].presence || "sqlite3://#{Dir.tmpdir}/#{database_file}-s.sqlite3",
-    properties: { allowPublicKeyRetrieval: true } # for JRuby madness
+    primary: {
+      url: primary_database_url,
+      properties: { allowPublicKeyRetrieval: true } # for JRuby madness
+    },
+    secondary: {
+      url: secondary_database_url,
+      properties: { allowPublicKeyRetrieval: true } # for JRuby madness
+    }
   }
 }
 
-puts "Testing with #{debug}"
-
 ENV['WITH_ADVISORY_LOCK_PREFIX'] ||= SecureRandom.hex
-
 
 def env_db
   @env_db ||= ActiveRecord::Base.connection_db_config.adapter.to_sym
@@ -37,9 +43,9 @@ def sqlite?
   env_db == :sqlite3
 end
 
-puts "Testing with #{env_db} database, ActiveRecord #{ActiveRecord.gem_version} and #{RUBY_ENGINE} #{RUBY_ENGINE_VERSION} as #{RUBY_VERSION}"
 
 DatabaseCleaner.strategy = :truncation
+DatabaseCleaner.allow_remote_database_url = true
 
 module Minitest
   class Spec
@@ -61,6 +67,19 @@ end
 Thread.abort_on_exception = true
 
 require 'closure_tree'
+begin
+  ActiveRecord::Base.establish_connection(:primary)
+rescue
+  ActiveRecord::Tasks::DatabaseTasks.create_current('primary')
+end
+
+begin
+  ActiveRecord::Base.establish_connection(:secondary)
+rescue
+  ActiveRecord::Tasks::DatabaseTasks.create_current('secondary')
+end
+
 require_relative '../spec/support/schema'
 require_relative '../spec/support/models'
-ActiveRecord::Base.connection.recreate_database('closure_tree_test') unless sqlite?
+
+puts "Testing with #{env_db} database"

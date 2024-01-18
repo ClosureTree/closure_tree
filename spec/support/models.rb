@@ -10,7 +10,7 @@ class Tag < ApplicationRecord
 
   def add_destroyed_tag
     # Proof for the tests that the destroy rather than the delete method was called:
-    DestroyedTag.create(name:)
+    DestroyedTag.create(name: to_s)
   end
 end
 
@@ -30,7 +30,7 @@ class UUIDTag < ApplicationRecord
 
   def add_destroyed_tag
     # Proof for the tests that the destroy rather than the delete method was called:
-    DestroyedTag.create(name:)
+    DestroyedTag.create(name: to_s)
   end
 end
 

@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-
 require 'database_cleaner'
 require 'closure_tree/test/matcher'
 require 'tmpdir'
@@ -11,6 +10,7 @@ require 'parallel'
 require 'active_record'
 require 'active_support/core_ext/array'
 
+puts "Using ActiveRecord #{ActiveRecord.gem_version} and #{RUBY_ENGINE} #{RUBY_ENGINE_VERSION} as #{RUBY_VERSION}"
 
 # Start Simplecov
 if RUBY_ENGINE == 'ruby'
@@ -20,19 +20,24 @@ if RUBY_ENGINE == 'ruby'
   end
 end
 
-database_file = SecureRandom.hex
-ActiveRecord::Base.configurations = debug = {
+primary_database_url = ENV['DATABASE_URL'].presence || "sqlite3:///tmp/closure_tree_test"
+secondary_database_url = ENV['SECONDARY_DATABASE_URL'].presence || "sqlite3:///tmp/closure_tree_test-s"
+
+puts "Using primary database #{primary_database_url}"
+puts "Using secondary database #{secondary_database_url}"
+
+ActiveRecord::Base.configurations = {
   default_env: {
-    url: ENV['DATABASE_URL'].presence || "sqlite3://#{Dir.tmpdir}/#{database_file}.sqlite3",
-    properties: { allowPublicKeyRetrieval: true } # for JRuby madness
-  },
-  secondary_env: {
-    url: ENV['SECONDARY_DATABASE_URL'].presence || "sqlite3://#{Dir.tmpdir}/#{database_file}-s.sqlite3",
-    properties: { allowPublicKeyRetrieval: true } # for JRuby madness
+    primary: {
+      url: primary_database_url,
+      properties: { allowPublicKeyRetrieval: true } # for JRuby madness
+    },
+    secondary: {
+      url: secondary_database_url,
+      properties: { allowPublicKeyRetrieval: true } # for JRuby madness
+    }
   }
 }
-
-puts "Testing with #{debug}"
 
 # Configure ActiveRecord
 ActiveRecord::Migration.verbose = false
@@ -75,15 +80,12 @@ RSpec.configure do |config|
   # disable monkey patching
   # see: https://relishapp.com/rspec/rspec-core/v/3-8/docs/configuration/zero-monkey-patching-mode
   config.disable_monkey_patching!
+  config.before(:suite) do
+    ENV['FLOCK_DIR'] = Dir.mktmpdir if sqlite?
+  end
 
-  if sqlite?
-    config.before(:suite) do
-      ENV['FLOCK_DIR'] = Dir.mktmpdir
-    end
-
-    config.after(:suite) do
-      FileUtils.remove_entry_secure ENV['FLOCK_DIR']
-    end
+  config.after(:suite) do
+    FileUtils.remove_entry_secure(ENV['FLOCK_DIR']) if sqlite?
   end
 end
 
@@ -94,10 +96,19 @@ Thread.abort_on_exception = true
 # See: https://github.com/ClosureTree/with_advisory_lock
 ENV['WITH_ADVISORY_LOCK_PREFIX'] ||= SecureRandom.hex
 
-ActiveRecord::Base.connection.recreate_database("closure_tree_test") unless sqlite?
-puts "Testing with #{env_db} database, ActiveRecord #{ActiveRecord.gem_version} and #{RUBY_ENGINE} #{RUBY_ENGINE_VERSION} as #{RUBY_VERSION}"
 # Require our gem
 require 'closure_tree'
+begin
+  ActiveRecord::Base.establish_connection(:primary)
+rescue
+  ActiveRecord::Tasks::DatabaseTasks.create_current('primary')
+end
+
+begin
+  ActiveRecord::Base.establish_connection(:secondary)
+rescue
+  ActiveRecord::Tasks::DatabaseTasks.create_current('secondary')
+end
 
 # Load test helpers
 require_relative 'support/schema'
@@ -105,3 +116,4 @@ require_relative 'support/models'
 require_relative 'support/helpers'
 require_relative 'support/exceed_query_limit'
 require_relative 'support/query_counter'
+puts "Testing with #{env_db} database"

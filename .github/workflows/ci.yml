@@ -50,9 +50,9 @@ jobs:
           - activerecord_6.1
           - activerecord_edge
         adapter:
-          - '' # SQLite3
+          - sqlite3:///tmp/closure_tree_test
           - mysql2://root:root@0/closure_tree_test
-          - postgres://closure_tree:closure_tree@0/closure_tree_test
+          - postgres://postgres:postgres@0/closure_tree_test
         exclude:
           - ruby: '3.0'
             rails: activerecord_edge

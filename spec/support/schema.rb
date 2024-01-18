@@ -7,7 +7,7 @@ end
 class SecondDatabaseRecord < ActiveRecord::Base
   self.abstract_class = true
 
-  establish_connection :secondary_env
+  establish_connection :secondary
 end
 
 ActiveRecord::Schema.define(version: 0) do
