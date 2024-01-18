@@ -29,6 +29,7 @@ puts "Using secondary database #{secondary_database_url}"
 ActiveRecord::Base.configurations = {
   default_env: {
     primary: {
+      primary: true,
       url: primary_database_url,
       properties: { allowPublicKeyRetrieval: true } # for JRuby madness
     },
@@ -99,14 +100,8 @@ ENV['WITH_ADVISORY_LOCK_PREFIX'] ||= SecureRandom.hex
 # Require our gem
 require 'closure_tree'
 
-ActiveRecord::Tasks::DatabaseTasks.drop_current(:primary)
-ActiveRecord::Tasks::DatabaseTasks.create_current(:primary)
-ActiveRecord::Tasks::DatabaseTasks.drop_current(:secondary)
-ActiveRecord::Tasks::DatabaseTasks.create_current(:secondary)
-
 # Load test helpers
 require_relative 'support/schema'
-require_relative 'support/models'
 require_relative 'support/helpers'
 require_relative 'support/exceed_query_limit'
 require_relative 'support/query_counter'

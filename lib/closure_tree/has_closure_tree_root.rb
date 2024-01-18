@@ -77,8 +77,6 @@ module ClosureTree
 
         @closure_tree_roots[assoc_name][assoc_map] = root
       end
-
-      connection_pool.release_connection
     end
   end
 end

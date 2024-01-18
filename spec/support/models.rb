@@ -1,5 +1,18 @@
 # frozen_string_literal: true
 
+
+
+class ApplicationRecord < ActiveRecord::Base
+  self.abstract_class = true
+
+  connects_to database: { writing: :primary, reading: :primary }
+end
+
+class SecondDatabaseRecord < ActiveRecord::Base
+  self.abstract_class = true
+
+  connects_to database: { writing: :secondary, reading: :secondary }
+end
 class Tag < ApplicationRecord
   has_closure_tree dependent: :destroy, order: :name
   before_destroy :add_destroyed_tag

@@ -9,8 +9,7 @@ describe 'Configuration' do
       has_closure_tree
     end
 
-    refute ActiveRecord::Base.connection_pool.active_connection?
-    # +false+ in AR 4, +nil+ in AR 5
+    assert_nil TypeDuplicate.connection_pool.active_connection?
   end
 
   it 'returns connection to the pool after has_closure_tree setup with order' do
@@ -19,7 +18,7 @@ describe 'Configuration' do
       has_closure_tree order: 'sort_order', name_column: 'value'
     end
 
-    refute ActiveRecord::Base.connection_pool.active_connection?
+    refute MetalDuplicate.connection_pool.active_connection?
   end
 
   it 'returns connection to the pool after has_closure_tree_root setup' do
@@ -28,6 +27,6 @@ describe 'Configuration' do
       has_closure_tree_root :root_user
     end
 
-    refute ActiveRecord::Base.connection_pool.active_connection?
+    refute GroupDuplicate.connection_pool.active_connection?
   end
 end

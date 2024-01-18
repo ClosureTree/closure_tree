@@ -67,12 +67,8 @@ end
 Thread.abort_on_exception = true
 
 require 'closure_tree'
-ActiveRecord::Tasks::DatabaseTasks.drop_current(:primary)
-ActiveRecord::Tasks::DatabaseTasks.create_current(:primary)
-ActiveRecord::Tasks::DatabaseTasks.drop_current(:secondary)
-ActiveRecord::Tasks::DatabaseTasks.create_current(:secondary)
+
 
 require_relative '../spec/support/schema'
-require_relative '../spec/support/models'
 
 puts "Testing with #{env_db} database"

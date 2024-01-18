@@ -1,19 +1,21 @@
 # frozen_string_literal: true
 
-class ApplicationRecord < ActiveRecord::Base
-  self.abstract_class = true
-
-  connects_to database: { writing: :primary, reading: :primary }
-end
-
-class SecondDatabaseRecord < ActiveRecord::Base
-  self.abstract_class = true
-
-  connects_to database: { writing: :secondary, reading: :secondary }
+require_relative 'models'
+ApplicationRecord.establish_connection
+if sqlite?
+  ActiveRecord::Tasks::DatabaseTasks.drop(:primary, 'test')
+  ActiveRecord::Tasks::DatabaseTasks.create(:primary, 'test')
+  ActiveRecord::Tasks::DatabaseTasks.drop(:secondary, 'test')
+  ActiveRecord::Tasks::DatabaseTasks.create(:secondary, 'test')
+else
+  ActiveRecord::Tasks::DatabaseTasks.drop(:primary)
+  ActiveRecord::Tasks::DatabaseTasks.create(:primary)
+  ActiveRecord::Tasks::DatabaseTasks.drop(:secondary)
+  ActiveRecord::Tasks::DatabaseTasks.create(:secondary)
 end
 
 ActiveRecord::Schema.define(version: 0) do
-  connection.create_table 'tags', force: :cascade do |t|
+  connection.create_table Tag.table_name, force: :cascade do |t|
     t.string 'name'
     t.string 'title'
     t.references 'parent'
@@ -21,13 +23,17 @@ ActiveRecord::Schema.define(version: 0) do
     t.timestamps null: false
   end
 
-  create_table 'tag_hierarchies', id: false, force: :cascade do |t|
+  create_table Tag.hierarchy_class.table_name, id: false, force: :cascade do |t|
     t.references 'ancestor', null: false
     t.references 'descendant', null: false
     t.integer 'generations', null: false
   end
 
-  create_table 'uuid_tags', id: false, force: :cascade do |t|
+  add_index Tag.hierarchy_class.table_name, %i[ancestor_id descendant_id generations], unique: true,
+                                                                                       name: 'tag_anc_desc_idx'
+  add_index Tag.hierarchy_class.table_name, [:descendant_id], name: 'tag_desc_idx'
+
+  create_table UUIDTag.table_name, id: false, force: :cascade do |t|
     t.string 'uuid', primary_key: true
     t.string 'name'
     t.string 'title'
@@ -36,95 +42,99 @@ ActiveRecord::Schema.define(version: 0) do
     t.timestamps null: false
   end
 
-  create_table 'uuid_tag_hierarchies', id: false, force: :cascade do |t|
+  create_table UUIDTag.hierarchy_class.table_name, id: false, force: :cascade do |t|
     t.string 'ancestor_id', null: false
     t.string 'descendant_id', null: false
     t.integer 'generations', null: false
   end
 
-  create_table 'destroyed_tags', force: :cascade do |t|
+  create_table DestroyedTag.table_name, force: :cascade do |t|
     t.string 'name'
   end
 
-  add_index 'tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
-                                                                          name: 'tag_anc_desc_idx'
-  add_index 'tag_hierarchies', [:descendant_id], name: 'tag_desc_idx'
-
-  create_table 'groups', force: :cascade do |t|
+  create_table Group.table_name, force: :cascade do |t|
     t.string 'name', null: false
   end
 
-  create_table 'groupings', force: :cascade do |t|
+  create_table Grouping.table_name, force: :cascade do |t|
     t.string 'name', null: false
   end
 
-  create_table 'user_sets', force: :cascade do |t|
+  create_table UserSet.table_name, force: :cascade do |t|
     t.string 'name', null: false
   end
 
-  create_table 'teams', force: :cascade do |t|
+  create_table Team.table_name, force: :cascade do |t|
     t.string 'name', null: false
   end
 
-  create_table 'users', force: :cascade do |t|
+  create_table User.table_name, force: :cascade do |t|
     t.string 'email'
     t.references 'referrer'
     t.integer 'group_id'
     t.timestamps null: false
   end
 
-  create_table 'contracts', force: :cascade do |t|
-    t.references 'user', null: false
-    t.references 'contract_type'
-    t.string 'title'
-  end
-
-  create_table 'contract_types', force: :cascade do |t|
-    t.string 'name', null: false
-  end
-
-  create_table 'referral_hierarchies', id: false, force: :cascade do |t|
+  create_table User.hierarchy_class.table_name, id: false, force: :cascade do |t|
     t.references 'ancestor', null: false
     t.references 'descendant', null: false
     t.integer 'generations', null: false
   end
 
-  create_table 'labels', force: :cascade do |t|
+  add_index User.hierarchy_class.table_name, %i[ancestor_id descendant_id generations], unique: true,
+                                                                                        name: 'ref_anc_desc_idx'
+  add_index User.hierarchy_class.table_name, [:descendant_id], name: 'ref_desc_idx'
+
+  create_table Contract.table_name, force: :cascade do |t|
+    t.references 'user', null: false
+    t.references 'contract_type'
+    t.string 'title'
+  end
+
+  create_table ContractType.table_name, force: :cascade do |t|
+    t.string 'name', null: false
+  end
+
+  create_table Label.table_name, force: :cascade do |t|
     t.string 'name'
     t.string 'type'
     t.integer 'column_whereby_ordering_is_inferred'
     t.references 'mother'
   end
 
-  create_table 'label_hierarchies', id: false, force: :cascade do |t|
+  create_table Label.hierarchy_class.table_name, id: false, force: :cascade do |t|
     t.references 'ancestor', null: false
     t.references 'descendant', null: false
     t.integer 'generations', null: false
   end
 
-  create_table 'cuisine_types', force: :cascade do |t|
+  add_index Label.hierarchy_class.table_name, %i[ancestor_id descendant_id generations], unique: true,
+                                                                                         name: 'lh_anc_desc_idx'
+  add_index Label.hierarchy_class.table_name, [:descendant_id], name: 'lh_desc_idx'
+
+  create_table CuisineType.table_name, force: :cascade do |t|
     t.string 'name'
     t.references 'parent'
   end
 
-  create_table 'cuisine_type_hierarchies', id: false, force: :cascade do |t|
+  create_table CuisineType.hierarchy_class.table_name, id: false, force: :cascade do |t|
     t.references 'ancestor', null: false
     t.references 'descendant', null: false
     t.integer 'generations', null: false
   end
 
-  create_table 'namespace_types', force: :cascade do |t|
+  create_table Namespace::Type.table_name, force: :cascade do |t|
     t.string 'name'
     t.references 'parent'
   end
 
-  create_table 'namespace_type_hierarchies', id: false, force: :cascade do |t|
+  create_table Namespace::Type.hierarchy_class.table_name, id: false, force: :cascade do |t|
     t.references 'ancestor', null: false
     t.references 'descendant', null: false
     t.integer 'generations', null: false
   end
 
-  create_table 'metal', force: :cascade do |t|
+  create_table Metal.table_name, force: :cascade do |t|
     t.references 'parent'
     t.string 'metal_type'
     t.string 'value'
@@ -132,43 +142,38 @@ ActiveRecord::Schema.define(version: 0) do
     t.integer 'sort_order'
   end
 
-  create_table 'metal_hierarchies', id: false, force: :cascade do |t|
+  create_table Metal.hierarchy_class.table_name, id: false, force: :cascade do |t|
     t.references 'ancestor', null: false
     t.references 'descendant', null: false
     t.integer 'generations', null: false
   end
 
-  add_index 'label_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
-                                                                            name: 'lh_anc_desc_idx'
-  add_index 'label_hierarchies', [:descendant_id], name: 'lh_desc_idx'
-  add_index 'referral_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
-                                                                               name: 'ref_anc_desc_idx'
-  add_index 'referral_hierarchies', [:descendant_id], name: 'ref_desc_idx'
-
-  add_foreign_key(:tags, :tags, column: 'parent_id', on_delete: :cascade)
-  add_foreign_key(:users, :users, column: 'referrer_id', on_delete: :cascade)
-  add_foreign_key(:labels, :labels, column: 'mother_id', on_delete: :cascade)
-  add_foreign_key(:metal, :metal, column: 'parent_id', on_delete: :cascade)
-  add_foreign_key(:tag_hierarchies, :tags, column: 'ancestor_id', on_delete: :cascade)
-  add_foreign_key(:tag_hierarchies, :tags, column: 'descendant_id', on_delete: :cascade)
+  add_foreign_key(Tag.table_name, Tag.table_name, column: 'parent_id', on_delete: :cascade)
+  add_foreign_key(User.table_name, User.table_name, column: 'referrer_id', on_delete: :cascade)
+  add_foreign_key(Label.table_name, Label.table_name, column: 'mother_id', on_delete: :cascade)
+  add_foreign_key(Metal.table_name, Metal.table_name, column: 'parent_id', on_delete: :cascade)
+  add_foreign_key(Tag.hierarchy_class.table_name, Tag.table_name, column: 'ancestor_id', on_delete: :cascade)
+  add_foreign_key(Tag.hierarchy_class.table_name, Tag.table_name, column: 'descendant_id', on_delete: :cascade)
 end
 
 SecondDatabaseRecord.establish_connection
 SecondDatabaseRecord.connection_pool.with_connection do |connection|
   ActiveRecord::Schema.define(version: 0) do
-    connection.create_table 'menu_items', force: :cascade do |t|
+    connection.create_table MenuItem.table_name, force: :cascade do |t|
       t.string 'name'
       t.references 'parent'
       t.timestamps null: false
     end
 
-    connection.create_table 'menu_item_hierarchies', id: false, force: :cascade do |t|
+    connection.create_table MenuItem.hierarchy_class.table_name, id: false, force: :cascade do |t|
       t.references 'ancestor', null: false
       t.references 'descendant', null: false
       t.integer 'generations', null: false
     end
-    connection.add_foreign_key(:menu_items, :menu_items, column: 'parent_id', on_delete: :cascade)
-    connection.add_foreign_key(:menu_item_hierarchies, :menu_items, column: 'ancestor_id', on_delete: :cascade)
-    connection.add_foreign_key(:menu_item_hierarchies, :menu_items, column: 'descendant_id', on_delete: :cascade)
+    connection.add_foreign_key(MenuItem.table_name, MenuItem.table_name, column: 'parent_id', on_delete: :cascade)
+    connection.add_foreign_key(MenuItem.hierarchy_class.table_name, MenuItem.table_name, column: 'ancestor_id',
+                                                                                         on_delete: :cascade)
+    connection.add_foreign_key(MenuItem.hierarchy_class.table_name, MenuItem.table_name, column: 'descendant_id',
+                                                                                         on_delete: :cascade)
   end
 end

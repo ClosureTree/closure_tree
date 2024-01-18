@@ -26,9 +26,6 @@ module ClosureTree
         :numeric_order => false
       }.merge(options)
       raise ArgumentError, "name_column can't be 'path'" if options[:name_column] == 'path'
-      if order_is_numeric?
-        extend NumericOrderSupport.adapter_for_connection(connection)
-      end
     end
 
     def hierarchy_class_for_model
@@ -52,6 +49,10 @@ module ClosureTree
       end
       hierarchy_class.table_name = hierarchy_table_name
       hierarchy_class
+    end
+
+    def reorder_with_parent_id(parent_id, minimum_sort_order_value = nil)
+      NumericOrderSupport.adapter_for_connection(self, parent_id, minimum_sort_order_value)
     end
 
     def hierarchy_table_name
