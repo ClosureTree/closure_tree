@@ -2,12 +2,14 @@
 
 class ApplicationRecord < ActiveRecord::Base
   self.abstract_class = true
+
+  connects_to database: { writing: :primary, reading: :primary }
 end
 
 class SecondDatabaseRecord < ActiveRecord::Base
   self.abstract_class = true
 
-  establish_connection :secondary
+  connects_to database: { writing: :secondary, reading: :secondary }
 end
 
 ActiveRecord::Schema.define(version: 0) do
@@ -151,6 +153,7 @@ ActiveRecord::Schema.define(version: 0) do
   add_foreign_key(:tag_hierarchies, :tags, column: 'descendant_id', on_delete: :cascade)
 end
 
+SecondDatabaseRecord.establish_connection
 SecondDatabaseRecord.connection_pool.with_connection do |connection|
   ActiveRecord::Schema.define(version: 0) do
     connection.create_table 'menu_items', force: :cascade do |t|

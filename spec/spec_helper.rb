@@ -98,17 +98,11 @@ ENV['WITH_ADVISORY_LOCK_PREFIX'] ||= SecureRandom.hex
 
 # Require our gem
 require 'closure_tree'
-begin
-  ActiveRecord::Base.establish_connection(:primary)
-rescue
-  ActiveRecord::Tasks::DatabaseTasks.create_current('primary')
-end
 
-begin
-  ActiveRecord::Base.establish_connection(:secondary)
-rescue
-  ActiveRecord::Tasks::DatabaseTasks.create_current('secondary')
-end
+ActiveRecord::Tasks::DatabaseTasks.drop_current(:primary)
+ActiveRecord::Tasks::DatabaseTasks.create_current(:primary)
+ActiveRecord::Tasks::DatabaseTasks.drop_current(:secondary)
+ActiveRecord::Tasks::DatabaseTasks.create_current(:secondary)
 
 # Load test helpers
 require_relative 'support/schema'
