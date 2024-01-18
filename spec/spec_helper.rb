@@ -38,7 +38,6 @@ puts "Testing with #{debug}"
 ActiveRecord::Migration.verbose = false
 ActiveRecord::Base.table_name_prefix = ENV['DB_PREFIX'].to_s
 ActiveRecord::Base.table_name_suffix = ENV['DB_SUFFIX'].to_s
-ActiveRecord::Base.establish_connection
 
 def env_db
   @env_db ||= ActiveRecord::Base.connection_db_config.adapter.to_sym

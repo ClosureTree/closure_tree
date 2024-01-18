@@ -67,7 +67,7 @@ jobs:
         env:
           RAILS_VERSION: ${{ matrix.rails }}
           DATABASE_URL: ${{ matrix.adapter }}
-          SECONDARY_DATABASE_URL: ${{ matrix.adapter }}
+          SECONDARY_DATABASE_URL: ${{ matrix.adapter }}_secondary
           BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
           WITH_ADVISORY_LOCK_PREFIX: ${{ github.run_id }}
         run: bin/rake

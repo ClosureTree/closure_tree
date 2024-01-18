@@ -31,7 +31,6 @@ end
 ActiveRecord::Migration.verbose = false
 ActiveRecord::Base.table_name_prefix = ENV['DB_PREFIX'].to_s
 ActiveRecord::Base.table_name_suffix = ENV['DB_SUFFIX'].to_s
-ActiveRecord::Base.establish_connection
 
 # Use in specs to skip some tests
 def sqlite?
