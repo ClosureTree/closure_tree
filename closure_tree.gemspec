@@ -21,7 +21,7 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '>= 3.0.0'
 
   gem.add_runtime_dependency 'activerecord', '>= 6.1.0'
-  gem.add_runtime_dependency 'with_advisory_lock', '>= 4.0.0'
+  gem.add_runtime_dependency 'with_advisory_lock', '>= 5.0.0'
 
   gem.add_development_dependency 'appraisal'
   gem.add_development_dependency 'database_cleaner'

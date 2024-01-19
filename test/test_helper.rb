@@ -10,6 +10,7 @@ require 'minitest/autorun'
 require 'database_cleaner'
 require 'support/query_counter'
 require 'parallel'
+require 'timecop'
 
 ActiveRecord::Base.configurations = {
   default_env: {
@@ -61,8 +62,36 @@ module Minitest
   end
 end
 
+class ActiveSupport::TestCase
+  def exceed_query_limit(num, &block)
+    counter = QueryCounter.new
+    ActiveSupport::Notifications.subscribed(counter.to_proc, 'sql.active_record', &block)
+    assert counter.query_count <= num, "Expected to run maximum #{num} queries, but ran #{counter.query_count}"
+  end
+
+  class QueryCounter
+  attr_reader :query_count
+
+  def initialize
+    @query_count = 0
+  end
+
+  def to_proc
+    lambda(&method(:callback))
+  end
+
+  def callback(name, start, finish, message_id, values)
+    @query_count += 1 unless %w(CACHE SCHEMA).include?(values[:name])
+  end
+end
+end
+
 # Configure parallel tests
 Thread.abort_on_exception = true
+
+# Configure advisory_lock
+# See: https://github.com/ClosureTree/with_advisory_lock
+ENV['WITH_ADVISORY_LOCK_PREFIX'] ||= SecureRandom.hex
 
 require 'closure_tree'
 require_relative '../spec/support/schema'
