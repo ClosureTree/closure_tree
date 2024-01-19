@@ -11,7 +11,7 @@ module ClosureTree
       _ct.has_name? ? read_attribute(_ct.name_column) : to_s
     end
 
-    module ClassMethods
+    class_methods do
       # Renders the given scope as a DOT digraph, suitable for rendering by Graphviz
       def to_dot_digraph(tree_scope)
         id_to_instance = tree_scope.reduce({}) { |h, ea| h[ea.id] = ea; h }

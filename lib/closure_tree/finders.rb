@@ -50,7 +50,7 @@ module ClosureTree
       scope.without_instance(self)
     end
 
-    module ClassMethods
+    class_methods do
 
       def without_instance(instance)
         if instance.new_record?

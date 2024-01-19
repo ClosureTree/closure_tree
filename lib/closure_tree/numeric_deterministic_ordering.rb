@@ -42,7 +42,7 @@ module ClosureTree
         .reorder(self.class._ct_sum_order_by(self))
     end
 
-    module ClassMethods
+    class_methods do
 
       # If node is nil, order the whole tree.
       def _ct_sum_order_by(node = nil)
