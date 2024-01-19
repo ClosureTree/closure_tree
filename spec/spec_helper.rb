@@ -12,13 +12,13 @@ require 'active_record'
 require 'active_support/core_ext/array'
 
 
-# Start Simplecov
-if RUBY_ENGINE == 'ruby'
-  require 'simplecov'
-  SimpleCov.start do
-    add_filter '/spec/'
-  end
-end
+# # Start Simplecov
+# if RUBY_ENGINE == 'ruby'
+#   require 'simplecov'
+#   SimpleCov.start do
+#     add_filter '/spec/'
+#   end
+# end
 
 ActiveRecord::Base.configurations = {
   default_env: {
