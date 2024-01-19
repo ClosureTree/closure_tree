@@ -104,7 +104,7 @@ module ClosureTree
       end
     end
 
-    module ClassMethods
+    class_methods do
       # Rebuilds the hierarchy table based on the parent_id column in the database.
       # Note that the hierarchy table will be truncated.
       def rebuild!
