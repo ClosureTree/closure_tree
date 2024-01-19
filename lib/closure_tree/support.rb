@@ -59,9 +59,9 @@ module ClosureTree
       # because they may have overridden the table name, which is what we want to be consistent with
       # in order for the schema to make sense.
       tablename = options[:hierarchy_table_name] ||
-        remove_prefix_and_suffix(table_name).singularize + "_hierarchies"
+        remove_prefix_and_suffix(table_name, model_class).singularize + "_hierarchies"
 
-      ActiveRecord::Base.table_name_prefix + tablename + ActiveRecord::Base.table_name_suffix
+      [model_class.table_name_prefix, tablename, model_class.table_name_suffix].join
     end
 
     def with_order_option(opts)
