@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # From http://stackoverflow.com/a/13423584/153896
 module ActiveRecord
   class QueryCounter
@@ -11,8 +13,8 @@ module ActiveRecord
       lambda(&method(:callback))
     end
 
-    def callback(name, start, finish, message_id, values)
-      @query_count += 1 unless %w(CACHE SCHEMA).include?(values[:name])
+    def callback(_name, _start, _finish, _message_id, values)
+      @query_count += 1 unless %w[CACHE SCHEMA].include?(values[:name])
     end
   end
 end

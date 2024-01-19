@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Derived from http://stackoverflow.com/a/13423584/153896. Updated for RSpec 3.
 RSpec::Matchers.define :exceed_query_limit do |expected|
   supports_block_expectations
@@ -6,7 +8,7 @@ RSpec::Matchers.define :exceed_query_limit do |expected|
     query_count(&block) > expected
   end
 
-  failure_message_when_negated do |actual|
+  failure_message_when_negated do |_actual|
     "Expected to run maximum #{expected} queries, got #{@counter.query_count}"
   end
 
