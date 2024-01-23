@@ -859,6 +859,65 @@ module TagExamples
           assert_equal(graph, dot)
         end
       end
+
+      describe '.depth' do
+        it 'should render for an empty scope' do
+          @tag_class.find_or_create_by_path(%w[a b1 c1])
+          @tag_class.find_or_create_by_path(%w[a b2 c2])
+          @tag_class.find_or_create_by_path(%w[a b2 c3])
+          a, b1, b2, c1, c2, c3 = %w[a b1 b2 c1 c2 c3].map { |ea| @tag_class.where(name: ea).first.id }
+          dot = @tag_class.roots.first.to_dot_digraph
+
+          graph = <<~DOT
+            digraph G {
+              "#{a}" [label="a"]
+              "#{a}" -> "#{b1}"
+              "#{b1}" [label="b1"]
+              "#{a}" -> "#{b2}"
+              "#{b2}" [label="b2"]
+              "#{b1}" -> "#{c1}"
+              "#{c1}" [label="c1"]
+              "#{b2}" -> "#{c2}"
+              "#{c2}" [label="c2"]
+              "#{b2}" -> "#{c3}"
+              "#{c3}" [label="c3"]
+            }
+          DOT
+
+          assert_equal(graph, dot)
+        end
+      end
+
+      describe '.depth' do
+        before do
+          @d1 = @tag_class.find_or_create_by_path %w[a b c1 d1]
+          @c1 = @d1.parent
+          @b = @c1.parent
+          @a = @b.parent
+          @a2 = @tag_class.create(name: 'a2')
+          @b2 = @tag_class.find_or_create_by_path %w[a b2]
+          @c3 = @tag_class.find_or_create_by_path %w[a3 b3 c3]
+          @b3 = @c3.parent
+          @a3 = @b3.parent
+
+ 
+        end
+
+        it 'should return 0 for root' do
+          assert_equal 0, @a.depth
+          assert_equal 0, @a2.depth
+          assert_equal 0, @a3.depth
+        end
+
+        it 'should return correct depth for nodes' do
+          assert_equal 1, @b.depth
+          assert_equal 2, @c1.depth
+          assert_equal 3, @d1.depth
+          assert_equal 1, @b2.depth
+          assert_equal 1, @b3.depth
+          assert_equal 2, @c3.depth
+        end
+      end
     end
   end
 end

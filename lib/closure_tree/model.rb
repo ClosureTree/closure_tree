@@ -77,7 +77,7 @@ module ClosureTree
     end
 
     def depth
-      ancestor_hierarchies.size
+      ancestor_hierarchies.size - 1
     end
 
     alias_method :level, :depth
