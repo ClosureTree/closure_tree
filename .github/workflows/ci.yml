@@ -74,7 +74,7 @@ jobs:
       - name: RSpec
         env:
           RAILS_VERSION: ${{ matrix.rails }}
-          DB_ADAPTER: ${{ matrix.adapter }}
+          DATABASE_URL: ${{ matrix.adapter }}
           BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
           WITH_ADVISORY_LOCK_PREFIX: ${{ github.run_id }}
         run: bin/rake
