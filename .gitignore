@@ -13,4 +13,5 @@ tmp/
 *.lock
 .ruby-*
 *.iml
+.env
 coverage/
