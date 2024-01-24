@@ -29,6 +29,7 @@ jobs:
         ports: ['5432:5432']
         env:
           POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: closure_tree
           POSTGRES_DB: closure_tree_test
         options: >-
           --health-cmd pg_isready
@@ -50,9 +51,9 @@ jobs:
           - activerecord_6.1
           - activerecord_edge
         adapter:
-          - 'sqlite3:///:memory:'
-          - mysql2://root:root@0/closure_tree_test
-          - postgres://closure_tree:closure_tree@0/closure_tree_test
+          - 'sqlite3:///tmp/closure_tree_test.sqlite3'
+          - mysql2://root:root@127.0.0.1:3306/closure_tree_test
+          - postgres://closure_tree:closure_tree@localhost:5432/closure_tree_test
         exclude:
           - ruby: '3.0'
             rails: activerecord_edge
