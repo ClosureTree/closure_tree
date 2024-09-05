@@ -5,7 +5,7 @@ appraise 'activerecord-6.1' do
   platforms :ruby do
     gem 'mysql2'
     gem 'pg'
-    gem 'sqlite3'
+    gem 'sqlite3', '< 2.0'
   end
 
   platforms :jruby do
@@ -20,7 +20,7 @@ appraise 'activerecord-7.0' do
   platforms :ruby do
     gem 'mysql2'
     gem 'pg'
-    gem 'sqlite3'
+    gem 'sqlite3', '< 2.0'
   end
 
   platforms :jruby do
@@ -35,7 +35,7 @@ appraise 'activerecord-7.1' do
   platforms :ruby do
     gem 'mysql2'
     gem 'pg'
-    gem 'sqlite3'
+    gem 'sqlite3', '< 2.0'
   end
 
   platforms :jruby do
