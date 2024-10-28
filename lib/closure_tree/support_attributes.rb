@@ -36,6 +36,14 @@ module ClosureTree
       parent_column_name.to_sym
     end
 
+    def belong_to_column_name
+      options[:order_belong_to]
+    end
+
+    def belong_to_column_sym
+      belong_to_column_name&.to_sym
+    end
+
     def name_column
       options[:name_column]
     end
