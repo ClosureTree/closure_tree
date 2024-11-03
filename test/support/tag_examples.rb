@@ -761,8 +761,18 @@ module TagExamples
             assert_equal @full_tree, @tag_class.hash_tree(limit_depth: 4)
           end
 
+          it 'joins the default scope when a limit_depth is given' do
+            queries = sql_queries { @tag_class.hash_tree(limit_depth: 2) }
+            assert queries.any? { |query| query.match?(%r{INNER JOIN \( SELECT descendant_id, MAX\(generations\) as depth}) }
+          end
+
           it 'no limit' do
             assert_equal @full_tree, @tag_class.hash_tree
+          end
+
+          it 'does not join the default scope when there is no limit' do
+            queries = sql_queries { @tag_class.hash_tree }
+            assert_equal queries.any? { |query| query.match?(%r{INNER JOIN \( SELECT descendant_id, MAX\(generations\) as depth}) }, false
           end
         end
 
@@ -803,6 +813,16 @@ module TagExamples
 
           it 'no limit from chained activerecord association subroots' do
             assert_equal @full_tree[@a], @a.children.hash_tree
+          end
+
+          it 'joins the default scope when a limit_depth is given' do
+            queries = sql_queries { @a.self_and_descendants.hash_tree(limit_depth: 2) }
+            assert queries.any? { |query| query.match?(%r{INNER JOIN \( SELECT descendant_id, MAX\(generations\) as depth}) }
+          end
+
+          it 'does not join the default scope when there is no limit' do
+            queries = sql_queries { @a.self_and_descendants.hash_tree }
+            assert_equal queries.any? { |query| query.match?(%r{INNER JOIN \( SELECT descendant_id, MAX\(generations\) as depth}) }, false
           end
 
           it 'limit_depth 3 from b.parent' do
@@ -899,8 +919,6 @@ module TagExamples
           @c3 = @tag_class.find_or_create_by_path %w[a3 b3 c3]
           @b3 = @c3.parent
           @a3 = @b3.parent
-
- 
         end
 
         it 'should return 0 for root' do
