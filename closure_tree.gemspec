@@ -13,6 +13,14 @@ Gem::Specification.new do |gem|
   gem.description = gem.summary
   gem.license     = 'MIT'
 
+  gem.metadata = {
+    'bug_tracker_uri'   => "https://github.com/ClosureTree/closure_tree/issues",
+    'changelog_uri'     => "https://github.com/ClosureTree/closure_tree/blob/master/CHANGELOG.md",
+    'documentation_uri' => "https://www.rubydoc.info/gems/closure_tree/#{gem.version}",
+    'homepage_uri'      => "https://closuretree.github.io/closure_tree/",
+    'source_code_uri'   => "https://github.com/ClosureTree/closure_tree",
+  } if gem.respond_to?(:metadata=)
+
   gem.files         = `git ls-files`.split($/).reject do |f|
     f.match(%r{^(spec|img|gemfiles)})
   end
