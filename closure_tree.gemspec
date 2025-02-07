@@ -10,7 +10,6 @@ Gem::Specification.new do |gem|
   gem.homepage    = 'https://github.com/ClosureTree/closure_tree/'
 
   gem.summary     = %q(Easily and efficiently make your ActiveRecord model support hierarchies)
-  gem.description = gem.summary
   gem.license     = 'MIT'
 
   gem.metadata = {
