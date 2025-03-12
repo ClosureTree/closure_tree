@@ -1,3 +1,7 @@
+# OpsLevel fork of Closure Tree
+
+This fork is based on 7.4.0, the last stable gem version release (from Oct 2021). We then applied a patch from https://github.com/ClosureTree/closure_tree/pull/442, which allows us to support tenancy with determinstically ordered closure trees.
+
 # Closure Tree
 
 ### Closure_tree lets your ActiveRecord models act as nodes in a [tree data structure](http://en.wikipedia.org/wiki/Tree_%28data_structure%29)
