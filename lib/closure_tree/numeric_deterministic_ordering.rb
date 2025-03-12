@@ -17,17 +17,17 @@ module ClosureTree
         attribute_method = as_5_1 ? :attribute_before_last_save : :attribute_was
 
         was_parent_id = public_send(attribute_method, _ct.parent_column_name)
-        _ct.reorder_with_parent_id(was_parent_id)
+        _ct.reorder_with_parent_id(parent_id: was_parent_id, belong_to_name: _ct.belong_to_column_sym, belong_to_id: _ct_belong_to_id)
       end
     end
 
     def _ct_reorder_siblings(minimum_sort_order_value = nil)
-      _ct.reorder_with_parent_id(_ct_parent_id, minimum_sort_order_value)
+      _ct.reorder_with_parent_id(parent_id: _ct_parent_id, minimum_sort_order_value: minimum_sort_order_value, belong_to_name: _ct.belong_to_column_sym, belong_to_id: _ct_belong_to_id)
       reload unless destroyed?
     end
 
     def _ct_reorder_children(minimum_sort_order_value = nil)
-      _ct.reorder_with_parent_id(_ct_id, minimum_sort_order_value)
+      _ct.reorder_with_parent_id(parent_id: _ct_id, minimum_sort_order_value: minimum_sort_order_value)
     end
 
     def self_and_descendants_preordered

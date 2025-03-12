@@ -12,6 +12,14 @@ ActiveRecord::Schema.define(:version => 0) do
 
   add_foreign_key(:tags, :tags, :column => 'parent_id')
 
+  create_table 'blocks' do |t|
+    t.string 'name'
+    t.references 'parent'
+    t.references 'user', null: false
+    t.integer 'sort_order'
+    t.timestamps null: false
+  end
+
   create_table "tag_hierarchies", :id => false do |t|
     t.references "ancestor", :null => false
     t.references "descendant", :null => false
