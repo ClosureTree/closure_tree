@@ -1,0 +1,76 @@
+---
+name: Tests
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+
+    services:
+      postgres:
+        image: "postgres:13"
+        ports: ["5432:5432"]
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: closure_tree
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - "3.2.5"
+        rails:
+          - activerecord_7.0
+        adapter:
+          - sqlite3
+          - mysql2
+          - postgresql
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Set DB Adapter
+        env:
+          RAILS_VERSION: ${{ matrix.rails }}
+          DB_ADAPTER: ${{ matrix.adapter }}
+
+        # See: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md#mysql
+        run: |
+          if [ "${DB_ADAPTER}" = "mysql2" ]; then
+            sudo systemctl start mysql.service
+            mysql -u root -proot -e "create database closure_tree;"
+          fi
+
+      - name: Bundle
+        env:
+          RAILS_VERSION: ${{ matrix.rails }}
+          DB_ADAPTER: ${{ matrix.adapter }}
+          BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
+        run: |
+          gem install bundler
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+
+      - name: RSpec
+        env:
+          RAILS_VERSION: ${{ matrix.rails }}
+          DB_ADAPTER: ${{ matrix.adapter }}
+          BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
+          WITH_ADVISORY_LOCK_PREFIX: ${{ github.run_id }}
+        run: bin/rake --trace spec:all
