@@ -30,13 +30,15 @@ ActiveRecord::Schema.define(:version => 0) do
   add_foreign_key(:tag_hierarchies, :tags, :column => 'descendant_id')
 
   create_table "uuid_tags", :id => false do |t|
-    t.string "uuid", :unique => true
+    t.string "uuid"
     t.string "name"
     t.string "title"
     t.string "parent_uuid"
     t.integer "sort_order"
     t.timestamps null: false
   end
+
+  add_index "uuid_tags", :uuid, unique: true
 
   create_table "uuid_tag_hierarchies", :id => false do |t|
     t.string "ancestor_id", :null => false

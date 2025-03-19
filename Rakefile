@@ -26,12 +26,3 @@ namespace :spec do
     task.pattern = 'spec/generators/*_spec.rb'
   end
 end
-
-require 'github_changelog_generator/task'
-GitHubChangelogGenerator::RakeTask.new :changelog do |config|
-  config.user = 'ClosureTree'
-  config.project = 'closure_tree'
-  config.issues = false
-  config.future_release = '5.2.0'
-  config.since_tag = 'v7.3.0'
-end

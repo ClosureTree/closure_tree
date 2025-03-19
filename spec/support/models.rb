@@ -78,7 +78,7 @@ class ContractType < ActiveRecord::Base
   has_many :contracts, inverse_of: :contract_type
 end
 
-class Block < ApplicationRecord
+class Block < ActiveRecord::Base
   acts_as_tree order: :column_whereby_ordering_is_inferred, # <- symbol, and not "sort_order"
                numeric_order: true,
                dependent: :destroy,
