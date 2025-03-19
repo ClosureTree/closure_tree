@@ -17,7 +17,7 @@ module ClosureTree
       return found if found
 
       attrs = subpath.shift
-      _ct.with_advisory_lock do
+      _ct.with_advisory_lock! do
         # shenanigans because children.create is bound to the superclass
         # (in the case of polymorphism):
         child = self.children.where(attrs).first || begin
@@ -159,7 +159,7 @@ module ClosureTree
         attr_path = _ct.build_ancestry_attr_path(path, attributes)
         find_by_path(attr_path) || begin
           root_attrs = attr_path.shift
-          _ct.with_advisory_lock do
+          _ct.with_advisory_lock! do
             # shenanigans because find_or_create can't infer that we want the same class as this:
             # Note that roots will already be constrained to this subclass (in the case of polymorphism):
             root = roots.where(root_attrs).first || _ct.create!(self, root_attrs)
