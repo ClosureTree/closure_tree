@@ -103,7 +103,7 @@ RSpec.describe 'Concurrent creation' do
 
   it 'creates dupe roots without advisory locks' do
     # disable with_advisory_lock:
-    allow(Tag).to receive(:with_advisory_lock) { |_lock_name, &block| block.call }
+    allow(Tag).to receive(:with_advisory_lock!) { |_lock_name, &block| block.call }
     run_workers
     # duplication from at least one iteration:
     expect(Tag.where(name: @names).size).to be > @iterations

@@ -27,6 +27,9 @@ module ClosureTree
         :numeric_order => false
       }.merge(options)
       raise ArgumentError, "name_column can't be 'path'" if options[:name_column] == 'path'
+      if !options[:with_advisory_lock] && options[:advisory_lock_timeout_seconds].present?
+        raise ArgumentError, "advisory_lock_timeout_seconds cannot be provided when advisory lock is disabled"
+      end
       if order_is_numeric?
         extend NumericOrderSupport.adapter_for_connection(connection)
       end
