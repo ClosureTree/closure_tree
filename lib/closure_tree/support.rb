@@ -114,8 +114,7 @@ module ClosureTree
 
     def with_advisory_lock!(&block)
       if options[:with_advisory_lock]
-        lock_options = { timeout_seconds: options[:advisory_lock_timeout_seconds] }.compact
-        model_class.with_advisory_lock!(advisory_lock_name, lock_options) do
+        model_class.with_advisory_lock!(advisory_lock_name, advisory_lock_options) do
           transaction { yield }
         end
       else

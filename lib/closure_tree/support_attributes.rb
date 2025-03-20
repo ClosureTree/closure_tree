@@ -8,6 +8,10 @@ module ClosureTree
       Digest::SHA1.hexdigest("ClosureTree::#{base_class.name}")[0..32]
     end
 
+    def advisory_lock_options
+      { timeout_seconds: options[:advisory_lock_timeout_seconds] }.compact
+    end
+
     def quoted_table_name
       connection.quote_table_name(table_name)
     end
