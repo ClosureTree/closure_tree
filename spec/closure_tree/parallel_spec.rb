@@ -123,7 +123,7 @@ RSpec.describe 'Concurrent creation' do
   it 'fails to deadlock while simultaneously deleting items from the same hierarchy' do
     allow(User).to receive(:with_advisory_lock!).and_wrap_original do |method, *args, &block|
       options = args.extract_options!
-      options[:timeout_seconds] = nil
+      options[:timeout_seconds] = 15
       method.call(*args, options, &block)
     end
 
