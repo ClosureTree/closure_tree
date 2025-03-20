@@ -23,13 +23,10 @@ module ClosureTree
         :dependent => :nullify, # or :destroy or :delete_all -- see the README
         :name_column => 'name',
         :with_advisory_lock => true,
-        :advisory_lock_timeout_seconds => nil,
+        :advisory_lock_timeout_seconds => 5,
         :numeric_order => false
       }.merge(options)
       raise ArgumentError, "name_column can't be 'path'" if options[:name_column] == 'path'
-      if !options[:with_advisory_lock] && options[:advisory_lock_timeout_seconds].present?
-        raise ArgumentError, "advisory_lock_timeout_seconds cannot be provided when advisory lock is disabled"
-      end
       if order_is_numeric?
         extend NumericOrderSupport.adapter_for_connection(connection)
       end
