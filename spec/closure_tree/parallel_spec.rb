@@ -121,12 +121,6 @@ RSpec.describe 'Concurrent creation' do
   end
 
   it 'fails to deadlock while simultaneously deleting items from the same hierarchy' do
-    allow(User).to receive(:with_advisory_lock!).and_wrap_original do |method, *args, &block|
-      options = args.extract_options!
-      options[:timeout_seconds] = 15
-      method.call(*args, options, &block)
-    end
-
     target = User.find_or_create_by_path((1..200).to_a.map { |ea| ea.to_s })
     emails = target.self_and_ancestors.to_a.map(&:email).shuffle
     Parallel.map(emails, :in_threads => max_threads) do |email|
