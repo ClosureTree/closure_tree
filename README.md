@@ -1,5 +1,13 @@
 # OpsLevel fork of Closure Tree
 
+[![Overall](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fapp.opslevel.com%2Fapi%2Fservice_level%2F8bksYN3Yj8yRfI1LKJNLpqXqzpXSPdvGAkJKUXqYMIA)](https://app.opslevel.com/services/closure_tree/maturity-report)
+[![🔐 Security](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fapp.opslevel.com%2Fapi%2Fservice_level%2F8bksYN3Yj8yRfI1LKJNLpqXqzpXSPdvGAkJKUXqYMIA%2Fsecurity)](https://app.opslevel.com/services/closure_tree/maturity-report)
+[![🟢 Reliability](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fapp.opslevel.com%2Fapi%2Fservice_level%2F8bksYN3Yj8yRfI1LKJNLpqXqzpXSPdvGAkJKUXqYMIA%2Freliability)](https://app.opslevel.com/services/closure_tree/maturity-report)
+[![🔍 Observability](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fapp.opslevel.com%2Fapi%2Fservice_level%2F8bksYN3Yj8yRfI1LKJNLpqXqzpXSPdvGAkJKUXqYMIA%2Fobservability)](https://app.opslevel.com/services/closure_tree/maturity-report)
+[![📈 Quality](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fapp.opslevel.com%2Fapi%2Fservice_level%2F8bksYN3Yj8yRfI1LKJNLpqXqzpXSPdvGAkJKUXqYMIA%2Fquality)](https://app.opslevel.com/services/closure_tree/maturity-report)
+[![📋 Ownership](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fapp.opslevel.com%2Fapi%2Fservice_level%2F8bksYN3Yj8yRfI1LKJNLpqXqzpXSPdvGAkJKUXqYMIA%2Fownership)](https://app.opslevel.com/services/closure_tree/maturity-report)
+[![🛠 Misc](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fapp.opslevel.com%2Fapi%2Fservice_level%2F8bksYN3Yj8yRfI1LKJNLpqXqzpXSPdvGAkJKUXqYMIA%2Fmisc_2)](https://app.opslevel.com/services/closure_tree/maturity-report)
+
 This fork is based on 7.4.0, the last stable gem version release (from Oct 2021). We then applied a patch from https://github.com/ClosureTree/closure_tree/pull/442, which allows us to support tenancy with determinstically ordered closure trees.
 
 # Closure Tree
