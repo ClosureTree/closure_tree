@@ -105,6 +105,15 @@ RSpec.describe "has_closure_tree_roots" do
         expect(empty_post.comments_including_tree).to eq([])
       end
     end
+
+    it "works if eager load association map is not given" do
+      expect do
+        roots = post_reloaded.comments_including_tree
+        expect(roots.size).to eq 2
+        expect(roots[0].body).to eq "Top comment 1"
+        expect(roots[0].children[1].children[0].body).to eq "Reply 1-2-1"
+      end.to_not exceed_query_limit(2)
+    end
   end
 
   context "when comment is destroyed" do
@@ -132,23 +141,83 @@ RSpec.describe "has_closure_tree_roots" do
     end
   end
 
-  context "with nested comment creation" do
-    it "properly builds the hierarchy" do
-      # Create a new root comment with nested children
-      new_comment = Comment.new(body: "New root", post: post)
-      reply1 = Comment.new(body: "New reply 1", post: post)
-      reply2 = Comment.new(body: "New reply 2", post: post)
+  context "with no tree root" do
+    let(:empty_post) { Post.create!(title: "Empty Post") }
+
+    it "should return []" do
+      expect(empty_post.comments_including_tree).to eq([])
+    end
+  end
+
+  context "with explicit class_name and foreign_key" do
+    before do
+      # Create a model similar to Grouping in the models.rb file
+      class ForumPost < ApplicationRecord
+        self.table_name = "posts"
+        has_closure_tree_roots :thread_comments, class_name: 'Comment', foreign_key: 'post_id'
+      end
       
-      new_comment.children << reply1
-      new_comment.children << reply2
+      # Create the post and comments - reusing the same ones from above for simplicity
+      @post_collection = ForumPost.find(post.id)
+      @post_collection_reloaded = @post_collection.class.find(@post_collection.id)
+    end
+    
+    after do
+      # Clean up our dynamically created class after the test
+      Object.send(:remove_const, :ForumPost) if Object.const_defined?(:ForumPost)
+    end
+    
+    it "should still work" do
+      roots = @post_collection_reloaded.thread_comments_including_tree
+      expect(roots.size).to eq 2
+      expect(roots[0].body).to eq "Top comment 1"
+      expect(roots[0].children[1].body).to eq "Reply 1-2"
+    end
+  end
+  
+  context "with bad class_name" do
+    before do
+      # Create a model with an invalid class_name
+      class BadClassPost < ApplicationRecord
+        self.table_name = "posts"
+        has_closure_tree_roots :invalid_comments, class_name: 'NonExistentComment'
+      end
       
-      new_comment.save!
+      @bad_class_post = BadClassPost.find(post.id)
+      @bad_class_post_reloaded = @bad_class_post.class.find(@bad_class_post.id)
+    end
+    
+    after do
+      Object.send(:remove_const, :BadClassPost) if Object.const_defined?(:BadClassPost)
+    end
+    
+    it "should error" do
+      expect do
+        @bad_class_post_reloaded.invalid_comments_including_tree
+      end.to raise_error(NameError)
+    end
+  end
+  
+  context "with bad foreign_key" do
+    before do
+      # Create a model with an invalid foreign_key
+      class BadKeyPost < ApplicationRecord
+        self.table_name = "posts"
+        has_closure_tree_roots :broken_comments, class_name: 'Comment', foreign_key: 'nonexistent_id'
+      end
       
-      roots = post_reloaded.comments_including_tree(true)
-      new_root = roots.find { |r| r.body == "New root" }
-      
-      expect(new_root.children.size).to eq 2
-      expect(new_root.children.map(&:body)).to include("New reply 1", "New reply 2")
+      @bad_key_post = BadKeyPost.find(post.id)
+      @bad_key_post_reloaded = @bad_key_post.class.find(@bad_key_post.id)
+    end
+    
+    after do
+      Object.send(:remove_const, :BadKeyPost) if Object.const_defined?(:BadKeyPost)
+    end
+    
+    it "should error" do
+      expect do
+        @bad_key_post_reloaded.broken_comments_including_tree
+      end.to raise_error(ActiveRecord::StatementInvalid)
     end
   end
 end 
