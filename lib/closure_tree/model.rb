@@ -171,6 +171,10 @@ module ClosureTree
       read_attribute(_ct.parent_column_sym)
     end
 
+    def _ct_belong_to_id
+      read_attribute(_ct.belong_to_column_sym)
+    end
+
     def _ct_quoted_parent_id
       _ct.quoted_value(_ct_parent_id)
     end
