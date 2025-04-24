@@ -10,8 +10,15 @@ Gem::Specification.new do |gem|
   gem.homepage    = 'https://github.com/ClosureTree/closure_tree/'
 
   gem.summary     = %q(Easily and efficiently make your ActiveRecord model support hierarchies)
-  gem.description = gem.summary
   gem.license     = 'MIT'
+
+  gem.metadata = {
+    'bug_tracker_uri'   => "https://github.com/ClosureTree/closure_tree/issues",
+    'changelog_uri'     => "https://github.com/ClosureTree/closure_tree/blob/master/CHANGELOG.md",
+    'documentation_uri' => "https://www.rubydoc.info/gems/closure_tree/#{gem.version}",
+    'homepage_uri'      => "https://closuretree.github.io/closure_tree/",
+    'source_code_uri'   => "https://github.com/ClosureTree/closure_tree",
+  }
 
   gem.files         = `git ls-files`.split($/).reject do |f|
     f.match(%r{^(spec|img|gemfiles)})
