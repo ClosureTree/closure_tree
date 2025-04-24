@@ -3,14 +3,27 @@ module ClosureTree
   class RootOrderingDisabledError < StandardError; end
 
   module HasClosureTreeRoot
-
     def has_closure_tree_root(assoc_name, options = {})
-       options[:class_name] ||= assoc_name.to_s.sub(/\Aroot_/, "").classify
+      options[:class_name] ||= assoc_name.to_s.sub(/\Aroot_/, "").classify
       options[:foreign_key] ||= self.name.underscore << "_id"
 
       has_one assoc_name, -> { where(parent: nil) }, **options
+      define_closure_tree_method(assoc_name, options, allow_multiple_roots: false)
+      connection_pool.release_connection
+    end
 
-      # Fetches the association, eager loading all children and given associations
+    def has_closure_tree_roots(assoc_name, options = {})
+      options[:class_name] ||= assoc_name.to_s.sub(/\Aroots_/, "").classify
+      options[:foreign_key] ||= self.name.underscore << "_id"
+
+      has_many assoc_name, -> { where(parent: nil) }, **options
+      define_closure_tree_method(assoc_name, options, allow_multiple_roots: true)
+      connection_pool.release_connection
+    end
+
+    private
+
+    def define_closure_tree_method(assoc_name, options, allow_multiple_roots: false)
       define_method("#{assoc_name}_including_tree") do |*args|
         reload = false
         reload = args.shift if args && (args.first == true || args.first == false)
@@ -28,25 +41,45 @@ module ClosureTree
 
         roots = options[:class_name].constantize.where(parent: nil, options[:foreign_key] => id).to_a
 
-        return nil if roots.empty?
+        if roots.empty?
+          return allow_multiple_roots ? [] : nil
+        end
 
-        if roots.size > 1
+        unless allow_multiple_roots || roots.size <= 1
           raise MultipleRootError.new("#{self.class.name}: has_closure_tree_root requires a single root")
         end
 
-        temp_root = roots.first
-        root = nil
-        id_hash = {}
-        parent_col_id = temp_root.class._ct.options[:parent_column_name]
-
         # Lookup inverse belongs_to association reflection on target class.
-        inverse = temp_root.class.reflections.values.detect do |r|
+        inverse = roots.first.class.reflections.values.detect do |r|
           r.macro == :belongs_to && r.klass == self.class
         end
 
         # Fetch all descendants in constant number of queries.
         # This is the last query-triggering statement in the method.
-        temp_root.self_and_descendants.includes(*assoc_map).each do |node|
+        nodes_to_process = if allow_multiple_roots && roots.size > 0
+          # For multiple roots, fetch all descendants at once to avoid N+1 queries
+          root_ids = roots.map(&:id)
+          klass = roots.first.class
+          hierarchy_table = klass._ct.quoted_hierarchy_table_name
+          
+          # Get all descendants of all roots including the roots themselves
+          # (generations 0 = self, > 0 = descendants)
+          descendant_scope = klass.
+            joins("INNER JOIN #{hierarchy_table} ON #{hierarchy_table}.descendant_id = #{klass.quoted_table_name}.#{klass.primary_key}").
+            where("#{hierarchy_table}.ancestor_id IN (?)", root_ids).
+            includes(*assoc_map).
+            distinct
+            
+          descendant_scope
+        else
+          roots.first.self_and_descendants.includes(*assoc_map)
+        end
+
+        id_hash = {}
+        parent_col_id = roots.first.class._ct.options[:parent_column_name]
+        root = nil
+
+        nodes_to_process.each do |node|
           id_hash[node.id] = node
           parent_node = id_hash[node[parent_col_id]]
 
@@ -62,8 +95,8 @@ module ClosureTree
 
           if parent_node
             parent_node.association(:children).target << node
-          else
-            # Capture the root we're going to use
+          elsif !allow_multiple_roots
+            # Capture the root we're going to use (only for single root case)
             root = node
           end
 
@@ -75,10 +108,12 @@ module ClosureTree
           end
         end
 
-        @closure_tree_roots[assoc_name][assoc_map] = root
-      end
+        result = allow_multiple_roots ? 
+          roots.map { |root| id_hash[root.id] } : 
+          root
 
-      connection_pool.release_connection
+        @closure_tree_roots[assoc_name][assoc_map] = result
+      end
     end
   end
 end

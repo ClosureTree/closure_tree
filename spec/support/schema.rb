@@ -138,6 +138,33 @@ ActiveRecord::Schema.define(version: 1) do
     t.integer 'generations', null: false
   end
 
+  create_table 'posts' do |t|
+    t.string 'title'
+    t.text 'content'
+    t.timestamps null: false
+  end
+
+  create_table 'comments' do |t|
+    t.text 'body'
+    t.references 'post'
+    t.references 'parent'
+    t.references 'user'
+    t.integer 'likes_count'
+    t.timestamps null: false
+  end
+
+  create_table 'comment_likes' do |t|
+    t.references 'comment', null: false
+    t.references 'user', null: false
+    t.timestamps null: false
+  end
+
+  create_table 'comment_hierarchies', id: false do |t|
+    t.references 'ancestor', null: false
+    t.references 'descendant', null: false
+    t.integer 'generations', null: false
+  end
+
   add_index 'label_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
                                                                             name: 'lh_anc_desc_idx'
   add_index 'label_hierarchies', [:descendant_id], name: 'lh_desc_idx'
@@ -154,4 +181,9 @@ ActiveRecord::Schema.define(version: 1) do
   add_foreign_key(:menu_item_hierarchies, :menu_items, column: 'descendant_id', on_delete: :cascade)
   add_foreign_key(:tag_hierarchies, :tags, column: 'ancestor_id', on_delete: :cascade)
   add_foreign_key(:tag_hierarchies, :tags, column: 'descendant_id', on_delete: :cascade)
+  add_foreign_key(:comments, :comments, column: 'parent_id', on_delete: :cascade)
+  add_foreign_key(:comment_hierarchies, :comments, column: 'ancestor_id', on_delete: :cascade)
+  add_foreign_key(:comment_hierarchies, :comments, column: 'descendant_id', on_delete: :cascade)
+  add_foreign_key(:comment_likes, :comments, column: 'comment_id', on_delete: :cascade)
+  add_foreign_key(:comment_likes, :users, column: 'user_id', on_delete: :cascade)
 end
