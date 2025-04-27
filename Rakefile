@@ -8,8 +8,6 @@ RSpec::Core::RakeTask.new(:spec) do |task|
   task.pattern = 'spec/closure_tree/*_spec.rb'
 end
 
-task default: %i[spec test]
-
 namespace :spec do
   desc 'Run all spec variants'
   task :all do
@@ -29,14 +27,4 @@ Rake::TestTask.new do |t|
   t.verbose = true
 end
 
-if RUBY_ENGINE == 'ruby'
-  require 'github_changelog_generator/task'
-  GitHubChangelogGenerator::RakeTask.new :changelog do |config|
-    config.user = 'ClosureTree'
-    config.project = 'closure_tree'
-    config.issues = false
-    config.future_release = '5.2.0'
-    config.since_tag = 'v7.4.0'
-  end
-end
-task default: 'spec:all'
+task default: %i[spec:all test]
