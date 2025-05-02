@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-
+require 'logger'
 require 'database_cleaner'
 require 'closure_tree/test/matcher'
 require 'tmpdir'

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'logger'
 require 'erb'
 require 'active_record'
 require 'with_advisory_lock'
