@@ -29,14 +29,4 @@ Rake::TestTask.new do |t|
   t.verbose = true
 end
 
-if RUBY_ENGINE == 'ruby'
-  require 'github_changelog_generator/task'
-  GitHubChangelogGenerator::RakeTask.new :changelog do |config|
-    config.user = 'ClosureTree'
-    config.project = 'closure_tree'
-    config.issues = false
-    config.future_release = '5.2.0'
-    config.since_tag = 'v7.4.0'
-  end
-end
 task default: 'spec:all'
