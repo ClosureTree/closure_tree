@@ -24,7 +24,7 @@ closure_tree has some great features:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
 * __Support for [concurrency](#concurrency)__ (using [with_advisory_lock](https://github.com/ClosureTree/with_advisory_lock))
-* __Tested against ActiveRecord 6.0+ with Ruby 2.7+__
+* __Tested against ActiveRecord 7.1+ with Ruby 3.3+__
 * Support for reparenting children (and all their descendants)
 * Support for [single-table inheritance (STI)](#sti) within the hierarchy
 * ```find_or_create_by_path``` for [building out heterogeneous hierarchies quickly and conveniently](#find_or_create_by_path)
@@ -52,7 +52,7 @@ for a description of different tree storage algorithms.
 
 ## Installation
 
-Note that closure_tree only supports ActiveRecord 6.0 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
+Note that closure_tree only supports ActiveRecord 7.1 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
 
 1.  Add `gem 'closure_tree'` to your Gemfile
 
@@ -662,8 +662,8 @@ end
 
 Closure tree is [tested under every valid combination](https://github.com/ClosureTree/closure_tree/blob/master/.github/workflows/ci.yml) of
 
-* Ruby 2.7+
-* ActiveRecord 6.0+
+* Ruby 3.3+
+* ActiveRecord 7.1+
 * PostgreSQL, MySQL, and SQLite. Concurrency tests are only run with MySQL and PostgreSQL.
 
 ```shell

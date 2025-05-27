@@ -40,8 +40,7 @@ jobs:
       fail-fast: false
       matrix:
         rails:
-          - activerecord_7.0
-          - activerecord_6.1
+          - activerecord_7.1
         adapter:
           - 'sqlite3:///:memory:'
           - mysql2://root:root@0/closure_tree_test

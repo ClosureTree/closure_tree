@@ -8,9 +8,7 @@ on:
   pull_request:
     branches:
       - master
-concurrency:
-  group: ci-${{ github.head_ref }}
-  cancel-in-progress: true
+
 
 jobs:
   rspec:
@@ -41,26 +39,15 @@ jobs:
       matrix:
         ruby:
           - '3.3'
-          - '3.2'
-          - '3.1'
-          - '3.0'
         rails:
+          - activerecord_8.0
           - activerecord_7.2
           - activerecord_7.1
-          - activerecord_7.0
-          - activerecord_6.1
           - activerecord_edge
         adapter:
           - 'sqlite3:///:memory:'
           - mysql2://root:root@0/closure_tree_test
           - postgres://closure_tree:closure_tree@0/closure_tree_test
-        exclude:
-          - ruby: '3.0'
-            rails: activerecord_edge
-          - ruby: '3.1'
-            rails: activerecord_edge
-          - ruby: '3.0'
-            rails: activerecord_7.2
 
     steps:
       - name: Checkout
