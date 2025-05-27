@@ -48,6 +48,28 @@ end
 class DestroyedTag < ApplicationRecord
 end
 
+class Post < ApplicationRecord
+  # A post may have many comments, and each comment may have many replies. It makes little
+  # sense to have a "Root comment" in this context, so we use has_closure_tree_roots.
+  has_closure_tree_roots :comments
+end
+
+class Comment < ApplicationRecord
+  has_closure_tree dependent: :destroy
+  belongs_to :post
+  belongs_to :user, optional: true
+  has_many :comment_likes
+  
+  # This is just for testing the eager loading of associations
+  attribute :likes_count, :integer
+end
+
+# To test eager loading of descendants with multiple roots, we need a model that has many
+class CommentLike < ApplicationRecord
+  belongs_to :comment
+  belongs_to :user
+end
+
 class Group < ApplicationRecord
   has_closure_tree_root :root_user
 end
