@@ -95,5 +95,5 @@ Thread.abort_on_exception = true
 ENV['WITH_ADVISORY_LOCK_PREFIX'] ||= SecureRandom.hex
 
 require 'closure_tree'
-require_relative '../spec/support/schema'
-require_relative '../spec/support/models'
+require_relative 'support/schema'
+require_relative 'support/models'
