@@ -64,6 +64,7 @@ jobs:
 
       - name: Test
         env:
+          RAILS_ENV: test
           RAILS_VERSION: ${{ matrix.rails }}
           DB_ADAPTER: ${{ matrix.adapter }}
           BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
