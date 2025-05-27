@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  rspec:
+  test:
     runs-on: ubuntu-latest
     services:
       mysql:
@@ -62,7 +62,7 @@ jobs:
           BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
           RAILS_ENV: test
 
-      - name: RSpec
+      - name: Test
         env:
           RAILS_VERSION: ${{ matrix.rails }}
           DB_ADAPTER: ${{ matrix.adapter }}

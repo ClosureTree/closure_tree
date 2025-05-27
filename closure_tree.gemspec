@@ -4,7 +4,7 @@ require_relative 'lib/closure_tree/version'
 
 Gem::Specification.new do |gem|
   gem.name        = 'closure_tree'
-  gem.version     = ::ClosureTree::VERSION
+  gem.version     = ClosureTree::VERSION
   gem.authors     = ['Matthew McEachen', 'Abdelkader Boudih']
   gem.email       = %w[matthew+github@mceachen.org terminale@gmail.com]
   gem.homepage    = 'https://github.com/ClosureTree/closure_tree/'
@@ -21,10 +21,10 @@ Gem::Specification.new do |gem|
   }
 
   gem.files         = `git ls-files`.split($/).reject do |f|
-    f.match(%r{^(spec|img|gemfiles)})
+    f.match(%r{^(test|img|gemfiles)})
   end
 
-  gem.test_files  = gem.files.grep(%r{^spec/})
+  gem.test_files  = gem.files.grep(%r{^test/})
   gem.required_ruby_version = '>= 3.3.0'
 
   gem.add_runtime_dependency 'activerecord', '>= 7.1.0'

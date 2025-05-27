@@ -12,6 +12,7 @@ require 'database_cleaner'
 require 'support/query_counter'
 require 'parallel'
 require 'timecop'
+require 'rails'
 
 ActiveRecord::Base.configurations = {
   default_env: {
@@ -71,20 +72,20 @@ class ActiveSupport::TestCase
   end
 
   class QueryCounter
-  attr_reader :query_count
+    attr_reader :query_count
 
-  def initialize
-    @query_count = 0
-  end
+    def initialize
+      @query_count = 0
+    end
 
-  def to_proc
-    lambda(&method(:callback))
-  end
+    def to_proc
+      lambda(&method(:callback))
+    end
 
-  def callback(name, start, finish, message_id, values)
-    @query_count += 1 unless %w(CACHE SCHEMA).include?(values[:name])
+    def callback(name, start, finish, message_id, values)
+      @query_count += 1 unless %w(CACHE SCHEMA).include?(values[:name])
+    end
   end
-end
 end
 
 # Configure parallel tests
