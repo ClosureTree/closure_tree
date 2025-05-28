@@ -11,7 +11,7 @@ on:
 
 
 jobs:
-  rspec:
+  test:
     runs-on: ubuntu-latest
     services:
       mysql:
@@ -63,8 +63,9 @@ jobs:
           BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
           RAILS_ENV: test
 
-      - name: RSpec
+      - name: Test
         env:
+          RAILS_ENV: test
           RAILS_VERSION: ${{ matrix.rails }}
           DB_ADAPTER: ${{ matrix.adapter }}
           BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile

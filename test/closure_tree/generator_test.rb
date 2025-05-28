@@ -42,7 +42,8 @@ module ClosureTree
 
       def test_should_run_all_tasks_in_generator_without_errors
         gen = generator %w[tag]
-        capture_io { gen.invoke_all }
+        output = capture_io { gen.invoke_all }
+        assert output, "Generator should complete without errors"
       end
     end
   end

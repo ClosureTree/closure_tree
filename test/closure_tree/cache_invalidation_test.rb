@@ -2,6 +2,7 @@ require 'test_helper'
 
 class CacheInvalidationTest < ActiveSupport::TestCase
   def setup
+    skip_on_jruby "Timecop is incompatible with JRuby and ActiveRecord 7.1+"
     Timecop.travel(10.seconds.ago) do
       #create a long tree with 2 branch
       @root = MenuItem.create(
