@@ -19,30 +19,39 @@ database_url = ENV['DB_ADAPTER'] || ENV['DATABASE_URL'] || "sqlite3:///:memory:"
 ENV['WITH_ADVISORY_LOCK_PREFIX'] ||= SecureRandom.hex
 
 # Parse database URL and establish connection
-if database_url.start_with?('sqlite3://')
+connection_config = if database_url.start_with?('sqlite3://')
   # SQLite needs special handling
   if database_url == 'sqlite3:///:memory:'
-    ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ':memory:')
+    { adapter: 'sqlite3', database: ':memory:' }
   else
     # Create a temporary database file
     db_file = File.join(Dir.tmpdir, "closure_tree_test_#{SecureRandom.hex}.sqlite3")
-    ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: db_file)
+    { adapter: 'sqlite3', database: db_file }
   end
 elsif database_url.start_with?('mysql2://')
   # Parse MySQL URL: mysql2://root:root@0/closure_tree_test
   # The @0 means localhost in GitHub Actions
-  fixed_url = database_url.gsub('@0/', '@127.0.0.1/')
-  ActiveRecord::Base.establish_connection(fixed_url)
+  database_url.gsub('@0/', '@127.0.0.1/')
 elsif database_url.start_with?('postgres://')
   # Parse PostgreSQL URL: postgres://closure_tree:closure_tree@0/closure_tree_test
   # The @0 means localhost in GitHub Actions
   fixed_url = database_url.gsub('@0/', '@127.0.0.1/')
   # PostgreSQL adapter expects 'postgresql://' not 'postgres://'
-  fixed_url = fixed_url.gsub('postgres://', 'postgresql://')
-  ActiveRecord::Base.establish_connection(fixed_url)
+  fixed_url.gsub('postgres://', 'postgresql://')
 else
   # For other database URLs, use directly
-  ActiveRecord::Base.establish_connection(database_url)
+  database_url
+end
+
+# Set connection pool size for parallel tests
+if connection_config.is_a?(Hash)
+  connection_config[:pool] = 50
+  connection_config[:checkout_timeout] = 10
+  ActiveRecord::Base.establish_connection(connection_config)
+else
+  # For URL-based configs, append pool parameters
+  separator = connection_config.include?('?') ? '&' : '?'
+  ActiveRecord::Base.establish_connection("#{connection_config}#{separator}pool=50&checkout_timeout=10")
 end
 
 def env_db
