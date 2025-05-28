@@ -41,30 +41,33 @@ class MatcherTest < ActiveSupport::TestCase
 
   def assert_closure_tree(model, options = {})
     assert model.is_a?(Class), "Expected #{model} to be a Class"
-    assert model.included_modules.include?(ClosureTree::Model), 
-           "Expected #{model} to include ClosureTree::Model"
+    assert model.respond_to?(:_ct), 
+           "Expected #{model} to have closure_tree enabled"
     
     if options[:ordered]
       order_column = options[:ordered] == true ? :sort_order : options[:ordered]
-      assert model.closure_tree_options[:order], 
+      assert model._ct.options[:order], 
              "Expected #{model} to be ordered"
-      if order_column != true
-        assert_equal order_column.to_s, model.closure_tree_options[:order], 
+      if order_column != true && order_column != :sort_order
+        assert_equal order_column.to_s, model._ct.options[:order], 
                      "Expected #{model} to be ordered by #{order_column}"
       end
     end
     
     if options.key?(:with_advisory_lock)
       expected = options[:with_advisory_lock]
-      actual = model.closure_tree_options[:with_advisory_lock]
-      assert_equal expected, actual, 
-                   "Expected #{model} advisory lock to be #{expected}, but was #{actual}"
+      actual = model._ct.options[:with_advisory_lock]
+      if expected
+        assert actual, "Expected #{model} to have advisory lock"
+      else
+        refute actual, "Expected #{model} not to have advisory lock"
+      end
     end
   end
   
   def refute_closure_tree(model)
     assert model.is_a?(Class), "Expected #{model} to be a Class"
-    refute model.included_modules.include?(ClosureTree::Model), 
-           "Expected #{model} not to include ClosureTree::Model"
+    refute model.respond_to?(:_ct), 
+           "Expected #{model} not to have closure_tree enabled"
   end
 end

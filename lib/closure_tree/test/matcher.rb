@@ -85,7 +85,3 @@ module ClosureTree
     end
   end
 end
-
-RSpec.configure do |c|
-  c.include ClosureTree::Test::Matcher, type: :model
-end
