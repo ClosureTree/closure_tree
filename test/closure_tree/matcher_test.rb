@@ -28,9 +28,14 @@ class MatcherTest < ActiveSupport::TestCase
   end
 
   test "advisory_lock option" do
-    assert_closure_tree User, with_advisory_lock: true
-    assert_closure_tree Label, ordered: true, with_advisory_lock: true
-    assert_closure_tree Metal, ordered: :sort_order, with_advisory_lock: true
+    # SQLite doesn't support advisory locks, so skip these tests when using SQLite
+    if ActiveRecord::Base.connection.adapter_name.downcase.include?('sqlite')
+      skip "SQLite doesn't support advisory locks"
+    else
+      assert_closure_tree User, with_advisory_lock: true
+      assert_closure_tree Label, ordered: true, with_advisory_lock: true
+      assert_closure_tree Metal, ordered: :sort_order, with_advisory_lock: true
+    end
   end
 
   test "without_advisory_lock option" do

@@ -78,10 +78,37 @@ def sqlite?
   env_db == :sqlite3
 end
 
-ActiveRecord::Base.connection.recreate_database('closure_tree_test') unless sqlite?
+# For PostgreSQL and MySQL, we need to create/reset the database structure
+unless sqlite?
+  begin
+    if ActiveRecord::Base.connection.adapter_name.downcase.include?('postgresql')
+      # PostgreSQL requires disconnecting before dropping the database
+      ActiveRecord::Base.connection.disconnect!
+      # Connect to postgres database to drop/create closure_tree_test
+      if connection_config.is_a?(String)
+        # Parse the DATABASE_URL and change database to postgres
+        postgres_url = connection_config.gsub(/\/closure_tree_test/, '/postgres')
+        ActiveRecord::Base.establish_connection(postgres_url)
+      else
+        ActiveRecord::Base.establish_connection(connection_config.merge(database: 'postgres'))
+      end
+      ActiveRecord::Base.connection.drop_database('closure_tree_test') rescue nil
+      ActiveRecord::Base.connection.create_database('closure_tree_test')
+      ActiveRecord::Base.connection.disconnect!
+      ActiveRecord::Base.establish_connection(connection_config)
+    else
+      # MySQL can recreate directly
+      ActiveRecord::Base.connection.recreate_database('closure_tree_test')
+    end
+  rescue => e
+    puts "Warning: Could not recreate database: #{e.message}"
+  end
+end
 puts "Testing with #{env_db} database, ActiveRecord #{ActiveRecord.gem_version} and #{RUBY_ENGINE} #{RUBY_ENGINE_VERSION} as #{RUBY_VERSION}"
 
 DatabaseCleaner.strategy = :truncation
+# Allow DatabaseCleaner to work with our test database
+DatabaseCleaner.allow_remote_database_url = true
 
 module Minitest
   class Spec

@@ -18,11 +18,15 @@ module ClosureTree
 
     def initialize(model_class, options)
       @model_class = model_class
+      
+      # Detect if we're using SQLite and disable advisory locks
+      default_with_advisory_lock = !connection.adapter_name.downcase.include?('sqlite')
+      
       @options = {
         :parent_column_name => 'parent_id',
         :dependent => :nullify, # or :destroy or :delete_all -- see the README
         :name_column => 'name',
-        :with_advisory_lock => true,
+        :with_advisory_lock => default_with_advisory_lock,
         :numeric_order => false
       }.merge(options)
       raise ArgumentError, "name_column can't be 'path'" if options[:name_column] == 'path'
@@ -34,14 +38,10 @@ module ClosureTree
     def hierarchy_class_for_model
       parent_class = model_class.module_parent
       hierarchy_class = parent_class.const_set(short_hierarchy_class_name, Class.new(model_class.superclass))
-      use_attr_accessible = use_attr_accessible?
-      include_forbidden_attributes_protection = include_forbidden_attributes_protection?
       model_class_name = model_class.to_s
       hierarchy_class.class_eval do
-        include ActiveModel::ForbiddenAttributesProtection if include_forbidden_attributes_protection
         belongs_to :ancestor, class_name: model_class_name
         belongs_to :descendant, class_name: model_class_name
-        attr_accessible :ancestor, :descendant, :generations if use_attr_accessible
         def ==(other)
           self.class == other.class && ancestor_id == other.ancestor_id && descendant_id == other.descendant_id
         end

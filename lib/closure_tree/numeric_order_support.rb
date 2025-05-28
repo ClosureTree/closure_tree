@@ -2,10 +2,10 @@ module ClosureTree
   module NumericOrderSupport
 
     def self.adapter_for_connection(connection)
-      das = WithAdvisoryLock::DatabaseAdapterSupport.new(connection)
-      if das.postgresql?
+      adapter_name = connection.adapter_name.downcase
+      if adapter_name.include?('postgresql') || adapter_name.include?('postgis')
         ::ClosureTree::NumericOrderSupport::PostgreSQLAdapter
-      elsif das.mysql?
+      elsif adapter_name.include?('mysql') || adapter_name.include?('trilogy')
         ::ClosureTree::NumericOrderSupport::MysqlAdapter
       else
         ::ClosureTree::NumericOrderSupport::GenericAdapter
