@@ -13,6 +13,12 @@ require 'support/query_counter'
 require 'parallel'
 require 'timecop'
 
+# JRuby has issues with Timecop and ActiveRecord datetime casting
+# Skip Timecop-dependent tests on JRuby
+if defined?(JRUBY_VERSION)
+  puts "Warning: Timecop tests may fail on JRuby due to Time class incompatibilities"
+end
+
 # Configure the database based on environment
 database_url = ENV['DB_ADAPTER'] || ENV['DATABASE_URL'] || "sqlite3:///:memory:"
 
@@ -47,6 +53,11 @@ end
 if connection_config.is_a?(Hash)
   connection_config[:pool] = 50
   connection_config[:checkout_timeout] = 10
+  # Add JRuby-specific properties if needed
+  if defined?(JRUBY_VERSION)
+    connection_config[:properties] ||= {}
+    connection_config[:properties][:allowPublicKeyRetrieval] = true
+  end
   ActiveRecord::Base.establish_connection(connection_config)
 else
   # For URL-based configs, append pool parameters
@@ -101,6 +112,11 @@ class ActiveSupport::TestCase
     counter = QueryCounter.new
     ActiveSupport::Notifications.subscribed(counter.to_proc, 'sql.active_record', &block)
     assert counter.query_count <= num, "Expected to run maximum #{num} queries, but ran #{counter.query_count}"
+  end
+  
+  # Helper method to skip tests on JRuby
+  def skip_on_jruby(message = "Skipping on JRuby")
+    skip message if defined?(JRUBY_VERSION)
   end
 
   class QueryCounter
