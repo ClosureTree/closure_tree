@@ -1,16 +1,6 @@
 module ClosureTree
   module SupportFlags
 
-    def use_attr_accessible?
-      defined?(ActiveModel::MassAssignmentSecurity) &&
-        model_class.respond_to?(:accessible_attributes) &&
-        ! model_class.accessible_attributes.empty?
-    end
-
-    def include_forbidden_attributes_protection?
-      defined?(ActiveModel::ForbiddenAttributesProtection) &&
-        model_class.ancestors.include?(ActiveModel::ForbiddenAttributesProtection)
-    end
 
     def order_option?
       order_by.present?

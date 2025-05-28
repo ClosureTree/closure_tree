@@ -12,11 +12,6 @@ module TagExamples
     end
 
     describe 'class setup' do
-      it 'has correct accessible_attributes' do
-        if @tag_class._ct.use_attr_accessible?
-          assert_equal(%w[parent name title].sort, @tag_class.accessible_attributes.to_a.sort)
-        end
-      end
 
       it 'should build hierarchy classname correctly' do
         assert_equal @tag_hierarchy_class, @tag_class.hierarchy_class
