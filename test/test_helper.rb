@@ -28,8 +28,20 @@ if database_url.start_with?('sqlite3://')
     db_file = File.join(Dir.tmpdir, "closure_tree_test_#{SecureRandom.hex}.sqlite3")
     ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: db_file)
   end
+elsif database_url.start_with?('mysql2://')
+  # Parse MySQL URL: mysql2://root:root@0/closure_tree_test
+  # The @0 means localhost in GitHub Actions
+  fixed_url = database_url.gsub('@0/', '@127.0.0.1/')
+  ActiveRecord::Base.establish_connection(fixed_url)
+elsif database_url.start_with?('postgres://')
+  # Parse PostgreSQL URL: postgres://closure_tree:closure_tree@0/closure_tree_test
+  # The @0 means localhost in GitHub Actions
+  fixed_url = database_url.gsub('@0/', '@127.0.0.1/')
+  # PostgreSQL adapter expects 'postgresql://' not 'postgres://'
+  fixed_url = fixed_url.gsub('postgres://', 'postgresql://')
+  ActiveRecord::Base.establish_connection(fixed_url)
 else
-  # For MySQL and PostgreSQL, use the URL directly
+  # For other database URLs, use directly
   ActiveRecord::Base.establish_connection(database_url)
 end
 
