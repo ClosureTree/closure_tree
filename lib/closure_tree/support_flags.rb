@@ -21,5 +21,9 @@ module ClosureTree
     def has_name?
       model_class.new.attributes.include? options[:name_column]
     end
+
+    def database_type_from_options
+      options[:database_type]
+    end
   end
 end
