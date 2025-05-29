@@ -171,5 +171,11 @@ Thread.abort_on_exception = true
 ENV['WITH_ADVISORY_LOCK_PREFIX'] ||= SecureRandom.hex
 
 require 'closure_tree'
+
+# Helper method to skip tests on JRuby
+def skip_on_jruby(message = "Skipping on JRuby")
+  skip message if defined?(JRUBY_VERSION)
+end
+
 require_relative 'support/schema'
 require_relative 'support/models'

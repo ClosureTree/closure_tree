@@ -30,7 +30,6 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency 'activerecord', '>= 7.1.0'
   gem.add_runtime_dependency 'with_advisory_lock', '>= 6.0.0'
 
-  gem.add_development_dependency 'appraisal'
   gem.add_development_dependency 'database_cleaner'
   gem.add_development_dependency 'parallel'
   gem.add_development_dependency 'minitest'

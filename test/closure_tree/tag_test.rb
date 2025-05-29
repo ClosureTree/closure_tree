@@ -3,6 +3,7 @@
 require 'test_helper'
 require 'support/tag_examples'
 
-describe Tag do
+class TagTest < ActiveSupport::TestCase
+  TAG_CLASS = Tag
   include TagExamples
 end
