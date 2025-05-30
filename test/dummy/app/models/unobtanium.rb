@@ -1,0 +1,2 @@
+class Unobtanium < Metal
+end

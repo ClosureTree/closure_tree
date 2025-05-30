@@ -1,0 +1,2 @@
+class Adamantium < Metal
+end

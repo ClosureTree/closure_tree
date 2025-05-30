@@ -1,8 +1,14 @@
 # frozen_string_literal: true
 
-class Tag < ApplicationRecord
-  has_closure_tree dependent: :destroy, order: :name
+class UuidTag < ApplicationRecord
+  self.primary_key = :uuid
+  before_create :set_uuid
+  has_closure_tree dependent: :destroy, order: 'name', parent_column_name: 'parent_uuid'
   before_destroy :add_destroyed_tag
+
+  def set_uuid
+    self.uuid = SecureRandom.uuid
+  end
 
   def to_s
     name

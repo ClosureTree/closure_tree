@@ -1,36 +1,42 @@
 # frozen_string_literal: true
 
-module TagExamples
-  def self.included(base)
-    base.class_eval do
-      def setup
-        super
-        @tag_class = self.class.const_get(:TAG_CLASS) || Tag
-        @tag_hierarchy_class = @tag_class.hierarchy_class
-      end
+require 'active_support/concern'
 
-      test "should build hierarchy classname correctly" do
+module TagExamples
+  extend ActiveSupport::Concern
+
+  included do
+    def setup
+      super
+      @tag_class = self.class.const_get(:TAG_CLASS) || Tag
+      @tag_hierarchy_class = @tag_class.hierarchy_class
+      # Clean up any existing data to ensure test isolation
+      @tag_class.delete_all
+      @tag_hierarchy_class.delete_all
+    end
+
+    define_method "test_should_build_hierarchy_classname_correctly" do
         assert_equal @tag_hierarchy_class, @tag_class.hierarchy_class
         assert_equal @tag_hierarchy_class.to_s, @tag_class._ct.hierarchy_class_name
         assert_equal @tag_hierarchy_class.to_s, @tag_class._ct.short_hierarchy_class_name
       end
 
-      test "should have a correct parent column name" do
-        expected_parent_column_name = @tag_class == UUIDTag ? 'parent_uuid' : 'parent_id'
+      define_method "test_should_have_a_correct_parent_column_name" do
+        expected_parent_column_name = @tag_class == UuidTag ? 'parent_uuid' : 'parent_id'
         assert_equal expected_parent_column_name, @tag_class._ct.parent_column_name
       end
 
-      test "should return no entities when db is empty" do
+      define_method "test_should_return_no_entities_when_db_is_empty" do
         assert_empty @tag_class.roots
         assert_empty @tag_class.leaves
       end
 
-      test "#find_or_create_by_path with strings" do
+      define_method "test_find_or_create_by_path_with_strings" do
         a = @tag_class.create!(name: 'a')
         assert_equal(%w[a b c], a.find_or_create_by_path(%w[b c]).ancestry_path)
       end
 
-      test "#find_or_create_by_path with hashes" do
+      define_method "test_find_or_create_by_path_with_hashes" do
         a = @tag_class.create!(name: 'a', title: 'A')
         subject = a.find_or_create_by_path([
           { name: 'b', title: 'B' },
@@ -40,7 +46,7 @@ module TagExamples
         assert_equal(%w[C B A], subject.self_and_ancestors.map(&:title))
       end
 
-      test "single tag should be a leaf and root" do
+      define_method "test_single_tag_should_be_a_leaf_and_root" do
         tag = @tag_class.create!(name: 'tag')
         assert tag.leaf?
         assert tag.root?
@@ -50,7 +56,7 @@ module TagExamples
         assert_equal [tag], @tag_class.leaves
       end
 
-      test "should not find tag with invalid path arguments" do
+      define_method "test_should_not_find_tag_with_invalid_path_arguments" do
         tag = @tag_class.create!(name: 'tag')
         assert_nil @tag_class.find_by_path([''])
         assert_nil @tag_class.find_by_path([])
@@ -61,13 +67,13 @@ module TagExamples
         assert_nil @tag_class.find_by_path([tag.name, nil])
       end
 
-      test "should find tag by valid path" do
+      define_method "test_should find tag by valid path" do
         tag = @tag_class.create!(name: 'tag')
         assert_equal tag, @tag_class.find_by_path([tag.name])
         assert_equal tag, @tag_class.find_by_path(tag.name)
       end
 
-      test "adds children through add_child" do
+      define_method "test_adds children through add_child" do
         tag = @tag_class.create!(name: 'tag')
         child = @tag_class.create!(name: 'tag 2')
         tag.add_child child
@@ -80,7 +86,7 @@ module TagExamples
         assert_equal [child], tag.reload.children.to_a
       end
 
-      test "adds children through collection" do
+      define_method "test_adds children through collection" do
         tag = @tag_class.create!(name: 'tag')
         child = @tag_class.create!(name: 'tag 2')
         tag.children << child
@@ -93,7 +99,7 @@ module TagExamples
         assert_equal [child], tag.reload.children.to_a
       end
 
-      test "returns simple root and leaf with 2 tags" do
+      define_method "test_returns simple root and leaf with 2 tags" do
         root = @tag_class.create!(name: 'root')
         leaf = root.add_child(@tag_class.create!(name: 'leaf'))
         
@@ -103,7 +109,7 @@ module TagExamples
         assert_empty leaf.child_ids
       end
 
-      test "3 tag collection.create hierarchy" do
+      define_method "test_3 tag collection.create hierarchy" do
         root = @tag_class.create! name: 'root'
         mid = root.children.create! name: 'mid'
         leaf = mid.children.create! name: 'leaf'
@@ -114,7 +120,7 @@ module TagExamples
         assert_equal [leaf], @tag_class.leaves
       end
 
-      test "deletes leaves" do
+      define_method "test_deletes leaves" do
         root = @tag_class.create! name: 'root'
         mid = root.children.create! name: 'mid'
         leaf = mid.children.create! name: 'leaf'
@@ -125,7 +131,7 @@ module TagExamples
         assert_equal [mid], @tag_class.leaves
       end
 
-      test "deletes everything when deleting roots" do
+      define_method "test_deletes everything when deleting roots" do
         root = @tag_class.create! name: 'root'
         mid = root.children.create! name: 'mid'
         leaf = mid.children.create! name: 'leaf'
@@ -138,7 +144,7 @@ module TagExamples
         assert_equal %w[root mid leaf].sort, DestroyedTag.all.map(&:name).sort
       end
 
-      test "fixes self_and_ancestors properly on reparenting" do
+      define_method "test_fixes self_and_ancestors properly on reparenting" do
         root = @tag_class.create! name: 'root'
         mid = root.children.create! name: 'mid'
         leaf = mid.children.create! name: 'leaf'
@@ -149,7 +155,7 @@ module TagExamples
         assert_equal [t, mid, root], t.self_and_ancestors.to_a
       end
 
-      test "prevents ancestor loops" do
+      define_method "test_prevents ancestor loops" do
         root = @tag_class.create! name: 'root'
         mid = root.children.create! name: 'mid'
         leaf = mid.children.create! name: 'leaf'
@@ -159,7 +165,7 @@ module TagExamples
         assert_includes root.reload.descendants, leaf
       end
 
-      test "moves non-leaves" do
+      define_method "test_moves non-leaves" do
         root = @tag_class.create! name: 'root'
         mid = root.children.create! name: 'mid'
         leaf = mid.children.create! name: 'leaf'
@@ -171,7 +177,7 @@ module TagExamples
         assert_equal %w[new_root mid leaf], leaf.reload.ancestry_path
       end
 
-      test "moves leaves" do
+      define_method "test_moves leaves" do
         root = @tag_class.create! name: 'root'
         mid = root.children.create! name: 'mid'
         leaf = mid.children.create! name: 'leaf'
@@ -183,7 +189,7 @@ module TagExamples
         assert_equal %w[new_root leaf], leaf.reload.ancestry_path
       end
 
-      test "3 tag explicit_create hierarchy" do
+      define_method "test_3 tag explicit_create hierarchy" do
         root = @tag_class.create!(name: 'root')
         mid = root.add_child(@tag_class.create!(name: 'mid'))
         leaf = mid.add_child(@tag_class.create!(name: 'leaf'))
@@ -193,7 +199,7 @@ module TagExamples
         assert_equal [leaf], @tag_class.leaves
       end
 
-      test "prevents parental loops from torso" do
+      define_method "test_prevents parental loops from torso" do
         root = @tag_class.create!(name: 'root')
         mid = root.add_child(@tag_class.create!(name: 'mid'))
         leaf = mid.add_child(@tag_class.create!(name: 'leaf'))
@@ -203,7 +209,7 @@ module TagExamples
         assert_equal [leaf], mid.reload.children
       end
 
-      test "prevents parental loops from toes" do
+      define_method "test_prevents parental loops from toes" do
         root = @tag_class.create!(name: 'root')
         mid = root.add_child(@tag_class.create!(name: 'mid'))
         leaf = mid.add_child(@tag_class.create!(name: 'leaf'))
@@ -213,7 +219,7 @@ module TagExamples
         assert_empty leaf.reload.children
       end
 
-      test "supports re-parenting" do
+      define_method "test_supports re-parenting" do
         root = @tag_class.create!(name: 'root')
         mid = root.add_child(@tag_class.create!(name: 'mid'))
         leaf = mid.add_child(@tag_class.create!(name: 'leaf'))
@@ -222,7 +228,7 @@ module TagExamples
         assert_equal [leaf, mid], @tag_class.leaves
       end
 
-      test "cleans up hierarchy references for leaves" do
+      define_method "test_cleans up hierarchy references for leaves" do
         root = @tag_class.create!(name: 'root')
         mid = root.add_child(@tag_class.create!(name: 'mid'))
         leaf = mid.add_child(@tag_class.create!(name: 'leaf'))
@@ -232,7 +238,7 @@ module TagExamples
         assert_empty @tag_hierarchy_class.where(descendant_id: leaf.id)
       end
 
-      test "cleans up hierarchy references" do
+      define_method "test_cleans up hierarchy references" do
         root = @tag_class.create!(name: 'root')
         mid = root.add_child(@tag_class.create!(name: 'mid'))
         leaf = mid.add_child(@tag_class.create!(name: 'leaf'))
@@ -247,7 +253,7 @@ module TagExamples
         assert_equal root_hiers, @tag_hierarchy_class.where(descendant_id: root.id)
       end
 
-      test "hierarchy models have different hash codes" do
+      define_method "test_hierarchy models have different hash codes" do
         root = @tag_class.create!(name: 'root')
         mid = root.add_child(@tag_class.create!(name: 'mid'))
         leaf = mid.add_child(@tag_class.create!(name: 'leaf'))
@@ -256,14 +262,14 @@ module TagExamples
         assert_equal hashes.uniq.sort, hashes.sort
       end
 
-      test "equal hierarchy models have same hash code" do
+      define_method "test_equal hierarchy models have same hash code" do
         root = @tag_class.create!(name: 'root')
         root.add_child(@tag_class.create!(name: 'mid'))
         
         assert_equal @tag_hierarchy_class.first.hash, @tag_hierarchy_class.first.hash
       end
 
-      test "performs as the readme says" do
+      define_method "test_performs as the readme says" do
         skip "JRuby has issues with ActiveRecord 7.1+ datetime handling in transactions" if defined?(JRUBY_VERSION)
         
         grandparent = @tag_class.create(name: 'Grandparent')
@@ -286,13 +292,13 @@ module TagExamples
         assert_equal %w[a b c d e f g h], h.ancestry_path
       end
 
-      test "roots sort alphabetically" do
+      define_method "test_roots sort alphabetically" do
         expected = ('a'..'z').to_a
         expected.shuffle.each { |ea| @tag_class.create!(name: ea) }
         assert_equal expected, @tag_class.roots.collect(&:name)
       end
 
-      test "finds global roots in simple tree" do
+      define_method "test_finds global roots in simple tree" do
         @tag_class.find_or_create_by_path %w[a1 b1 c1a]
         @tag_class.find_or_create_by_path %w[a1 b1 c1b]
         @tag_class.find_or_create_by_path %w[a1 b1 c1c]
@@ -306,7 +312,7 @@ module TagExamples
         assert_equal expected_roots.sort, @tag_class.roots.to_a.sort
       end
 
-      test "returns root? for roots" do
+      define_method "test_returns root? for roots" do
         @tag_class.find_or_create_by_path %w[a1 b1 c1a]
         @tag_class.find_or_create_by_path %w[a2 b2]
         @tag_class.find_or_create_by_path %w[a3]
@@ -315,7 +321,7 @@ module TagExamples
         [a1, a2, a3].each { |ea| assert(ea.root?) }
       end
 
-      test "does not return root? for non-roots" do
+      define_method "test_does not return root? for non-roots" do
         @tag_class.find_or_create_by_path %w[a1 b1 c1a]
         @tag_class.find_or_create_by_path %w[a2 b2]
         
@@ -323,7 +329,7 @@ module TagExamples
         [b1, b2, c1a].each { |ea| refute(ea.root?) }
       end
 
-      test "returns the correct root" do
+      define_method "test_returns the correct root" do
         @tag_class.find_or_create_by_path %w[a1 b1 c1a]
         @tag_class.find_or_create_by_path %w[a1 b1 c1b]
         @tag_class.find_or_create_by_path %w[a2 b2]
@@ -335,7 +341,7 @@ module TagExamples
         end
       end
 
-      test "assembles global leaves" do
+      define_method "test_assembles global leaves" do
         @tag_class.find_or_create_by_path %w[a1 b1 c1a]
         @tag_class.find_or_create_by_path %w[a1 b1 c1b]
         @tag_class.find_or_create_by_path %w[a1 b1 c1c]
@@ -349,7 +355,7 @@ module TagExamples
         assert_equal expected_leaves.sort, @tag_class.leaves.to_a.sort
       end
 
-      test "assembles siblings properly" do
+      define_method "test_assembles siblings properly" do
         @tag_class.find_or_create_by_path %w[a1 b1 c1a]
         @tag_class.find_or_create_by_path %w[a1 b1 c1b]
         @tag_class.find_or_create_by_path %w[a1 b1 c1c]
@@ -373,7 +379,7 @@ module TagExamples
         end
       end
 
-      test "assembles before_siblings" do
+      define_method "test_assembles before_siblings" do
         @tag_class.find_or_create_by_path %w[a1 b1 c1a]
         @tag_class.find_or_create_by_path %w[a1 b1 c1b]
         @tag_class.find_or_create_by_path %w[a1 b1 c1c]
@@ -393,7 +399,7 @@ module TagExamples
         end
       end
 
-      test "assembles after_siblings" do
+      define_method "test_assembles after_siblings" do
         @tag_class.find_or_create_by_path %w[a1 b1 c1a]
         @tag_class.find_or_create_by_path %w[a1 b1 c1b]
         @tag_class.find_or_create_by_path %w[a1 b1 c1c]
@@ -413,7 +419,7 @@ module TagExamples
         end
       end
 
-      test "assembles instance leaves" do
+      define_method "test_assembles instance leaves" do
         @tag_class.find_or_create_by_path %w[a1 b1 c1a]
         @tag_class.find_or_create_by_path %w[a1 b1 c1b]
         @tag_class.find_or_create_by_path %w[a1 b1 c1c]
@@ -431,7 +437,7 @@ module TagExamples
         expected_leaves.each { |ea| assert_equal [ea], ea.leaves.to_a }
       end
 
-      test "returns leaf? for leaves" do
+      define_method "test_returns leaf? for leaves" do
         @tag_class.find_or_create_by_path %w[a1 b1 c1a]
         @tag_class.find_or_create_by_path %w[a1 b1b]
         @tag_class.find_or_create_by_path %w[a2 b2]
@@ -443,7 +449,7 @@ module TagExamples
         expected_leaves.each { |ea| assert ea.leaf? }
       end
 
-      test "can move roots" do
+      define_method "test_can move roots" do
         @tag_class.find_or_create_by_path %w[a1 b1 c1a]
         @tag_class.find_or_create_by_path %w[a2 b2]
         @tag_class.find_or_create_by_path %w[a3]
@@ -455,7 +461,7 @@ module TagExamples
         assert_equal %w[a1 b1 c1a a2 b2 a3], a3.reload.ancestry_path
       end
 
-      test "cascade-deletes from roots" do
+      define_method "test_cascade-deletes from roots" do
         @tag_class.find_or_create_by_path %w[a1 b1 c1a]
         @tag_class.find_or_create_by_path %w[a1 b1 c1b]
         @tag_class.find_or_create_by_path %w[a1 b1 c1c]
@@ -471,11 +477,11 @@ module TagExamples
         assert_equal survivor_names, @tag_class.all.map(&:name)
       end
 
-      test "with_ancestor works with no rows" do
+      define_method "test_with_ancestor works with no rows" do
         assert_empty @tag_class.with_ancestor.to_a
       end
 
-      test "with_ancestor finds only children" do
+      define_method "test_with_ancestor finds only children" do
         c = @tag_class.find_or_create_by_path %w[A B C]
         a = c.parent.parent
         b = c.parent
@@ -483,7 +489,7 @@ module TagExamples
         assert_equal [b, c], @tag_class.with_ancestor(a).to_a
       end
 
-      test "with_ancestor limits subsequent where clauses" do
+      define_method "test_with_ancestor limits subsequent where clauses" do
         a1c = @tag_class.find_or_create_by_path %w[A1 B C]
         a2c = @tag_class.find_or_create_by_path %w[A2 B C]
         refute_equal a2c, a1c
@@ -491,11 +497,11 @@ module TagExamples
         assert_equal [a1c], @tag_class.with_ancestor(a1c.parent.parent).where(name: 'C').to_a.sort
       end
 
-      test "with_descendant works with no rows" do
+      define_method "test_with_descendant works with no rows" do
         assert_empty @tag_class.with_descendant.to_a
       end
 
-      test "with_descendant finds only parents" do
+      define_method "test_with_descendant finds only parents" do
         c = @tag_class.find_or_create_by_path %w[A B C]
         a = c.parent.parent
         b = c.parent
@@ -503,7 +509,7 @@ module TagExamples
         assert_equal [a, b], @tag_class.with_descendant(c).to_a
       end
 
-      test "with_descendant limits subsequent where clauses" do
+      define_method "test_with_descendant limits subsequent where clauses" do
         ac1 = @tag_class.create(name: 'A')
         ac2 = @tag_class.create(name: 'A')
         
@@ -518,7 +524,7 @@ module TagExamples
         assert_equal [ac1], @tag_class.with_descendant(c1).where(name: 'A').to_a
       end
 
-      test "lowest_common_ancestor finds parent for siblings" do
+      define_method "test_lowest_common_ancestor finds parent for siblings" do
         t1 = @tag_class.create!(name: 't1')
         t11 = @tag_class.create!(name: 't11', parent: t1)
         t111 = @tag_class.create!(name: 't111', parent: t11)
@@ -533,7 +539,7 @@ module TagExamples
         assert_equal t1, @tag_class.lowest_common_ancestor(@tag_class.where(name: %w[t12 t11]))
       end
 
-      test "lowest_common_ancestor finds grandparent for cousins" do
+      define_method "test_lowest_common_ancestor finds grandparent for cousins" do
         t1 = @tag_class.create!(name: 't1')
         t11 = @tag_class.create!(name: 't11', parent: t1)
         t111 = @tag_class.create!(name: 't111', parent: t11)
@@ -546,7 +552,7 @@ module TagExamples
         assert_equal t1, @tag_class.lowest_common_ancestor(@tag_class.where(name: %w[t112 t111 t121]))
       end
 
-      test "lowest_common_ancestor for aunt-uncle/niece-nephew" do
+      define_method "test_lowest_common_ancestor for aunt-uncle/niece-nephew" do
         t1 = @tag_class.create!(name: 't1')
         t11 = @tag_class.create!(name: 't11', parent: t1)
         t112 = @tag_class.create!(name: 't112', parent: t11)
@@ -557,7 +563,7 @@ module TagExamples
         assert_equal t1, @tag_class.lowest_common_ancestor(@tag_class.where(name: %w[t12 t112]))
       end
 
-      test "lowest_common_ancestor for parent/child" do
+      define_method "test_lowest_common_ancestor for parent/child" do
         t1 = @tag_class.create!(name: 't1')
         t12 = @tag_class.create!(name: 't12', parent: t1)
         t121 = @tag_class.create!(name: 't121', parent: t12)
@@ -570,7 +576,7 @@ module TagExamples
         assert_equal t1, @tag_class.lowest_common_ancestor(@tag_class.where(name: %w[t1 t12]))
       end
 
-      test "lowest_common_ancestor for grandparent/grandchild" do
+      define_method "test_lowest_common_ancestor for grandparent/grandchild" do
         t1 = @tag_class.create!(name: 't1')
         t11 = @tag_class.create!(name: 't11', parent: t1)
         t111 = @tag_class.create!(name: 't111', parent: t11)
@@ -586,7 +592,7 @@ module TagExamples
         assert_equal t1, @tag_class.lowest_common_ancestor(@tag_class.where(name: %w[t111 t1]))
       end
 
-      test "lowest_common_ancestor for whole extended family" do
+      define_method "test_lowest_common_ancestor for whole extended family" do
         t1 = @tag_class.create!(name: 't1')
         t11 = @tag_class.create!(name: 't11', parent: t1)
         t111 = @tag_class.create!(name: 't111', parent: t11)
@@ -605,13 +611,13 @@ module TagExamples
         assert_equal t2, @tag_class.lowest_common_ancestor(@tag_class.where(name: %w[t2 t21 t211]))
       end
 
-      test "lowest_common_ancestor is nil for no items" do
+      define_method "test_lowest_common_ancestor is nil for no items" do
         assert_nil @tag_class.lowest_common_ancestor
         assert_nil @tag_class.lowest_common_ancestor([])
         assert_nil @tag_class.lowest_common_ancestor(@tag_class.none)
       end
 
-      test "lowest_common_ancestor is nil for no common ancestors" do
+      define_method "test_lowest_common_ancestor is nil for no common ancestors" do
         t1 = @tag_class.create!(name: 't1')
         t11 = @tag_class.create!(name: 't11', parent: t1)
         t111 = @tag_class.create!(name: 't111', parent: t11)
@@ -624,7 +630,7 @@ module TagExamples
         assert_nil @tag_class.lowest_common_ancestor(@tag_class.where(name: %w[t111 t211]))
       end
 
-      test "lowest_common_ancestor is itself for single item" do
+      define_method "test_lowest_common_ancestor is itself for single item" do
         t1 = @tag_class.create!(name: 't1')
         t11 = @tag_class.create!(name: 't11', parent: t1)
         t111 = @tag_class.create!(name: 't111', parent: t11)
@@ -638,7 +644,7 @@ module TagExamples
         assert_equal t2, @tag_class.lowest_common_ancestor(@tag_class.where(name: 't2'))
       end
 
-      test "builds ancestry path" do
+      define_method "test_builds ancestry path" do
         child = @tag_class.find_or_create_by_path([
           { name: 'grandparent', title: 'Nonnie' },
           { name: 'parent', title: 'Mom' },
@@ -652,7 +658,7 @@ module TagExamples
         assert_equal %w[Nonnie Mom Kid], child.ancestry_path(:title)
       end
 
-      test "assembles ancestors" do
+      define_method "test_assembles ancestors" do
         child = @tag_class.find_or_create_by_path([
           { name: 'grandparent', title: 'Nonnie' },
           { name: 'parent', title: 'Mom' },
@@ -665,7 +671,7 @@ module TagExamples
         assert_equal [child, parent, grandparent], child.self_and_ancestors
       end
 
-      test "finds by path" do
+      define_method "test_finds by path" do
         child = @tag_class.find_or_create_by_path([
           { name: 'grandparent', title: 'Nonnie' },
           { name: 'parent', title: 'Mom' },
@@ -680,7 +686,7 @@ module TagExamples
         assert_nil parent.find_by_path(%w[child larvae])
       end
 
-      test "respects attribute hashes with both selection and creation" do
+      define_method "test_respects attribute hashes with both selection and creation" do
         grandparent = @tag_class.find_or_create_by_path([
           { name: 'grandparent', title: 'Nonnie' }
         ])
@@ -694,7 +700,7 @@ module TagExamples
         assert_equal existing_title, grandparent.reload.title
       end
 
-      test "creates hierarchy with given attribute" do
+      define_method "test_creates hierarchy with given attribute" do
         expected_title = 'unicorn rainbows'
         attrs = { title: expected_title }
         child = @tag_class.find_or_create_by_path(%w[grandparent parent child], attrs)
@@ -704,20 +710,20 @@ module TagExamples
         end
       end
 
-      test "finds correctly rooted paths" do
+      define_method "test_finds correctly rooted paths" do
         _decoy = @tag_class.find_or_create_by_path %w[a b c d]
         b_d = @tag_class.find_or_create_by_path %w[b c d]
         assert_equal b_d, @tag_class.find_by_path(%w[b c d])
         assert_nil @tag_class.find_by_path(%w[c d])
       end
 
-      test "find_by_path for 1 node" do
+      define_method "test_find_by_path for 1 node" do
         b = @tag_class.find_or_create_by_path %w[a b]
         b2 = b.root.find_by_path(%w[b])
         assert_equal b, b2
       end
 
-      test "find_by_path for 2 nodes" do
+      define_method "test_find_by_path for 2 nodes" do
         path = %w[a b c]
         c = @tag_class.find_or_create_by_path path
         permutations = path.permutation.to_a
@@ -728,33 +734,33 @@ module TagExamples
         end
       end
 
-      test "find_by_path for 3 nodes" do
+      define_method "test_find_by_path for 3 nodes" do
         d = @tag_class.find_or_create_by_path %w[a b c d]
         assert_equal d, d.root.find_by_path(%w[b c d])
         assert_equal d, @tag_class.find_by_path(%w[a b c d])
         assert_nil @tag_class.find_by_path(%w[d])
       end
 
-      test "returns nil for missing nodes" do
+      define_method "test_returns nil for missing nodes" do
         assert_nil @tag_class.find_by_path(%w[missing])
         assert_nil @tag_class.find_by_path(%w[grandparent missing])
         assert_nil @tag_class.find_by_path(%w[grandparent parent missing])
         assert_nil @tag_class.find_by_path(%w[grandparent parent missing child])
       end
 
-      test "find_or_create_by_path uses existing records" do
+      define_method "test_find_or_create_by_path uses existing records" do
         grandparent = @tag_class.find_or_create_by_path(%w[grandparent])
         assert_equal grandparent, grandparent
         child = @tag_class.find_or_create_by_path(%w[grandparent parent child])
         assert_equal child, child
       end
 
-      test "find_or_create_by_path creates 2-deep trees with strings" do
+      define_method "test_find_or_create_by_path creates 2-deep trees with strings" do
         subject = @tag_class.find_or_create_by_path(%w[events anniversary])
         assert_equal %w[events anniversary], subject.ancestry_path
       end
 
-      test "find_or_create_by_path creates 2-deep trees with hashes" do
+      define_method "test_find_or_create_by_path creates 2-deep trees with hashes" do
         subject = @tag_class.find_or_create_by_path([
           { name: 'test1', title: 'TEST1' },
           { name: 'test2', title: 'TEST2' }
@@ -763,12 +769,12 @@ module TagExamples
         assert_equal %w[TEST2 TEST1], subject.self_and_ancestors.map(&:title)
       end
 
-      test "hash_tree returns {} for depth 0" do
+      define_method "test_hash_tree returns {} for depth 0" do
         d1 = @tag_class.find_or_create_by_path %w[a b c1 d1]
         assert_equal({}, @tag_class.hash_tree(limit_depth: 0))
       end
 
-      test "hash_tree limit_depth 1" do
+      define_method "test_hash_tree limit_depth 1" do
         d1 = @tag_class.find_or_create_by_path %w[a b c1 d1]
         a = d1.root
         a2 = @tag_class.create(name: 'a2')
@@ -778,7 +784,7 @@ module TagExamples
         assert_equal one_tree, @tag_class.hash_tree(limit_depth: 1)
       end
 
-      test "hash_tree limit_depth 2" do
+      define_method "test_hash_tree limit_depth 2" do
         d1 = @tag_class.find_or_create_by_path %w[a b c1 d1]
         c1 = d1.parent
         b = c1.parent
@@ -797,7 +803,7 @@ module TagExamples
         assert_equal two_tree, @tag_class.hash_tree(limit_depth: 2)
       end
 
-      test "hash_tree limit_depth 3" do
+      define_method "test_hash_tree limit_depth 3" do
         d1 = @tag_class.find_or_create_by_path %w[a b c1 d1]
         c1 = d1.parent
         b = c1.parent
@@ -816,7 +822,7 @@ module TagExamples
         assert_equal three_tree, @tag_class.hash_tree(limit_depth: 3)
       end
 
-      test "hash_tree limit_depth 4" do
+      define_method "test_hash_tree limit_depth 4" do
         d1 = @tag_class.find_or_create_by_path %w[a b c1 d1]
         c1 = d1.parent
         b = c1.parent
@@ -835,7 +841,7 @@ module TagExamples
         assert_equal full_tree, @tag_class.hash_tree(limit_depth: 4)
       end
 
-      test "hash_tree no limit" do
+      define_method "test_hash_tree no limit" do
         d1 = @tag_class.find_or_create_by_path %w[a b c1 d1]
         c1 = d1.parent
         b = c1.parent
@@ -854,13 +860,13 @@ module TagExamples
         assert_equal full_tree, @tag_class.hash_tree
       end
 
-      test "instance hash_tree returns {} for depth 0" do
+      define_method "test_instance hash_tree returns {} for depth 0" do
         d1 = @tag_class.find_or_create_by_path %w[a b c1 d1]
         b = d1.parent.parent
         assert_equal({}, b.hash_tree(limit_depth: 0))
       end
 
-      test "instance hash_tree limit_depth 1" do
+      define_method "test_instance hash_tree limit_depth 1" do
         d1 = @tag_class.find_or_create_by_path %w[a b c1 d1]
         c1 = d1.parent
         b = c1.parent
@@ -871,7 +877,7 @@ module TagExamples
         assert_equal two_tree[a].slice(b), b.hash_tree(limit_depth: 1)
       end
 
-      test "instance hash_tree no limit from subroot" do
+      define_method "test_instance hash_tree no limit from subroot" do
         d1 = @tag_class.find_or_create_by_path %w[a b c1 d1]
         c1 = d1.parent
         b = c1.parent
@@ -882,7 +888,7 @@ module TagExamples
         assert_equal full_tree[a].slice(b), b.hash_tree
       end
 
-      test "hash_tree from chained associations" do
+      define_method "test_hash_tree from chained associations" do
         d1 = @tag_class.find_or_create_by_path %w[a b c1 d1]
         c1 = d1.parent
         b = c1.parent
@@ -893,7 +899,7 @@ module TagExamples
         assert_equal full_tree[a], a.children.hash_tree
       end
 
-      test "finds_by_path for very deep trees" do
+      define_method "test_finds_by_path for very deep trees" do
         path = (1..20).to_a.map(&:to_s)
         subject = @tag_class.find_or_create_by_path(path)
         assert_equal path, subject.ancestry_path
@@ -902,11 +908,11 @@ module TagExamples
         assert_equal subject, root.find_by_path(path[1..])
       end
 
-      test "DOT rendering for empty scope" do
+      define_method "test_DOT rendering for empty scope" do
         assert_equal "digraph G {\n}\n", @tag_class.to_dot_digraph(@tag_class.where('0=1'))
       end
 
-      test "DOT rendering for tree" do
+      define_method "test_DOT rendering for tree" do
         @tag_class.find_or_create_by_path(%w[a b1 c1])
         @tag_class.find_or_create_by_path(%w[a b2 c2])
         @tag_class.find_or_create_by_path(%w[a b2 c3])
@@ -932,7 +938,7 @@ module TagExamples
         assert_equal(graph, dot)
       end
 
-      test "depth returns 0 for root" do
+      define_method "test_depth returns 0 for root" do
         d1 = @tag_class.find_or_create_by_path %w[a b c1 d1]
         c1 = d1.parent
         b = c1.parent
@@ -946,7 +952,7 @@ module TagExamples
         assert_equal 0, a3.depth
       end
 
-      test "depth returns correct depth for nodes" do
+      define_method "test_depth returns correct depth for nodes" do
         d1 = @tag_class.find_or_create_by_path %w[a b c1 d1]
         c1 = d1.parent
         b = c1.parent
@@ -961,6 +967,5 @@ module TagExamples
         assert_equal 1, b3.depth
         assert_equal 2, c3.depth
       end
-    end
   end
 end

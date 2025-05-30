@@ -1,0 +1,2 @@
+class EventLabel < Label
+end

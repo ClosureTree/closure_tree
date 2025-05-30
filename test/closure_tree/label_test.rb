@@ -3,10 +3,14 @@
 require "test_helper"
 
 module CorrectOrderValue
-  def self.shared_examples(&block)
+  def self.shared_examples(model, expected_root_order_value)
     describe "correct order_value" do
       before do
-        instance_exec(&block)
+        @model = model
+        @expected_root_order_value = expected_root_order_value
+        # Clean up any existing data
+        @model.delete_all
+        @model.hierarchy_class.delete_all
         @root = @model.create(name: "root")
         @a, @b, @c = %w[a b c].map { |n| @root.children.create(name: n) }
       end
@@ -111,6 +115,11 @@ describe Label do
   end
 
   describe "roots" do
+    before do
+      Label.delete_all
+      Label.hierarchy_class.delete_all
+    end
+    
     it "sorts alphabetically" do
       expected = (0..10).to_a
       expected.shuffle.each do |ea|
@@ -471,17 +480,11 @@ describe Label do
 
   describe "order_value must be set" do
     describe "with normal model" do
-      CorrectOrderValue.shared_examples do
-        @model = Label
-        @expected_root_order_value = 0
-      end
+      CorrectOrderValue.shared_examples(Label, 0)
     end
 
     describe "without root ordering" do
-      CorrectOrderValue.shared_examples do
-        @model = LabelWithoutRootOrdering
-        @expected_root_order_value = nil
-      end
+      CorrectOrderValue.shared_examples(LabelWithoutRootOrdering, nil)
     end
   end
 

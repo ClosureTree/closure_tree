@@ -1,5 +1,14 @@
-test:
-  adapter: sqlite3
-  database: ":memory:"
+default: &default
   pool: 50
   timeout: 5000
+
+test:
+  primary:
+    <<: *default
+    url: "<%= ENV['DATABASE_URL_PG'] %>"
+  mysql:
+    <<: *default
+    url: "<%= ENV['DATABASE_URL_MYSQL'] %>"
+  sqlite:
+    <<: *default
+    url: "<%= ENV['DATABASE_URL_SQLITE3'] %>"

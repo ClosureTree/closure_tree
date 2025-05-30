@@ -3,6 +3,7 @@
 require 'test_helper'
 require 'support/tag_examples'
 
-describe UUIDTag do
+describe UuidTag do
+  TAG_CLASS = UuidTag
   include TagExamples
 end

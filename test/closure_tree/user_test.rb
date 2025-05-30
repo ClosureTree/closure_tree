@@ -3,6 +3,11 @@
 require "test_helper"
 
 describe "empty db" do
+  before do
+    User.delete_all
+    User.hierarchy_class.delete_all
+  end
+
   describe "empty db" do
     it "should return no entities" do
       assert User.roots.empty?
@@ -79,8 +84,8 @@ describe "empty db" do
     end
 
     def assert_mid_and_leaf_remain
-      assert ReferralHierarchy.where(ancestor_id: @root_id).empty?
-      assert ReferralHierarchy.where(descendant_id: @root_id).empty?
+      assert User.hierarchy_class.where(ancestor_id: @root_id).empty?
+      assert User.hierarchy_class.where(descendant_id: @root_id).empty?
       assert_equal %w[matt@t.co], @mid.ancestry_path
       assert_equal %w[matt@t.co james@t.co], @leaf.ancestry_path
       assert_equal [@mid, @leaf].sort, @mid.self_and_descendants.to_a.sort

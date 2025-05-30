@@ -7,4 +7,6 @@ Rails.application.configure do
   config.action_controller.perform_caching = false
   config.action_dispatch.show_exceptions = false
   config.active_support.deprecation = :stderr
+  config.active_support.test_order = :random
+  config.active_record.maintain_test_schema = false
 end

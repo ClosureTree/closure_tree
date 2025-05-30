@@ -1,0 +1,2 @@
+class DirectoryLabel < Label
+end

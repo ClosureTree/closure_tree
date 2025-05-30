@@ -13,7 +13,7 @@ class MatcherTest < ActiveSupport::TestCase
   end
 
   test "be_a_closure_tree matcher" do
-    assert_closure_tree UUIDTag
+    assert_closure_tree UuidTag
     assert_closure_tree User
     assert_closure_tree Label, ordered: true
     assert_closure_tree Metal, ordered: :sort_order
@@ -23,7 +23,7 @@ class MatcherTest < ActiveSupport::TestCase
 
   test "ordered option" do
     assert_closure_tree Label, ordered: true
-    assert_closure_tree UUIDTag, ordered: true
+    assert_closure_tree UuidTag, ordered: true
     assert_closure_tree Metal, ordered: :sort_order
   end
 

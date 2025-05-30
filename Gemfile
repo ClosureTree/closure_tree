@@ -4,12 +4,21 @@ source 'https://rubygems.org'
 
 gemspec
 
-gem 'with_advisory_lock', github: 'closuretree/with_advisory_lock'
 gem 'railties'
-# Test with ActiveRecord 7.1 directly
-gem 'activerecord', '~> 7.1.0'
+gem 'with_advisory_lock', github: 'closuretree/with_advisory_lock'
 
-# Database adapters
-gem 'sqlite3'
-gem 'pg'
-gem 'mysql2'
+gem 'activerecord', "~> #{ENV['RAILS_VERSION'] || '8.0'}.0"
+
+platforms :ruby, :truffleruby do
+  # Database adapters
+  gem 'mysql2'
+  gem 'pg'
+  gem 'sqlite3'
+end
+
+platform :jruby do
+  # JRuby-specific gems
+  gem 'activerecord-jdbcmysql-adapter'
+  gem 'activerecord-jdbcpostgresql-adapter'
+  gem 'activerecord-jdbcsqlite3-adapter'
+end
