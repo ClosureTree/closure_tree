@@ -38,16 +38,22 @@ jobs:
       fail-fast: false
       matrix:
         ruby:
-          - '3.3'
+          - '3.4'
+          - 'jruby'
+          - 'truffleruby'
         rails:
-          - activerecord_8.0
-          - activerecord_7.2
-          - activerecord_7.1
-          - activerecord_edge
-        adapter:
-          - 'sqlite3:///:memory:'
-          - mysql2://root:root@0/closure_tree_test
-          - postgres://closure_tree:closure_tree@0/closure_tree_test
+          - '8.0'
+          - '7.2'
+          - '7.1'
+        exclude:
+          # JRuby doesn't support Rails 8.0 yet
+          - ruby: 'jruby'
+            rails: '7.2'
+          - ruby: 'jruby'
+            rails: '8.0'
+          # TruffleRuby also has compatibility issues with Rails 8.0
+          - ruby: 'truffleruby'
+            rails: '8.0'
 
     steps:
       - name: Checkout
@@ -60,14 +66,26 @@ jobs:
           bundler-cache: true
           rubygems: latest
         env:
-          BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
+          RAILS_VERSION: ${{ matrix.rails }}
           RAILS_ENV: test
+
+      - name: Setup databases
+        env:
+          RAILS_ENV: test
+          RAILS_VERSION: ${{ matrix.rails }}
+          DATABASE_URL_PG: postgres://postgres:postgres@127.0.0.1:5432/closure_tree_test
+          DATABASE_URL_MYSQL: mysql2://root:root@127.0.0.1:3306/closure_tree_test
+          DATABASE_URL_SQLITE3: 'sqlite3::memory:'
+        run: |
+          cd test/dummy
+          bundle exec rails db:schema:load
 
       - name: Test
         env:
           RAILS_ENV: test
           RAILS_VERSION: ${{ matrix.rails }}
-          DB_ADAPTER: ${{ matrix.adapter }}
-          BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
+          DATABASE_URL_PG: postgres://postgres:postgres@127.0.0.1:5432/closure_tree_test
+          DATABASE_URL_MYSQL: mysql2://root:root@127.0.0.1:3306/closure_tree_test
+          DATABASE_URL_SQLITE3: 'sqlite3::memory:'
           WITH_ADVISORY_LOCK_PREFIX: ${{ github.run_id }}
-        run: bin/rake
+        run: bin/rails test
