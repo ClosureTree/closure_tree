@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# frozen_string_literal: true
+
 ActiveRecord::Schema.define(version: 1) do
   create_table 'tags' do |t|
     t.string 'name'
@@ -35,7 +37,7 @@ ActiveRecord::Schema.define(version: 1) do
   end
 
   add_index 'tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
-                                                                          name: 'tag_anc_desc_idx'
+            name: 'tag_anc_desc_idx'
   add_index 'tag_hierarchies', [:descendant_id], name: 'tag_desc_idx'
 
   create_table 'groups' do |t|
@@ -139,10 +141,10 @@ ActiveRecord::Schema.define(version: 1) do
   end
 
   add_index 'label_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
-                                                                            name: 'lh_anc_desc_idx'
+            name: 'lh_anc_desc_idx'
   add_index 'label_hierarchies', [:descendant_id], name: 'lh_desc_idx'
   add_index 'referral_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
-                                                                               name: 'ref_anc_desc_idx'
+            name: 'ref_anc_desc_idx'
   add_index 'referral_hierarchies', [:descendant_id], name: 'ref_desc_idx'
 
   add_foreign_key(:tags, :tags, column: 'parent_id', on_delete: :cascade)
