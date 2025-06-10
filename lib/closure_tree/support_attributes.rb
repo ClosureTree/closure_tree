@@ -115,6 +115,10 @@ module ClosureTree
       "#{prefix}#{connection.quote_column_name(order_column)}"
     end
 
+    def fully_qualified_order_by
+      "#{quoted_order_column} #{order_by_order}"
+    end
+
     # table_name alias keyword , like "AS". When used on table name alias, Oracle Database don't support used 'AS'
     def t_alias_keyword
       (ActiveRecord::Base.connection.adapter_name.to_sym == :OracleEnhanced) ? "" : "AS"
