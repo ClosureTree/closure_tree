@@ -42,7 +42,7 @@ module ClosureTree
           UPDATE #{quoted_table_name}
           SET #{quoted_order_column(false)} = t.seq + #{minimum_sort_order_value.to_i - 1}
           FROM (
-            SELECT #{quoted_id_column_name} AS id, row_number() OVER(ORDER BY #{order_by}) AS seq
+            SELECT #{quoted_id_column_name} AS id, row_number() OVER(ORDER BY #{fully_qualified_order_by}) AS seq
             FROM #{quoted_table_name}
             WHERE #{where_eq(parent_column_name, parent_id)} #{min_where}
           ) AS t
