@@ -66,14 +66,14 @@ module ClosureTree
 
     def with_order_option(opts)
       if order_option?
-        opts[:order] = [opts[:order], order_by].compact.join(",")
+        opts[:order] = [opts[:order], fully_qualified_order_by].compact.join(",")
       end
       opts
     end
 
     def scope_with_order(scope, additional_order_by = nil)
       if order_option?
-        scope.order(*([additional_order_by, order_by].compact))
+        scope.order(*([additional_order_by, fully_qualified_order_by].compact))
       else
         additional_order_by ? scope.order(additional_order_by) : scope
       end
@@ -85,7 +85,7 @@ module ClosureTree
     end
 
     def has_many_order_with_option(order_by_opt=nil)
-      order_options = [order_by_opt, order_by].compact
+      order_options = [order_by_opt, fully_qualified_order_by].compact
       [lambda {
         order_options = order_options.map { |o| o.is_a?(Proc) ? o.call : o }
         order(order_options)
