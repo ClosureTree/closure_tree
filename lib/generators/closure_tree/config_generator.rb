@@ -1,7 +1,7 @@
 module ClosureTree
   module Generators # :nodoc:
     class ConfigGenerator < Rails::Generators::Base # :nodoc:
-      source_root File.expand_path('../templates', __FILE__)
+      source_root File.expand_path('templates', __dir__)
       desc 'Install closure tree config.'
 
       def config

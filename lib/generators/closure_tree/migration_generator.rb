@@ -36,10 +36,10 @@ module ClosureTree
 
       def ct
         @ct ||= if target_class.respond_to?(:_ct)
-          target_class._ct
-        else
-          fail "Please RTFM and add the `has_closure_tree` (or `acts_as_tree`) annotation to #{class_name} before creating the migration."
-        end
+                  target_class._ct
+                else
+                  raise "Please RTFM and add the `has_closure_tree` (or `acts_as_tree`) annotation to #{class_name} before creating the migration."
+                end
       end
 
       def migration_version

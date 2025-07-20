@@ -1,0 +1,19 @@
+services:
+  pg:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: closure_tree
+      POSTGRES_PASSWORD: closure_tree_pass
+      POSTGRES_DB: closure_tree_test
+    ports:
+      - "5434:5432"
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_USER: closure_tree
+      MYSQL_PASSWORD: closure_tree_pass
+      MYSQL_DATABASE: closure_tree_test
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - "3367:3306"

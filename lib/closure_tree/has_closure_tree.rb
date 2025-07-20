@@ -37,6 +37,6 @@ module ClosureTree
       raise e unless ClosureTree.configuration.database_less
     end
 
-    alias_method :acts_as_tree, :has_closure_tree
+    alias acts_as_tree has_closure_tree
   end
 end

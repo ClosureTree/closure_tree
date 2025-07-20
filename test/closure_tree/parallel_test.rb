@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require 'test_helper'
 
 # We don't need to run the expensive parallel tests for every combination of prefix/suffix.
 # Those affect SQL generation, not parallelism.
@@ -22,7 +22,7 @@ class WorkerBase
   def_delegators :@thread, :join, :wakeup, :status, :to_s
 
   def log(msg)
-    puts("#{Thread.current}: #{msg}") if ENV["VERBOSE"]
+    puts("#{Thread.current}: #{msg}") if ENV['VERBOSE']
   end
 
   def initialize(target, name)
@@ -30,11 +30,11 @@ class WorkerBase
     @name = name
     @thread = Thread.new do
       ActiveRecord::Base.connection_pool.with_connection { before_work } if respond_to? :before_work
-      log "going to sleep..."
+      log 'going to sleep...'
       sleep
-      log "woke up..."
+      log 'woke up...'
       ActiveRecord::Base.connection_pool.with_connection { work }
-      log "done."
+      log 'done.'
     end
   end
 end
@@ -59,14 +59,14 @@ class SiblingPrependerWorker < WorkerBase
   end
 end
 
-describe "Concurrent creation" do
+describe 'Concurrent creation' do
   before do
     @target = nil
     @iterations = 5
   end
 
   def log(msg)
-    puts(msg) if ENV["VERBOSE"]
+    puts(msg) if ENV['VERBOSE']
   end
 
   def run_workers(worker_class = FindOrCreateWorker)
@@ -75,29 +75,28 @@ describe "Concurrent creation" do
       workers = max_threads.times.map { worker_class.new(@target, name) }
       # Wait for all the threads to get ready:
       while true
-        unready_workers = workers.select { |ea| ea.status != "sleep" }
-        if unready_workers.empty?
-          break
-        else
-          log "Not ready to wakeup: #{unready_workers.map { |ea| [ea.to_s, ea.status] }}"
-          sleep(0.1)
-        end
+        unready_workers = workers.select { |ea| ea.status != 'sleep' }
+        break if unready_workers.empty?
+
+        log "Not ready to wakeup: #{unready_workers.map { |ea| [ea.to_s, ea.status] }}"
+        sleep(0.1)
+
       end
       sleep(0.25)
       # OK, GO!
-      log "Calling .wakeup on all workers..."
+      log 'Calling .wakeup on all workers...'
       workers.each(&:wakeup)
       sleep(0.25)
       # Then wait for them to finish:
-      log "Calling .join on all workers..."
+      log 'Calling .join on all workers...'
       workers.each(&:join)
     end
     # Ensure we're still connected:
     ActiveRecord::Base.connection_pool.connection
   end
 
-  it "will not create dupes from class methods" do
-    skip("unsupported") unless run_parallel_tests?
+  it 'will not create dupes from class methods' do
+    skip('unsupported') unless run_parallel_tests?
 
     run_workers
     assert_equal @names.sort, Tag.roots.collect { |ea| ea.name }.sort
@@ -107,10 +106,10 @@ describe "Concurrent creation" do
     end
   end
 
-  it "will not create dupes from instance methods" do
-    skip("unsupported") unless run_parallel_tests?
+  it 'will not create dupes from instance methods' do
+    skip('unsupported') unless run_parallel_tests?
 
-    @target = Tag.create!(name: "root")
+    @target = Tag.create!(name: 'root')
     run_workers
     assert_equal @names.sort, @target.reload.children.collect { |ea| ea.name }.sort
     assert_equal @iterations, Tag.where(name: @names).size
@@ -119,8 +118,8 @@ describe "Concurrent creation" do
     end
   end
 
-  it "creates dupe roots without advisory locks" do
-    skip("unsupported") unless run_parallel_tests?
+  it 'creates dupe roots without advisory locks' do
+    skip('unsupported') unless run_parallel_tests?
 
     # disable with_advisory_lock:
     Tag.stub(:with_advisory_lock, ->(_lock_name, &block) { block.call }) do
@@ -130,8 +129,8 @@ describe "Concurrent creation" do
     end
   end
 
-  it "fails to deadlock while simultaneously deleting items from the same hierarchy" do
-    skip("unsupported") unless run_parallel_tests?
+  it 'fails to deadlock while simultaneously deleting items from the same hierarchy' do
+    skip('unsupported') unless run_parallel_tests?
 
     target = User.find_or_create_by_path((1..200).to_a.map { |ea| ea.to_s })
     emails = target.self_and_ancestors.to_a.map(&:email).shuffle
@@ -147,8 +146,8 @@ describe "Concurrent creation" do
     assert User.all.empty?
   end
 
-  it "fails to deadlock from prepending siblings" do
-    skip("unsupported") unless run_parallel_tests?
+  it 'fails to deadlock from prepending siblings' do
+    skip('unsupported') unless run_parallel_tests?
 
     @target = Label.find_or_create_by_path %w[root parent]
     run_workers(SiblingPrependerWorker)

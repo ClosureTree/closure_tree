@@ -19,13 +19,13 @@ module ClosureTree
             end
 
             # Checking if hierarchy table exists (common error)
-            unless  @subject.hierarchy_class.table_exists?
+            unless @subject.hierarchy_class.table_exists?
               @message = "expected #{@subject.name}'s hierarchy table '#{@subject.hierarchy_class.table_name}' to exist"
               return false
             end
 
             if @ordered
-              unless  @subject._ct.options.include?(:order)
+              unless @subject._ct.options.include?(:order)
                 @message = "expected #{@subject.name} to be an ordered closure tree"
                 return false
               end
@@ -36,13 +36,13 @@ module ClosureTree
             end
 
             if @with_advisory_lock && !@subject._ct.options[:with_advisory_lock]
-                @message = "expected #{@subject.name} to have advisory lock"
-                return false
+              @message = "expected #{@subject.name} to have advisory lock"
+              return false
             end
 
             if @without_advisory_lock && @subject._ct.options[:with_advisory_lock]
-                @message = "expected #{@subject.name} to not have advisory lock"
-                return false
+              @message = "expected #{@subject.name} to not have advisory lock"
+              return false
             end
 
             return true
@@ -70,13 +70,13 @@ module ClosureTree
           @message || "expected #{@subject.name} to #{description}"
         end
 
-        alias_method :failure_message_for_should, :failure_message
+        alias failure_message_for_should failure_message
 
         def failure_message_when_negated
           "expected #{@subject.name} not be a closure tree, but it is."
         end
 
-        alias_method :failure_message_for_should_not, :failure_message_when_negated
+        alias failure_message_for_should_not failure_message_when_negated
 
         def description
           "be a#{@ordered} closure tree#{@with_advisory_lock}"

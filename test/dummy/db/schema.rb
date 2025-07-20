@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# frozen_string_literal: true
-
 ActiveRecord::Schema.define(version: 1) do
   create_table 'tags' do |t|
     t.string 'name'
@@ -37,7 +35,7 @@ ActiveRecord::Schema.define(version: 1) do
   end
 
   add_index 'tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
-            name: 'tag_anc_desc_idx'
+                                                                          name: 'tag_anc_desc_idx'
   add_index 'tag_hierarchies', [:descendant_id], name: 'tag_desc_idx'
 
   create_table 'groups' do |t|
@@ -141,10 +139,10 @@ ActiveRecord::Schema.define(version: 1) do
   end
 
   add_index 'label_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
-            name: 'lh_anc_desc_idx'
+                                                                            name: 'lh_anc_desc_idx'
   add_index 'label_hierarchies', [:descendant_id], name: 'lh_desc_idx'
   add_index 'referral_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
-            name: 'ref_anc_desc_idx'
+                                                                               name: 'ref_anc_desc_idx'
   add_index 'referral_hierarchies', [:descendant_id], name: 'ref_desc_idx'
 
   add_foreign_key(:tags, :tags, column: 'parent_id', on_delete: :cascade)
@@ -156,4 +154,37 @@ ActiveRecord::Schema.define(version: 1) do
   add_foreign_key(:menu_item_hierarchies, :menu_items, column: 'descendant_id', on_delete: :cascade)
   add_foreign_key(:tag_hierarchies, :tags, column: 'ancestor_id', on_delete: :cascade)
   add_foreign_key(:tag_hierarchies, :tags, column: 'descendant_id', on_delete: :cascade)
+
+  # Multi-database test models
+  create_table 'mysql_tags' do |t|
+    t.string 'name'
+    t.references 'parent'
+    t.timestamps null: false
+  end
+
+  create_table 'mysql_tag_hierarchies', id: false do |t|
+    t.references 'ancestor', null: false
+    t.references 'descendant', null: false
+    t.integer 'generations', null: false
+  end
+
+  add_index 'mysql_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
+                                                                                name: 'mysql_tag_anc_desc_idx'
+  add_index 'mysql_tag_hierarchies', [:descendant_id], name: 'mysql_tag_desc_idx'
+
+  create_table 'sqlite_tags' do |t|
+    t.string 'name'
+    t.references 'parent'
+    t.timestamps null: false
+  end
+
+  create_table 'sqlite_tag_hierarchies', id: false do |t|
+    t.references 'ancestor', null: false
+    t.references 'descendant', null: false
+    t.integer 'generations', null: false
+  end
+
+  add_index 'sqlite_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
+                                                                                 name: 'sqlite_tag_anc_desc_idx'
+  add_index 'sqlite_tag_hierarchies', [:descendant_id], name: 'sqlite_tag_desc_idx'
 end

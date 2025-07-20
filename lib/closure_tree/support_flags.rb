@@ -1,7 +1,5 @@
 module ClosureTree
   module SupportFlags
-
-
     def order_option?
       order_by.present?
     end

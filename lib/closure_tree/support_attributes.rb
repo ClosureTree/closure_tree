@@ -17,7 +17,7 @@ module ClosureTree
     end
 
     def hierarchy_class_name
-      options[:hierarchy_class_name] || model_class.to_s + "Hierarchy"
+      options[:hierarchy_class_name] || (model_class.to_s + 'Hierarchy')
     end
 
     def primary_key_column
@@ -111,13 +111,13 @@ module ClosureTree
 
     def quoted_order_column(include_table_name = true)
       require_order_column
-      prefix = include_table_name ? "#{quoted_table_name}." : ""
+      prefix = include_table_name ? "#{quoted_table_name}." : ''
       "#{prefix}#{connection.quote_column_name(order_column)}"
     end
 
     # table_name alias keyword , like "AS". When used on table name alias, Oracle Database don't support used 'AS'
     def t_alias_keyword
-      (ActiveRecord::Base.connection.adapter_name.to_sym == :OracleEnhanced) ? "" : "AS"
+      ActiveRecord::Base.connection.adapter_name.to_sym == :OracleEnhanced ? '' : 'AS'
     end
   end
 end

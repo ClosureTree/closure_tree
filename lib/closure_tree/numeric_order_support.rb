@@ -1,6 +1,5 @@
 module ClosureTree
   module NumericOrderSupport
-
     def self.adapter_for_connection(connection)
       adapter_name = connection.adapter_name.downcase
       if adapter_name.include?('postgresql') || adapter_name.include?('postgis')
@@ -15,11 +14,12 @@ module ClosureTree
     module MysqlAdapter
       def reorder_with_parent_id(parent_id, minimum_sort_order_value = nil)
         return if parent_id.nil? && dont_order_roots
+
         min_where = if minimum_sort_order_value
-          "AND #{quoted_order_column} >= #{minimum_sort_order_value}"
-        else
-          ""
-        end
+                      "AND #{quoted_order_column} >= #{minimum_sort_order_value}"
+                    else
+                      ''
+                    end
         connection.execute 'SET @i = 0'
         connection.execute <<-SQL.squish
           UPDATE #{quoted_table_name}
@@ -33,11 +33,12 @@ module ClosureTree
     module PostgreSQLAdapter
       def reorder_with_parent_id(parent_id, minimum_sort_order_value = nil)
         return if parent_id.nil? && dont_order_roots
+
         min_where = if minimum_sort_order_value
-          "AND #{quoted_order_column} >= #{minimum_sort_order_value}"
-        else
-          ""
-        end
+                      "AND #{quoted_order_column} >= #{minimum_sort_order_value}"
+                    else
+                      ''
+                    end
         connection.execute <<-SQL.squish
           UPDATE #{quoted_table_name}
           SET #{quoted_order_column(false)} = t.seq + #{minimum_sort_order_value.to_i - 1}
@@ -59,12 +60,11 @@ module ClosureTree
     module GenericAdapter
       def reorder_with_parent_id(parent_id, minimum_sort_order_value = nil)
         return if parent_id.nil? && dont_order_roots
-        scope = model_class.
-          where(parent_column_sym => parent_id).
-          order(nulls_last_order_by)
-        if minimum_sort_order_value
-          scope = scope.where("#{quoted_order_column} >= #{minimum_sort_order_value}")
-        end
+
+        scope = model_class
+                .where(parent_column_sym => parent_id)
+                .order(nulls_last_order_by)
+        scope = scope.where("#{quoted_order_column} >= #{minimum_sort_order_value}") if minimum_sort_order_value
         scope.each_with_index do |ea, idx|
           ea.update_order_value(idx + minimum_sort_order_value.to_i)
         end

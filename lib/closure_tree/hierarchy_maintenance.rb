@@ -21,11 +21,12 @@ module ClosureTree
 
     def _ct_validate
       if !(defined? @_ct_skip_cycle_detection) &&
-        !new_record? && # don't validate for cycles if we're a new record
-        changes[_ct.parent_column_name] && # don't validate for cycles if we didn't change our parent
-        parent.present? && # don't validate if we're root
-        parent.self_and_ancestors.include?(self) # < this is expensive :\
-        errors.add(_ct.parent_column_sym, I18n.t('closure_tree.loop_error', default: 'You cannot add an ancestor as a descendant'))
+         !new_record? && # don't validate for cycles if we're a new record
+         changes[_ct.parent_column_name] && # don't validate for cycles if we didn't change our parent
+         parent.present? && # don't validate if we're root
+         parent.self_and_ancestors.include?(self) # < this is expensive :\
+        errors.add(_ct.parent_column_sym,
+                   I18n.t('closure_tree.loop_error', default: 'You cannot add an ancestor as a descendant'))
       end
     end
 
@@ -35,9 +36,7 @@ module ClosureTree
     end
 
     def _ct_after_save
-      if public_send(:saved_changes)[_ct.parent_column_name] || @was_new_record
-        rebuild!
-      end
+      rebuild! if public_send(:saved_changes)[_ct.parent_column_name] || @was_new_record
       if public_send(:saved_changes)[_ct.parent_column_name] && !@was_new_record
         # Resetting the ancestral collections addresses
         # https://github.com/mceachen/closure_tree/issues/68
@@ -52,9 +51,7 @@ module ClosureTree
     def _ct_before_destroy
       _ct.with_advisory_lock do
         delete_hierarchy_references
-        if _ct.options[:dependent] == :nullify
-          self.class.find(self.id).children.find_each { |c| c.rebuild! }
-        end
+        self.class.find(id).children.find_each { |c| c.rebuild! } if _ct.options[:dependent] == :nullify
       end
       true # don't prevent destruction
     end
@@ -62,7 +59,7 @@ module ClosureTree
     def rebuild!(called_by_rebuild = false)
       _ct.with_advisory_lock do
         delete_hierarchy_references unless (defined? @was_new_record) && @was_new_record
-        hierarchy_class.create!(:ancestor => self, :descendant => self, :generations => 0)
+        hierarchy_class.create!(ancestor: self, descendant: self, generations: 0)
         unless root?
           _ct.connection.execute <<-SQL.squish
             INSERT INTO #{_ct.quoted_hierarchy_table_name}
@@ -76,7 +73,7 @@ module ClosureTree
         if _ct.order_is_numeric? && !@_ct_skip_sort_order_maintenance
           _ct_reorder_prior_siblings_if_parent_changed
           # Prevent double-reordering of siblings:
-          _ct_reorder_siblings if !called_by_rebuild
+          _ct_reorder_siblings unless called_by_rebuild
         end
 
         children.find_each { |c| c.rebuild!(true) }
@@ -99,7 +96,7 @@ module ClosureTree
               FROM #{_ct.quoted_hierarchy_table_name}
               WHERE ancestor_id = #{_ct.quote(id)}
                  OR descendant_id = #{_ct.quote(id)}
-            ) #{ _ct.t_alias_keyword } x )
+            ) #{_ct.t_alias_keyword} x )
         SQL
       end
     end
@@ -118,8 +115,8 @@ module ClosureTree
       def cleanup!
         hierarchy_table = hierarchy_class.arel_table
 
-        [:descendant_id, :ancestor_id].each do |foreign_key|
-          alias_name = foreign_key.to_s.split('_').first + "s"
+        %i[descendant_id ancestor_id].each do |foreign_key|
+          alias_name = foreign_key.to_s.split('_').first + 's'
           alias_table = Arel::Table.new(table_name).alias(alias_name)
           arel_join = hierarchy_table.join(alias_table, Arel::Nodes::OuterJoin)
                                      .on(alias_table[primary_key].eq(hierarchy_table[foreign_key]))

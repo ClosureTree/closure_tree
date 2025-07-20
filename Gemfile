@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 
 gemspec
 
+gem 'dotenv'
 gem 'railties'
 gem 'with_advisory_lock', github: 'closuretree/with_advisory_lock'
 
@@ -16,9 +17,8 @@ platforms :ruby, :truffleruby do
   gem 'sqlite3'
 end
 
-platform :jruby do
-  # JRuby-specific gems
-  gem 'activerecord-jdbcmysql-adapter'
-  gem 'activerecord-jdbcpostgresql-adapter'
-  gem 'activerecord-jdbcsqlite3-adapter'
+# Testing gems
+group :test do
+  gem 'maxitest'
+  gem 'mocha'
 end

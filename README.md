@@ -24,7 +24,7 @@ closure_tree has some great features:
   * 2 SQL INSERTs on node creation
   * 3 SQL INSERT/UPDATEs on node reparenting
 * __Support for [concurrency](#concurrency)__ (using [with_advisory_lock](https://github.com/ClosureTree/with_advisory_lock))
-* __Tested against ActiveRecord 7.1+ with Ruby 3.3+__
+* __Tested against ActiveRecord 7.2+ with Ruby 3.3+__
 * Support for reparenting children (and all their descendants)
 * Support for [single-table inheritance (STI)](#sti) within the hierarchy
 * ```find_or_create_by_path``` for [building out heterogeneous hierarchies quickly and conveniently](#find_or_create_by_path)
@@ -52,7 +52,7 @@ for a description of different tree storage algorithms.
 
 ## Installation
 
-Note that closure_tree only supports ActiveRecord 7.1 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
+Note that closure_tree only supports ActiveRecord 7.2 and later, and has test coverage for MySQL, PostgreSQL, and SQLite.
 
 1.  Add `gem 'closure_tree'` to your Gemfile
 
@@ -629,33 +629,17 @@ Upgrade to MySQL 5.7.12 or later if you see [this issue](https://github.com/Clos
 
 ## Testing with Closure Tree
 
-Closure tree comes with some RSpec2/3 matchers which you may use for your tests:
+Closure tree comes with test matchers which you may use in your tests:
 
 ```ruby
-require 'spec_helper'
+require 'test_helper'
 require 'closure_tree/test/matcher'
 
-describe Category do
- # Should syntax
- it { should be_a_closure_tree }
- # Expect syntax
- it { is_expected.to be_a_closure_tree }
+class CategoryTest < ActiveSupport::TestCase
+  test "should be a closure tree" do
+    assert Category.new.is_a?(ClosureTree::Model)
+  end
 end
-
-describe Label do
- # Should syntax
- it { should be_a_closure_tree.ordered }
- # Expect syntax
- it { is_expected.to be_a_closure_tree.ordered }
-end
-
-describe TodoList::Item do
- # Should syntax
- it { should be_a_closure_tree.ordered(:priority_order) }
- # Expect syntax
- it { is_expected.to be_a_closure_tree.ordered(:priority_order) }
-end
-
 ```
 
 ## Testing
@@ -663,23 +647,19 @@ end
 Closure tree is [tested under every valid combination](https://github.com/ClosureTree/closure_tree/blob/master/.github/workflows/ci.yml) of
 
 * Ruby 3.3+
-* ActiveRecord 7.1+
+* ActiveRecord 7.2+
 * PostgreSQL, MySQL, and SQLite. Concurrency tests are only run with MySQL and PostgreSQL.
 
 ```shell
 $ bundle
-$ appraisal bundle # this will install the matrix of dependencies
-$ appraisal rake # this will run the tests in all combinations
-$ appraisal activerecord-7.0 rake # this will run the tests in AR 7.0 only
-$ appraisal activerecord-7.0 rake spec # this will run rspec in AR 7.0 only
-$ appraisal activerecord-7.0 rake test # this will run minitest in AR 7.0 only
+$ rake test # this will run the tests
 ```
 
 By default the test are run with sqlite3 only. 
 You run test with other databases by passing the database url as environment variable:
 
 ```shell
-$ DATABASE_URL=postgres://localhost/my_database appraisal activerecord-7.0 rake test 
+$ DATABASE_URL=postgres://localhost/my_database rake test 
 ```
 
 ## Change log

@@ -5,10 +5,13 @@ default: &default
 test:
   primary:
     <<: *default
-    url: "<%= ENV['DATABASE_URL_PG'] %>"
-  mysql:
+    url: "<%= ENV['DATABASE_URL_PG'] || 'postgresql://closure_tree:closure_tree_pass@localhost:5434/closure_tree_test' %>"
+  secondary:
     <<: *default
-    url: "<%= ENV['DATABASE_URL_MYSQL'] %>"
+    url: "<%= ENV['DATABASE_URL_MYSQL'] || 'mysql2://closure_tree:closure_tree_pass@localhost:3367/closure_tree_test' %>"
+    properties:
+      allowPublicKeyRetrieval: true
   sqlite:
     <<: *default
-    url: "<%= ENV['DATABASE_URL_SQLITE3'] %>"
+    adapter: sqlite3
+    database: ":memory:"

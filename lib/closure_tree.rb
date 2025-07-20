@@ -14,6 +14,7 @@ module ClosureTree
   autoload :DeterministicOrdering
   autoload :NumericDeterministicOrdering
   autoload :Configuration
+  autoload :AdapterSupport
 
   def self.configure
     yield configuration
@@ -25,6 +26,23 @@ module ClosureTree
 end
 
 ActiveSupport.on_load :active_record do
-  ActiveRecord::Base.send :extend, ClosureTree::HasClosureTree
-  ActiveRecord::Base.send :extend, ClosureTree::HasClosureTreeRoot
+  ActiveRecord::Base.extend ClosureTree::HasClosureTree
+  ActiveRecord::Base.extend ClosureTree::HasClosureTreeRoot
+end
+
+# Adapter injection for different database types
+ActiveSupport.on_load :active_record_postgresqladapter do
+  prepend ClosureTree::AdapterSupport
+end
+
+ActiveSupport.on_load :active_record_mysql2adapter do
+  prepend ClosureTree::AdapterSupport
+end
+
+ActiveSupport.on_load :active_record_trilogyadapter do
+  prepend ClosureTree::AdapterSupport
+end
+
+ActiveSupport.on_load :active_record_sqlite3adapter do
+  prepend ClosureTree::AdapterSupport
 end
