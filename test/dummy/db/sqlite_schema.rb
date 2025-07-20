@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -11,19 +13,20 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema.define(version: 0) do
-  create_table "sqlite_tags", force: true do |t|
-    t.string   "name"
-    t.integer  "parent_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+  create_table 'sqlite_tags', force: true do |t|
+    t.string   'name'
+    t.integer  'parent_id'
+    t.datetime 'created_at'
+    t.datetime 'updated_at'
   end
 
-  create_table "sqlite_tag_hierarchies", id: false, force: true do |t|
-    t.integer  "ancestor_id", null: false
-    t.integer  "descendant_id", null: false
-    t.integer  "generations", null: false
+  create_table 'sqlite_tag_hierarchies', id: false, force: true do |t|
+    t.integer  'ancestor_id', null: false
+    t.integer  'descendant_id', null: false
+    t.integer  'generations', null: false
   end
 
-  add_index "sqlite_tag_hierarchies", [:ancestor_id, :descendant_id, :generations], unique: true, name: "sqlite_tag_anc_desc_idx"
-  add_index "sqlite_tag_hierarchies", [:descendant_id], name: "sqlite_tag_desc_idx"
+  add_index 'sqlite_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
+                                                                                 name: 'sqlite_tag_anc_desc_idx'
+  add_index 'sqlite_tag_hierarchies', [:descendant_id], name: 'sqlite_tag_desc_idx'
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_support/concern'
 
 # This module is only included if the order column is an integer.
@@ -10,9 +12,9 @@ module ClosureTree
     end
 
     def _ct_reorder_prior_siblings_if_parent_changed
-      return unless public_send(:saved_change_to_attribute?, _ct.parent_column_name) && !@was_new_record
+      return unless saved_change_to_attribute?(_ct.parent_column_name) && !@was_new_record
 
-      was_parent_id = public_send(:attribute_before_last_save, _ct.parent_column_name)
+      was_parent_id = attribute_before_last_save(_ct.parent_column_name)
       _ct.reorder_with_parent_id(was_parent_id)
     end
 
@@ -56,7 +58,7 @@ module ClosureTree
 
         depth_column = node ? 'depths.generations' : 'depths.max_depth'
 
-        node_score = "(1 + anc.#{_ct.quoted_order_column(false)}) * " +
+        node_score = "(1 + anc.#{_ct.quoted_order_column(false)}) * " \
                      "power(#{h['total_descendants']}, #{h['max_depth'].to_i + 1} - #{depth_column})"
 
         # We want the NULLs to be first in case we are not ordering roots and they have NULL order.
@@ -64,9 +66,7 @@ module ClosureTree
       end
 
       def roots_and_descendants_preordered
-        if _ct.dont_order_roots
-          raise ClosureTree::RootOrderingDisabledError.new('Root ordering is disabled on this model')
-        end
+        raise ClosureTree::RootOrderingDisabledError, 'Root ordering is disabled on this model' if _ct.dont_order_roots
 
         join_sql = <<-SQL.squish
           JOIN #{_ct.quoted_hierarchy_table_name} anc_hier
@@ -113,7 +113,7 @@ module ClosureTree
       raise "can't add self as sibling" if self == sibling
 
       if _ct.dont_order_roots && parent.nil?
-        raise ClosureTree::RootOrderingDisabledError.new('Root ordering is disabled on this model')
+        raise ClosureTree::RootOrderingDisabledError, 'Root ordering is disabled on this model'
       end
 
       # Make sure self isn't dirty, because we're going to call reload:

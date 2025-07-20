@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ClosureTree
   module ActiveRecordSupport
     delegate :quote, to: :connection

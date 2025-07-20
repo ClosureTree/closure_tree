@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class LabelWithoutRootOrdering < ActiveRecord::Base
   self.table_name = 'labels'
   has_closure_tree parent_column_name: 'mother_id',

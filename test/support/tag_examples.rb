@@ -467,7 +467,7 @@ module TagExamples
       @tag_class.find_or_create_by_path %w[a2 b2]
       @tag_class.find_or_create_by_path %w[a3]
 
-      a1 = @tag_class.all.sort_by(&:name).first
+      a1 = @tag_class.all.min_by(&:name)
 
       victim_names = a1.self_and_descendants.map(&:name)
       survivor_names = @tag_class.all.map(&:name) - victim_names

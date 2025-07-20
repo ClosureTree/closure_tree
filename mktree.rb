@@ -1,4 +1,5 @@
 #!/usr/bin/env bundle exec ruby -I lib:spec
+# frozen_string_literal: true
 
 # Simple benchmark utility to create a closure tree based on the topology of the current filesystem
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ClosureTree
   module HashTreeSupport
     def default_tree_scope(scope, limit_depth = nil)

@@ -2,13 +2,13 @@
 
 namespace :db do
   desc 'Setup all databases'
-  task :setup_all => :environment do
+  task setup_all: :environment do
     # Load primary database schema
     ActiveRecord::Base.establish_connection(:primary)
     ActiveRecord::Base.connection.disconnect! if ActiveRecord::Base.connection.active?
     ActiveRecord::Base.establish_connection(:primary)
     load Rails.root.join('db/schema.rb')
-    
+
     # Load secondary (MySQL) database schema if configured
     if ENV['DATABASE_URL_MYSQL'].present?
       ActiveRecord::Base.establish_connection(:secondary)
@@ -16,7 +16,7 @@ namespace :db do
       ActiveRecord::Base.establish_connection(:secondary)
       load Rails.root.join('db/secondary_schema.rb')
     end
-    
+
     # SQLite is in-memory so it will be created automatically
     ActiveRecord::Base.establish_connection(:primary)
   end

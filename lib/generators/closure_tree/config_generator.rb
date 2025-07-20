@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ClosureTree
   module Generators # :nodoc:
     class ConfigGenerator < Rails::Generators::Base # :nodoc:

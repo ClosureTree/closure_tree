@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
-class SqliteTag < SqliteRecord
+class MemoryTag < SqliteRecord
   has_closure_tree
 end

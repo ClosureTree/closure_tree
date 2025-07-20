@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ClosureTree
   module NumericOrderSupport
     def self.adapter_for_connection(connection)

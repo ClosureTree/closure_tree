@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ClosureTree
   class MultipleRootError < StandardError; end
   class RootOrderingDisabledError < StandardError; end
@@ -19,17 +21,13 @@ module ClosureTree
         # Memoize
         @closure_tree_roots ||= {}
         @closure_tree_roots[assoc_name] ||= {}
-        if !reload && @closure_tree_roots[assoc_name].has_key?(assoc_map)
-          return @closure_tree_roots[assoc_name][assoc_map]
-        end
+        return @closure_tree_roots[assoc_name][assoc_map] if !reload && @closure_tree_roots[assoc_name].key?(assoc_map)
 
         roots = options[:class_name].constantize.where(parent: nil, options[:foreign_key] => id).to_a
 
         return nil if roots.empty?
 
-        if roots.size > 1
-          raise MultipleRootError.new("#{self.class.name}: has_closure_tree_root requires a single root")
-        end
+        raise MultipleRootError, "#{self.class.name}: has_closure_tree_root requires a single root" if roots.size > 1
 
         temp_root = roots.first
         root = nil

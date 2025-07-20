@@ -63,6 +63,20 @@ describe 'Concurrent creation' do
   before do
     @target = nil
     @iterations = 5
+
+    # Clean up SQLite database file if it exists
+    db_file = 'test/dummy/db/test.sqlite3'
+    if File.exist?(db_file)
+      SqliteRecord.connection.disconnect!
+      File.delete(db_file)
+      SqliteRecord.connection.reconnect!
+    end
+    Tag.delete_all
+    Tag.hierarchy_class.delete_all
+    User.delete_all
+    User.hierarchy_class.delete_all
+    Label.delete_all
+    Label.hierarchy_class.delete_all
   end
 
   def log(msg)
@@ -74,13 +88,12 @@ describe 'Concurrent creation' do
     @names.each do |name|
       workers = max_threads.times.map { worker_class.new(@target, name) }
       # Wait for all the threads to get ready:
-      while true
-        unready_workers = workers.select { |ea| ea.status != 'sleep' }
+      loop do
+        unready_workers = workers.reject { |ea| ea.status == 'sleep' }
         break if unready_workers.empty?
 
         log "Not ready to wakeup: #{unready_workers.map { |ea| [ea.to_s, ea.status] }}"
         sleep(0.1)
-
       end
       sleep(0.25)
       # OK, GO!
@@ -92,14 +105,16 @@ describe 'Concurrent creation' do
       workers.each(&:join)
     end
     # Ensure we're still connected:
-    ActiveRecord::Base.connection_pool.connection
+    ActiveRecord::Base.connection_pool.with_connection do |connection|
+      connection.execute('SELECT 1')
+    end
   end
 
   it 'will not create dupes from class methods' do
     skip('unsupported') unless run_parallel_tests?
 
     run_workers
-    assert_equal @names.sort, Tag.roots.collect { |ea| ea.name }.sort
+    assert_equal @names.sort, Tag.roots.collect(&:name).sort
     # No dupe children:
     %w[a b c].each do |ea|
       assert_equal @iterations, Tag.where(name: ea).size
@@ -111,7 +126,7 @@ describe 'Concurrent creation' do
 
     @target = Tag.create!(name: 'root')
     run_workers
-    assert_equal @names.sort, @target.reload.children.collect { |ea| ea.name }.sort
+    assert_equal @names.sort, @target.reload.children.collect(&:name).sort
     assert_equal @iterations, Tag.where(name: @names).size
     %w[a b c].each do |ea|
       assert_equal @iterations, Tag.where(name: ea).size
@@ -132,13 +147,15 @@ describe 'Concurrent creation' do
   it 'fails to deadlock while simultaneously deleting items from the same hierarchy' do
     skip('unsupported') unless run_parallel_tests?
 
-    target = User.find_or_create_by_path((1..200).to_a.map { |ea| ea.to_s })
+    target = User.find_or_create_by_path((1..200).to_a.map(&:to_s))
     emails = target.self_and_ancestors.to_a.map(&:email).shuffle
-    Parallel.map(emails, in_threads: max_threads) do |email|
-      ActiveRecord::Base.connection_pool.with_connection do
-        User.transaction do
-          log "Destroying #{email}..."
-          User.where(email: email).destroy_all
+    User.stub(:rebuild!, -> {}) do
+      Parallel.map(emails, in_threads: max_threads) do |email|
+        ActiveRecord::Base.connection_pool.with_connection do
+          User.transaction do
+            log "Destroying #{email}..."
+            User.where(email: email).destroy_all
+          end
         end
       end
     end
@@ -152,10 +169,10 @@ describe 'Concurrent creation' do
     @target = Label.find_or_create_by_path %w[root parent]
     run_workers(SiblingPrependerWorker)
     children = Label.roots
-    uniq_order_values = children.collect { |ea| ea.order_value }.uniq
+    uniq_order_values = children.collect(&:order_value).uniq
     assert_equal uniq_order_values.size, children.size
 
     # The only non-root node should be "root":
-    assert_equal([@target.parent], Label.all.select { |ea| ea.root? })
+    assert_equal([@target.parent], Label.all.select(&:root?))
   end
 end

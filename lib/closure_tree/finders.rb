@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ClosureTree
   module Finders
     extend ActiveSupport::Concern

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_support/concern'
 
 module ClosureTree
@@ -36,8 +38,8 @@ module ClosureTree
     end
 
     def _ct_after_save
-      rebuild! if public_send(:saved_changes)[_ct.parent_column_name] || @was_new_record
-      if public_send(:saved_changes)[_ct.parent_column_name] && !@was_new_record
+      rebuild! if saved_changes[_ct.parent_column_name] || @was_new_record
+      if saved_changes[_ct.parent_column_name] && !@was_new_record
         # Resetting the ancestral collections addresses
         # https://github.com/mceachen/closure_tree/issues/68
         ancestor_hierarchies.reload
@@ -51,7 +53,7 @@ module ClosureTree
     def _ct_before_destroy
       _ct.with_advisory_lock do
         delete_hierarchy_references
-        self.class.find(id).children.find_each { |c| c.rebuild! } if _ct.options[:dependent] == :nullify
+        self.class.find(id).children.find_each(&:rebuild!) if _ct.options[:dependent] == :nullify
       end
       true # don't prevent destruction
     end
@@ -116,7 +118,7 @@ module ClosureTree
         hierarchy_table = hierarchy_class.arel_table
 
         %i[descendant_id ancestor_id].each do |foreign_key|
-          alias_name = foreign_key.to_s.split('_').first + 's'
+          alias_name = "#{foreign_key.to_s.split('_').first}s"
           alias_table = Arel::Table.new(table_name).alias(alias_name)
           arel_join = hierarchy_table.join(alias_table, Arel::Nodes::OuterJoin)
                                      .on(alias_table[primary_key].eq(hierarchy_table[foreign_key]))

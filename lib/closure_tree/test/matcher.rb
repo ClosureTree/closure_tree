@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'closure_tree'
 
 module ClosureTree

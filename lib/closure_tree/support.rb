@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'closure_tree/support_flags'
 require 'closure_tree/support_attributes'
 require 'closure_tree/numeric_order_support'
@@ -55,7 +57,7 @@ module ClosureTree
       # because they may have overridden the table name, which is what we want to be consistent with
       # in order for the schema to make sense.
       tablename = options[:hierarchy_table_name] ||
-                  (remove_prefix_and_suffix(table_name, model_class).singularize + '_hierarchies')
+                  "#{remove_prefix_and_suffix(table_name, model_class).singularize}_hierarchies"
 
       [model_class.table_name_prefix, tablename, model_class.table_name_suffix].join
     end
@@ -99,7 +101,7 @@ module ClosureTree
     end
 
     def with_advisory_lock(&block)
-      if options[:with_advisory_lock] && connection.supports_advisory_locks?
+      if options[:with_advisory_lock] && connection.supports_advisory_locks? && model_class.respond_to?(:with_advisory_lock)
         model_class.with_advisory_lock(advisory_lock_name) do
           transaction(&block)
         end
@@ -121,11 +123,9 @@ module ClosureTree
     end
 
     def scoped_attributes(scope, attributes, target_table = model_class.table_name)
-      table_prefixed_attributes = Hash[
-        attributes.map do |column_name, column_value|
-          ["#{target_table}.#{column_name}", column_value]
-        end
-      ]
+      table_prefixed_attributes = attributes.transform_keys do |column_name|
+        "#{target_table}.#{column_name}"
+      end
       scope.where(table_prefixed_attributes)
     end
 
@@ -159,7 +159,7 @@ module ClosureTree
     end
 
     def create!(model_class, attributes)
-      create(model_class, attributes).tap { |ea| ea.save! }
+      create(model_class, attributes).tap(&:save!)
     end
   end
 end

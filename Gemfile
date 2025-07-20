@@ -22,3 +22,8 @@ group :test do
   gem 'maxitest'
   gem 'mocha'
 end
+
+# Development gems
+group :development do
+  gem 'rubocop', require: false
+end

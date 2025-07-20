@@ -82,6 +82,10 @@ def create_preorder_tree(suffix = '')
 end
 
 describe Label do
+  before do
+    Label.delete_all
+    Label.hierarchy_class.delete_all
+  end
   describe 'destruction' do
     it 'properly destroys descendents created with find_or_create_by_path' do
       c = Label.find_or_create_by_path %w[a b c]
@@ -128,7 +132,7 @@ describe Label do
           l.order_value = ea
         end
       end
-      assert_equal(expected, Label.roots.collect { |ea| ea.order_value })
+      assert_equal(expected, Label.roots.collect(&:order_value))
     end
   end
 
@@ -211,8 +215,8 @@ describe Label do
       c = Label.new(name: 'c')
       b.add_child(c)
 
-      assert_equal([EventLabel, DateLabel, Label], a.self_and_descendants.collect { |ea| ea.class })
-      assert_equal(%w[a b c], a.self_and_descendants.collect { |ea| ea.name })
+      assert_equal([EventLabel, DateLabel, Label], a.self_and_descendants.collect(&:class))
+      assert_equal(%w[a b c], a.self_and_descendants.collect(&:name))
     end
   end
 
@@ -264,14 +268,14 @@ describe Label do
     it 'self_and_descendants should result in one select' do
       assert_database_queries_count(1) do
         a1_array = @a1.self_and_descendants
-        assert_equal(%w[a1 b1 c1 c2 d1 d2], a1_array.collect { |ea| ea.name })
+        assert_equal(%w[a1 b1 c1 c2 d1 d2], a1_array.collect(&:name))
       end
     end
 
     it 'self_and_ancestors should result in one select' do
       assert_database_queries_count(1) do
         d1_array = @d1.self_and_ancestors
-        assert_equal(%w[d1 c1 b1 a1], d1_array.collect { |ea| ea.name })
+        assert_equal(%w[d1 c1 b1 a1], d1_array.collect(&:name))
       end
     end
   end
@@ -456,6 +460,8 @@ describe Label do
     end
 
     before do
+      Label.delete_all
+      Label.hierarchy_class.delete_all
       @f1 = Label.find_or_create_by_path %w[a1 b1 c1 d1 e1 f1]
     end
 
@@ -502,19 +508,19 @@ describe Label do
       it 'from head' do
         @a.destroy
         assert_equal [@b, @c], @root.reload.children
-        assert_equal([0, 1], @root.children.map { |ea| ea.order_value })
+        assert_equal([0, 1], @root.children.map(&:order_value))
       end
 
       it 'from mid' do
         @b.destroy
         assert_equal [@a, @c], @root.reload.children
-        assert_equal([0, 1], @root.children.map { |ea| ea.order_value })
+        assert_equal([0, 1], @root.children.map(&:order_value))
       end
 
       it 'from tail' do
         @c.destroy
         assert_equal [@a, @b], @root.reload.children
-        assert_equal([0, 1], @root.children.map { |ea| ea.order_value })
+        assert_equal([0, 1], @root.children.map(&:order_value))
       end
     end
 
@@ -537,7 +543,7 @@ describe Label do
       it 'should retain sort orders of descendants when moving within the same new parent' do
         path = ('a'..'z').to_a
         z = @first_root.find_or_create_by_path(path)
-        z_children_names = (100..150).to_a.shuffle.map { |ea| ea.to_s }
+        z_children_names = (100..150).to_a.shuffle.map(&:to_s)
         z_children_names.reverse_each { |ea| z.prepend_child(Label.new(name: ea)) }
         assert_equal z_children_names, z.children.reload.pluck(:name)
         a = @first_root.find_by_path(['a'])
@@ -580,13 +586,18 @@ describe Label do
 
   unless sqlite?
     describe 'preorder' do
+      before do
+        Label.delete_all
+        Label.hierarchy_class.delete_all
+      end
+
       it 'returns descendants in proper order' do
         create_preorder_tree
         a = Label.root
         assert_equal 'a', a.name
         expected = ('a'..'r').to_a
-        assert_equal(expected, a.self_and_descendants_preordered.collect { |ea| ea.name })
-        assert_equal(expected, Label.roots_and_descendants_preordered.collect { |ea| ea.name })
+        assert_equal(expected, a.self_and_descendants_preordered.collect(&:name))
+        assert_equal(expected, Label.roots_and_descendants_preordered.collect(&:name))
         # Let's create the second root by hand so we can explicitly set the sort order
         Label.create! do |l|
           l.name = 'a1'
@@ -594,9 +605,9 @@ describe Label do
         end
         create_preorder_tree('1')
         # Should be no change:
-        assert_equal(expected, a.reload.self_and_descendants_preordered.collect { |ea| ea.name })
+        assert_equal(expected, a.reload.self_and_descendants_preordered.collect(&:name))
         expected += ('a'..'r').collect { |ea| "#{ea}1" }
-        assert_equal(expected, Label.roots_and_descendants_preordered.collect { |ea| ea.name })
+        assert_equal(expected, Label.roots_and_descendants_preordered.collect(&:name))
       end
     end
   end

@@ -174,7 +174,7 @@ describe 'empty db' do
           u.email = ea
         end
       end
-      assert_equal(expected, User.roots.collect { |ea| ea.email }.sort)
+      assert_equal(expected, User.roots.collect(&:email).sort)
     end
   end
 end

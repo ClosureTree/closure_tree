@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'closure_tree/active_record_support'
 require 'forwardable'
 require 'rails/generators'

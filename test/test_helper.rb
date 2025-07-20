@@ -13,6 +13,7 @@ require 'with_advisory_lock'
 
 require 'minitest/autorun'
 require 'database_cleaner'
+require 'database_cleaner/active_record'
 require 'support/query_counter'
 require 'parallel'
 require 'timecop'
@@ -33,7 +34,11 @@ class ActiveSupport::TestCase
   end
 
   setup do
-    DatabaseCleaner.strategy = :truncation
+    # Configure DatabaseCleaner for each database connection
+    DatabaseCleaner[:active_record, db: ApplicationRecord].strategy = :truncation
+    DatabaseCleaner[:active_record, db: MysqlRecord].strategy = :truncation
+    DatabaseCleaner[:active_record, db: SqliteRecord].strategy = :truncation
+
     DatabaseCleaner.start
   end
 

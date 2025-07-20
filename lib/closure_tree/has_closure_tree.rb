@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ClosureTree
   module HasClosureTree
     def has_closure_tree(options = {})
