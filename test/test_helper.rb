@@ -34,16 +34,11 @@ class ActiveSupport::TestCase
 
   setup do
     DatabaseCleaner.strategy = :truncation
-    # Clean all configured databases
-    DatabaseCleaner[:active_record, { connection: ApplicationRecord }].start
-    DatabaseCleaner[:active_record, { connection: MysqlRecord }].start if defined?(MysqlRecord)
-    DatabaseCleaner[:active_record, { connection: SqliteRecord }].start if defined?(SqliteRecord)
+    DatabaseCleaner.start
   end
 
   teardown do
-    DatabaseCleaner[:active_record, { connection: ApplicationRecord }].clean
-    DatabaseCleaner[:active_record, { connection: MysqlRecord }].clean if defined?(MysqlRecord)
-    DatabaseCleaner[:active_record, { connection: SqliteRecord }].clean if defined?(SqliteRecord)
+    DatabaseCleaner.clean
   end
 
   def exceed_query_limit(num, &)

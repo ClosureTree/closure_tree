@@ -8,9 +8,9 @@ gem 'dotenv'
 gem 'railties'
 gem 'with_advisory_lock', github: 'closuretree/with_advisory_lock'
 
-gem 'activerecord', "~> #{ENV['RAILS_VERSION'] || '8.0'}.0"
+gem 'activerecord', "~> #{ENV['RAILS_VERSION'] || '8.0'}"
 
-platforms :ruby, :truffleruby do
+platforms :mri, :truffleruby do
   # Database adapters
   gem 'mysql2'
   gem 'pg'

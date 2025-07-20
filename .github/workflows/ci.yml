@@ -46,7 +46,6 @@ jobs:
         ruby:
           - '3.4'
         rails:
-          - '7.2'
           - '8.0'
 
     steps:
@@ -61,6 +60,7 @@ jobs:
           rubygems: latest
         env:
           RAILS_VERSION: ${{ matrix.rails }}
+          BUNDLE_GEMFILE: ${{ github.workspace }}/Gemfile
 
       - name: Setup databases
         env:

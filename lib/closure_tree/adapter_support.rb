@@ -4,14 +4,8 @@ module ClosureTree
   module AdapterSupport
     extend ActiveSupport::Concern
 
-    def with_closure_tree_advisory_lock(lock_name, &)
-      if supports_advisory_locks?
-        with_advisory_lock("closure_tree:#{lock_name}", &)
-      else
-        # For adapters that don't support advisory locks (like SQLite),
-        # just yield without locking
-        yield
-      end
-    end
+    # This module is now only used to ensure the adapter has been loaded
+    # The actual advisory lock functionality is handled through the model's
+    # with_advisory_lock method from the with_advisory_lock gem
   end
 end

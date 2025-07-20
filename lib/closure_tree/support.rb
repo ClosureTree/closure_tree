@@ -99,8 +99,8 @@ module ClosureTree
     end
 
     def with_advisory_lock(&block)
-      if options[:with_advisory_lock]
-        connection.with_closure_tree_advisory_lock(advisory_lock_name) do
+      if options[:with_advisory_lock] && connection.supports_advisory_locks?
+        model_class.with_advisory_lock(advisory_lock_name) do
           transaction(&block)
         end
       else
