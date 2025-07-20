@@ -1,4 +1,3 @@
----
 name: CI
 
 on:
@@ -9,23 +8,17 @@ on:
     branches:
       - master
 
-
 jobs:
   test:
     runs-on: ubuntu-latest
+    
     services:
-      mysql:
-        image: mysql/mysql-server
-        ports:
-          - "3306:3306"
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: closure_tree_test
-          MYSQL_ROOT_HOST: '%'
       postgres:
-        image: 'postgres'
-        ports: ['5432:5432']
+        image: postgres:17-alpine
+        ports:
+          - 5432:5432
         env:
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: closure_tree_test
         options: >-
@@ -33,25 +26,31 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+          
+      mysql:
+        image: mysql:8
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_DATABASE: closure_tree_test
+          MYSQL_ROOT_PASSWORD: root
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
 
     strategy:
       fail-fast: false
       matrix:
         ruby:
-          - '3.3'
+          - '3.4'
         rails:
-          - activerecord_8.0
-          - activerecord_7.2
-          - activerecord_7.1
-          - activerecord_edge
-        adapter:
-          - 'sqlite3:///:memory:'
-          - mysql2://root:root@0/closure_tree_test
-          - postgres://closure_tree:closure_tree@0/closure_tree_test
+          - '8.0'
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -60,14 +59,25 @@ jobs:
           bundler-cache: true
           rubygems: latest
         env:
-          BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
-          RAILS_ENV: test
+          RAILS_VERSION: ${{ matrix.rails }}
+          BUNDLE_GEMFILE: ${{ github.workspace }}/Gemfile
 
-      - name: Test
+      - name: Setup databases
         env:
           RAILS_ENV: test
-          RAILS_VERSION: ${{ matrix.rails }}
-          DB_ADAPTER: ${{ matrix.adapter }}
-          BUNDLE_GEMFILE: gemfiles/${{ matrix.rails }}.gemfile
+          DATABASE_URL_PG: postgres://postgres:postgres@127.0.0.1:5432/closure_tree_test
+          DATABASE_URL_MYSQL: mysql2://root:root@127.0.0.1:3306/closure_tree_test
+          DATABASE_URL_SQLITE3: 'sqlite3::memory:'
+        run: |
+          cd test/dummy
+          bundle exec rails db:setup_all
+
+      - name: Run tests
+        env:
+          RAILS_ENV: test
+          DATABASE_URL_PG: postgres://postgres:postgres@127.0.0.1:5432/closure_tree_test
+          DATABASE_URL_MYSQL: mysql2://root:root@127.0.0.1:3306/closure_tree_test
+          DATABASE_URL_SQLITE3: 'sqlite3::memory:'
           WITH_ADVISORY_LOCK_PREFIX: ${{ github.run_id }}
-        run: bin/rake
+        run: |
+          bundle exec rake test

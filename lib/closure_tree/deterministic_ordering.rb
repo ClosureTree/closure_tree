@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ClosureTree
   module DeterministicOrdering
     def order_value

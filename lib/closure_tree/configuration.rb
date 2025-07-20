@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ClosureTree
   class Configuration # :nodoc:
     attr_accessor :database_less

@@ -1,38 +1,33 @@
+# frozen_string_literal: true
+
 module ClosureTree
   class MultipleRootError < StandardError; end
   class RootOrderingDisabledError < StandardError; end
 
   module HasClosureTreeRoot
-
     def has_closure_tree_root(assoc_name, options = {})
-       options[:class_name] ||= assoc_name.to_s.sub(/\Aroot_/, "").classify
-      options[:foreign_key] ||= self.name.underscore << "_id"
+      options[:class_name] ||= assoc_name.to_s.sub(/\Aroot_/, '').classify
+      options[:foreign_key] ||= name.underscore << '_id'
 
       has_one assoc_name, -> { where(parent: nil) }, **options
 
       # Fetches the association, eager loading all children and given associations
       define_method("#{assoc_name}_including_tree") do |*args|
         reload = false
-        reload = args.shift if args && (args.first == true || args.first == false)
+        reload = args.shift if args && [true, false].include?(args.first)
         assoc_map = args
         assoc_map = [nil] if assoc_map.blank?
 
         # Memoize
         @closure_tree_roots ||= {}
         @closure_tree_roots[assoc_name] ||= {}
-        unless reload
-          if @closure_tree_roots[assoc_name].has_key?(assoc_map)
-            return @closure_tree_roots[assoc_name][assoc_map]
-          end
-        end
+        return @closure_tree_roots[assoc_name][assoc_map] if !reload && @closure_tree_roots[assoc_name].key?(assoc_map)
 
         roots = options[:class_name].constantize.where(parent: nil, options[:foreign_key] => id).to_a
 
         return nil if roots.empty?
 
-        if roots.size > 1
-          raise MultipleRootError.new("#{self.class.name}: has_closure_tree_root requires a single root")
-        end
+        raise MultipleRootError, "#{self.class.name}: has_closure_tree_root requires a single root" if roots.size > 1
 
         temp_root = roots.first
         root = nil
@@ -68,11 +63,11 @@ module ClosureTree
           end
 
           # Pre-assign inverse association back to this class, if it exists on target class.
-          if inverse
-            inverse_assoc = node.association(inverse.name)
-            inverse_assoc.loaded!
-            inverse_assoc.target = self
-          end
+          next unless inverse
+
+          inverse_assoc = node.association(inverse.name)
+          inverse_assoc.loaded!
+          inverse_assoc.target = self
         end
 
         @closure_tree_roots[assoc_name][assoc_map] = root

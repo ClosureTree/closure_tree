@@ -1,0 +1,17 @@
+default: &default
+  pool: 50
+  timeout: 5000
+
+test:
+  primary:
+    <<: *default
+    url: "<%= ENV['DATABASE_URL_PG'] || 'postgresql://closure_tree:closure_tree_pass@127.0.0.1:5434/closure_tree_test' %>"
+  secondary:
+    <<: *default
+    url: "<%= ENV['DATABASE_URL_MYSQL'] || 'mysql2://closure_tree:closure_tree_pass@127.0.0.1:3367/closure_tree_test' %>"
+    properties:
+      allowPublicKeyRetrieval: true
+  sqlite:
+    <<: *default
+    adapter: sqlite3
+    database: "test/dummy/db/test.sqlite3"

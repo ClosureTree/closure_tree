@@ -25,15 +25,6 @@ describe Metal do
       ]
     end
 
-    if false
-      before do
-        # ensure the correct root is used in find_or_create_by_path:
-        [Metal, Adamantium, Unobtanium].each do |metal|
-          metal.find_or_create_by_path(%w[parent child grandchild])
-        end
-      end
-    end
-
     it 'creates children from the proper root' do
       assert_correctness(Metal.find_or_create_by_path(attr_path))
     end

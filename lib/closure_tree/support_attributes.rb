@@ -1,11 +1,18 @@
+# frozen_string_literal: true
+
 require 'forwardable'
+require 'zlib'
+
 module ClosureTree
   module SupportAttributes
     extend Forwardable
     def_delegators :model_class, :connection, :transaction, :table_name, :base_class, :inheritance_column, :column_names
 
     def advisory_lock_name
-      Digest::SHA1.hexdigest("ClosureTree::#{base_class.name}")[0..32]
+      # Use CRC32 for a shorter, consistent hash
+      # This gives us 8 hex characters which is plenty for uniqueness
+      # and leaves room for prefixes
+      "ct_#{Zlib.crc32(base_class.name.to_s).to_s(16)}"
     end
 
     def quoted_table_name
@@ -17,7 +24,7 @@ module ClosureTree
     end
 
     def hierarchy_class_name
-      options[:hierarchy_class_name] || model_class.to_s + "Hierarchy"
+      options[:hierarchy_class_name] || "#{model_class}Hierarchy"
     end
 
     def primary_key_column
@@ -84,7 +91,7 @@ module ClosureTree
     end
 
     def order_by_order(reverse = false)
-      desc = !!(order_by.to_s =~ /DESC\z/)
+      desc = !(order_by.to_s =~ /DESC\z/).nil?
       desc = !desc if reverse
       desc ? 'DESC' : 'ASC'
     end
@@ -111,13 +118,13 @@ module ClosureTree
 
     def quoted_order_column(include_table_name = true)
       require_order_column
-      prefix = include_table_name ? "#{quoted_table_name}." : ""
+      prefix = include_table_name ? "#{quoted_table_name}." : ''
       "#{prefix}#{connection.quote_column_name(order_column)}"
     end
 
     # table_name alias keyword , like "AS". When used on table name alias, Oracle Database don't support used 'AS'
     def t_alias_keyword
-      (ActiveRecord::Base.connection.adapter_name.to_sym == :OracleEnhanced) ? "" : "AS"
+      ActiveRecord::Base.connection.adapter_name.to_sym == :OracleEnhanced ? '' : 'AS'
     end
   end
 end

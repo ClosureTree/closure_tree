@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ClosureTree
   module HashTree
     extend ActiveSupport::Concern
@@ -7,7 +9,6 @@ module ClosureTree
     end
 
     class_methods do
-
       # There is no default depth limit. This might be crazy-big, depending
       # on your tree shape. Hash huge trees at your own peril!
       def hash_tree(options = {})
