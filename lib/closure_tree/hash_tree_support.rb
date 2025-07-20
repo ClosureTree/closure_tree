@@ -5,17 +5,40 @@ module ClosureTree
     def default_tree_scope(scope, limit_depth = nil)
       # Deepest generation, within limit, for each descendant
       # NOTE: Postgres requires HAVING clauses to always contains aggregate functions (!!)
-      having_clause = limit_depth ? "HAVING MAX(generations) <= #{limit_depth - 1}" : ''
-      generation_depth = <<-SQL.squish
-          INNER JOIN (
-            SELECT descendant_id, MAX(generations) as depth
-            FROM #{quoted_hierarchy_table_name}
-            GROUP BY descendant_id
-            #{having_clause}
-          ) #{t_alias_keyword} generation_depth
-            ON #{quoted_table_name}.#{model_class.primary_key} = generation_depth.descendant_id
-      SQL
-      scope_with_order(scope.joins(generation_depth), 'generation_depth.depth')
+
+      # Get the hierarchy table for the scope's model class
+      hierarchy_table_arel = if scope.respond_to?(:hierarchy_class)
+                               scope.hierarchy_class.arel_table
+                             elsif scope.klass.respond_to?(:hierarchy_class)
+                               scope.klass.hierarchy_class.arel_table
+                             else
+                               hierarchy_table
+                             end
+
+      model_table_arel = scope.klass.arel_table
+
+      # Build the subquery using Arel
+      subquery = hierarchy_table_arel
+                 .project(
+                   hierarchy_table_arel[:descendant_id],
+                   hierarchy_table_arel[:generations].maximum.as('depth')
+                 )
+                 .group(hierarchy_table_arel[:descendant_id])
+
+      # Add HAVING clause if limit_depth is specified
+      subquery = subquery.having(hierarchy_table_arel[:generations].maximum.lteq(limit_depth - 1)) if limit_depth
+
+      generation_depth_alias = subquery.as('generation_depth')
+
+      # Build the join
+      join_condition = model_table_arel[scope.klass.primary_key].eq(generation_depth_alias[:descendant_id])
+
+      join_source = model_table_arel
+                    .join(generation_depth_alias)
+                    .on(join_condition)
+                    .join_sources
+
+      scope_with_order(scope.joins(join_source), 'generation_depth.depth')
     end
 
     def hash_tree(tree_scope, limit_depth = nil)

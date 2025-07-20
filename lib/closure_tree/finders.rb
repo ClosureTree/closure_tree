@@ -37,15 +37,24 @@ module ClosureTree
     end
 
     def find_all_by_generation(generation_level)
-      s = _ct.base_class.joins(<<-SQL.squish)
-        INNER JOIN (
-          SELECT descendant_id
-          FROM #{_ct.quoted_hierarchy_table_name}
-          WHERE ancestor_id = #{_ct.quote(id)}
-          GROUP BY descendant_id
-          HAVING MAX(#{_ct.quoted_hierarchy_table_name}.generations) = #{generation_level.to_i}
-        ) #{_ct.t_alias_keyword} descendants ON (#{_ct.quoted_table_name}.#{_ct.base_class.primary_key} = descendants.descendant_id)
-      SQL
+      hierarchy_table = self.class.hierarchy_class.arel_table
+      model_table = self.class.arel_table
+
+      # Build the subquery
+      descendants_subquery = hierarchy_table
+                             .project(hierarchy_table[:descendant_id])
+                             .where(hierarchy_table[:ancestor_id].eq(id))
+                             .group(hierarchy_table[:descendant_id])
+                             .having(hierarchy_table[:generations].maximum.eq(generation_level.to_i))
+                             .as('descendants')
+
+      # Build the join
+      join_source = model_table
+                    .join(descendants_subquery)
+                    .on(model_table[_ct.base_class.primary_key].eq(descendants_subquery[:descendant_id]))
+                    .join_sources
+
+      s = _ct.base_class.joins(join_source)
       _ct.scope_with_order(s)
     end
 
@@ -72,14 +81,23 @@ module ClosureTree
       end
 
       def leaves
-        s = joins(<<-SQL.squish)
-          INNER JOIN (
-            SELECT ancestor_id
-            FROM #{_ct.quoted_hierarchy_table_name}
-            GROUP BY ancestor_id
-            HAVING MAX(#{_ct.quoted_hierarchy_table_name}.generations) = 0
-          ) #{_ct.t_alias_keyword} leaves ON (#{_ct.quoted_table_name}.#{primary_key} = leaves.ancestor_id)
-        SQL
+        hierarchy_table = hierarchy_class.arel_table
+        model_table = arel_table
+
+        # Build the subquery for leaves (nodes with no children)
+        leaves_subquery = hierarchy_table
+                          .project(hierarchy_table[:ancestor_id])
+                          .group(hierarchy_table[:ancestor_id])
+                          .having(hierarchy_table[:generations].maximum.eq(0))
+                          .as('leaves')
+
+        # Build the join
+        join_source = model_table
+                      .join(leaves_subquery)
+                      .on(model_table[primary_key].eq(leaves_subquery[:ancestor_id]))
+                      .join_sources
+
+        s = joins(join_source)
         _ct.scope_with_order(s.readonly(false))
       end
 
@@ -123,22 +141,38 @@ module ClosureTree
       end
 
       def find_all_by_generation(generation_level)
-        s = joins(<<-SQL.squish)
-          INNER JOIN (
-            SELECT #{primary_key} as root_id
-            FROM #{_ct.quoted_table_name}
-            WHERE #{_ct.quoted_parent_column_name} IS NULL
-          ) #{_ct.t_alias_keyword}  roots ON (1 = 1)
-          INNER JOIN (
-            SELECT ancestor_id, descendant_id
-            FROM #{_ct.quoted_hierarchy_table_name}
-            GROUP BY ancestor_id, descendant_id
-            HAVING MAX(generations) = #{generation_level.to_i}
-          ) #{_ct.t_alias_keyword}  descendants ON (
-            #{_ct.quoted_table_name}.#{primary_key} = descendants.descendant_id
-            AND roots.root_id = descendants.ancestor_id
-          )
-        SQL
+        hierarchy_table = hierarchy_class.arel_table
+        model_table = arel_table
+
+        # Build the roots subquery
+        roots_subquery = model_table
+                         .project(model_table[primary_key].as('root_id'))
+                         .where(model_table[_ct.parent_column_sym].eq(nil))
+                         .as('roots')
+
+        # Build the descendants subquery
+        descendants_subquery = hierarchy_table
+                               .project(
+                                 hierarchy_table[:ancestor_id],
+                                 hierarchy_table[:descendant_id]
+                               )
+                               .group(hierarchy_table[:ancestor_id], hierarchy_table[:descendant_id])
+                               .having(hierarchy_table[:generations].maximum.eq(generation_level.to_i))
+                               .as('descendants')
+
+        # Build the joins
+        join_roots = model_table
+                     .join(roots_subquery)
+                     .on(Arel.sql('1 = 1'))
+
+        join_descendants = join_roots
+                           .join(descendants_subquery)
+                           .on(
+                             model_table[primary_key].eq(descendants_subquery[:descendant_id])
+                             .and(roots_subquery[:root_id].eq(descendants_subquery[:ancestor_id]))
+                           )
+
+        s = joins(join_descendants.join_sources)
         _ct.scope_with_order(s)
       end
 
@@ -151,6 +185,7 @@ module ClosureTree
 
         scope = where(path.pop)
         last_joined_table = _ct.table_name
+
         path.reverse.each_with_index do |ea, idx|
           next_joined_table = "p#{idx}"
           scope = scope.joins(<<-SQL.squish)
@@ -161,6 +196,7 @@ module ClosureTree
           scope = _ct.scoped_attributes(scope, ea, next_joined_table)
           last_joined_table = next_joined_table
         end
+
         scope.where("#{last_joined_table}.#{_ct.parent_column_name}" => parent_id).readonly(false).first
       end
 
