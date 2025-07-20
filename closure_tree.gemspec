@@ -21,9 +21,7 @@ Gem::Specification.new do |gem|
     'rubygems_mfa_required' => 'true'
   }
 
-  gem.files = `git ls-files`.split($/).reject do |f|
-    f.match(/^(test|img|gemfiles)/)
-  end
+  gem.files = Dir.glob('{lib}/**/*') + Dir.glob('bin/*') + %w[README.md CHANGELOG.md MIT-LICENSE closure_tree.gemspec]
 
   gem.required_ruby_version = '>= 3.3.0'
 

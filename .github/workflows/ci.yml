@@ -32,8 +32,6 @@ jobs:
         ports:
           - 3306:3306
         env:
-          MYSQL_USER: root
-          MYSQL_PASSWORD: root
           MYSQL_DATABASE: closure_tree_test
           MYSQL_ROOT_PASSWORD: root
         options: >-
@@ -73,7 +71,7 @@ jobs:
           DATABASE_URL_SQLITE3: 'sqlite3::memory:'
         run: |
           cd test/dummy
-          bundle exec rails db:setup_all
+          bundle exec railsmake db:setup_all
 
       - name: Run tests
         env:
