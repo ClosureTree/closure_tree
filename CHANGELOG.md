@@ -1,5 +1,18 @@
 # Changelog
 
+## [9.0.0](https://github.com/ClosureTree/closure_tree/compare/closure_tree-v8.0.0...closure_tree/v9.0.0) (2025-07-21)
+
+
+### Features
+
+* Add runtime advisory lock name customization and multi-database documentation ([#454](https://github.com/ClosureTree/closure_tree/issues/454)) ([d6ffd73](https://github.com/ClosureTree/closure_tree/commit/d6ffd7381e25a28f7a4742bfa2d9c893f0115395))
+* rewrite with clean api ([#451](https://github.com/ClosureTree/closure_tree/issues/451)) ([f56f2e1](https://github.com/ClosureTree/closure_tree/commit/f56f2e1a3490bb8a099cea8f80b676945fce1c2e))
+
+
+### Bug Fixes
+
+* configure release-please to recognize v8.0.0 release ([#455](https://github.com/ClosureTree/closure_tree/issues/455)) ([fc34f21](https://github.com/ClosureTree/closure_tree/commit/fc34f2148570afd83608b07a3f5282e5fd475783))
+
 ### 8.0.0
 
 - Drop support to EOL ruby and rails
