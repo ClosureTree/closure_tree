@@ -67,7 +67,7 @@ module ClosureTree
 
         query = hierarchy_table
                 .project(
-                  hierarchy_table[:ancestor_id].count.as('total_descendants'),
+                  Arel.star.count.as('total_descendants'),
                   hierarchy_table[:generations].maximum.as('max_depth')
                 )
 

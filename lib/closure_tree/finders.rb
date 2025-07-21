@@ -161,6 +161,9 @@ module ClosureTree
                                .as('descendants')
 
         # Build the joins
+        # Note: We intentionally use a cartesian product join (CROSS JOIN) here.
+        # This allows us to find all nodes at a specific generation level across all root nodes.
+        # The 1=1 condition creates this cartesian product in a database-agnostic way.
         join_roots = model_table
                      .join(roots_subquery)
                      .on(Arel.sql('1 = 1'))

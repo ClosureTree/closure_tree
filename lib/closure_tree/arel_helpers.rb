@@ -70,7 +70,7 @@ module ClosureTree
       # Build the middle subquery with DISTINCT
       middle_subquery = Arel::SelectManager.new
       middle_subquery.from(inner_subquery)
-      middle_subquery.project(Arel.sql('DISTINCT descendant_id'))
+      middle_subquery.project(inner_subquery[:descendant_id]).distinct
 
       # Build the DELETE statement
       delete_manager = Arel::DeleteManager.new
