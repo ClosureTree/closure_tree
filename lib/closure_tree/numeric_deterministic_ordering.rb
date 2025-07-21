@@ -29,17 +29,32 @@ module ClosureTree
 
     def self_and_descendants_preordered
       # TODO: raise NotImplementedError if sort_order is not numeric and not null?
-      join_sql = <<-SQL
-        JOIN #{_ct.quoted_hierarchy_table_name} anc_hier
-          ON anc_hier.descendant_id = #{_ct.quoted_hierarchy_table_name}.descendant_id
-        JOIN #{_ct.quoted_table_name} anc
-          ON anc.#{_ct.quoted_id_column_name} = anc_hier.ancestor_id
-        JOIN #{_ct.quoted_hierarchy_table_name} depths
-          ON depths.ancestor_id = #{_ct.quote(id)} AND depths.descendant_id = anc.#{_ct.quoted_id_column_name}
-      SQL
+      hierarchy_table = self.class.hierarchy_class.arel_table
+      model_table = self.class.arel_table
+
+      # Create aliased tables for the joins
+      anc_hier = _ct.aliased_table(hierarchy_table, 'anc_hier')
+      anc = _ct.aliased_table(model_table, 'anc')
+      depths = _ct.aliased_table(hierarchy_table, 'depths')
+
+      # Build the join conditions using Arel
+      join_anc_hier = hierarchy_table
+                      .join(anc_hier)
+                      .on(anc_hier[:descendant_id].eq(hierarchy_table[:descendant_id]))
+
+      join_anc = join_anc_hier
+                 .join(anc)
+                 .on(anc[self.class.primary_key].eq(anc_hier[:ancestor_id]))
+
+      join_depths = join_anc
+                    .join(depths)
+                    .on(
+                      depths[:ancestor_id].eq(id)
+                      .and(depths[:descendant_id].eq(anc[self.class.primary_key]))
+                    )
 
       self_and_descendants
-        .joins(join_sql)
+        .joins(join_depths.join_sources)
         .group("#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name}")
         .reorder(self.class._ct_sum_order_by(self))
     end
@@ -47,14 +62,18 @@ module ClosureTree
     class_methods do
       # If node is nil, order the whole tree.
       def _ct_sum_order_by(node = nil)
-        stats_sql = <<-SQL.squish
-          SELECT
-            count(*) as total_descendants,
-            max(generations) as max_depth
-          FROM #{_ct.quoted_hierarchy_table_name}
-        SQL
-        stats_sql += " WHERE ancestor_id = #{_ct.quote(node.id)}" if node
-        h = _ct.connection.select_one(stats_sql)
+        # Build the stats query using Arel
+        hierarchy_table = hierarchy_class.arel_table
+
+        query = hierarchy_table
+                .project(
+                  Arel.star.count.as('total_descendants'),
+                  hierarchy_table[:generations].maximum.as('max_depth')
+                )
+
+        query = query.where(hierarchy_table[:ancestor_id].eq(node.id)) if node
+
+        h = _ct.connection.select_one(query.to_sql)
 
         depth_column = node ? 'depths.generations' : 'depths.max_depth'
 
@@ -68,18 +87,36 @@ module ClosureTree
       def roots_and_descendants_preordered
         raise ClosureTree::RootOrderingDisabledError, 'Root ordering is disabled on this model' if _ct.dont_order_roots
 
-        join_sql = <<-SQL.squish
-          JOIN #{_ct.quoted_hierarchy_table_name} anc_hier
-            ON anc_hier.descendant_id = #{_ct.quoted_table_name}.#{_ct.quoted_id_column_name}
-          JOIN #{_ct.quoted_table_name} anc
-            ON anc.#{_ct.quoted_id_column_name} = anc_hier.ancestor_id
-          JOIN (
-            SELECT descendant_id, max(generations) AS max_depth
-            FROM #{_ct.quoted_hierarchy_table_name}
-            GROUP BY descendant_id
-          ) #{_ct.t_alias_keyword} depths ON depths.descendant_id = anc.#{_ct.quoted_id_column_name}
-        SQL
-        joins(join_sql)
+        hierarchy_table = hierarchy_class.arel_table
+        model_table = arel_table
+
+        # Create aliased tables
+        anc_hier = _ct.aliased_table(hierarchy_table, 'anc_hier')
+        anc = _ct.aliased_table(model_table, 'anc')
+
+        # Build the subquery for depths
+        depths_subquery = hierarchy_table
+                          .project(
+                            hierarchy_table[:descendant_id],
+                            hierarchy_table[:generations].maximum.as('max_depth')
+                          )
+                          .group(hierarchy_table[:descendant_id])
+                          .as('depths')
+
+        # Build the join conditions
+        join_anc_hier = model_table
+                        .join(anc_hier)
+                        .on(anc_hier[:descendant_id].eq(model_table[primary_key]))
+
+        join_anc = join_anc_hier
+                   .join(anc)
+                   .on(anc[primary_key].eq(anc_hier[:ancestor_id]))
+
+        join_depths = join_anc
+                      .join(depths_subquery)
+                      .on(depths_subquery[:descendant_id].eq(anc[primary_key]))
+
+        joins(join_depths.join_sources)
           .group("#{_ct.quoted_table_name}.#{_ct.quoted_id_column_name}")
           .reorder(_ct_sum_order_by)
       end
