@@ -1,4 +1,15 @@
 {
   "release-type": "ruby",
-  "package-name": "closure_tree"
+  "package-name": "closure_tree",
+  "packages": {
+    ".": {
+      "release-type": "ruby",
+      "package-name": "closure_tree",
+      "changelog-path": "CHANGELOG.md",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": true,
+      "versioning": "default"
+    }
+  },
+  "bootstrap-sha": "422f61687e779d9888304eeacb2c7ce72125eb64"
 }
