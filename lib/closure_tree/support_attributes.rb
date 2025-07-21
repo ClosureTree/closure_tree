@@ -9,10 +9,29 @@ module ClosureTree
     def_delegators :model_class, :connection, :transaction, :table_name, :base_class, :inheritance_column, :column_names
 
     def advisory_lock_name
-      # Use CRC32 for a shorter, consistent hash
-      # This gives us 8 hex characters which is plenty for uniqueness
-      # and leaves room for prefixes
-      "ct_#{Zlib.crc32(base_class.name.to_s).to_s(16)}"
+      # Allow customization via options or instance method
+      if options[:advisory_lock_name]
+        case options[:advisory_lock_name]
+        when Proc
+          # Allow dynamic generation via proc
+          options[:advisory_lock_name].call(base_class)
+        when Symbol
+          # Allow delegation to a model method
+          if model_class.respond_to?(options[:advisory_lock_name])
+            model_class.send(options[:advisory_lock_name])
+          else
+            raise ArgumentError, "Model #{model_class} does not respond to #{options[:advisory_lock_name]}"
+          end
+        else
+          # Use static string value
+          options[:advisory_lock_name].to_s
+        end
+      else
+        # Default: Use CRC32 for a shorter, consistent hash
+        # This gives us 8 hex characters which is plenty for uniqueness
+        # and leaves room for prefixes
+        "ct_#{Zlib.crc32(base_class.name.to_s).to_s(16)}"
+      end
     end
 
     def quoted_table_name

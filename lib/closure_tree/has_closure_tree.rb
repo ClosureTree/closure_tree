@@ -13,7 +13,8 @@ module ClosureTree
         :dont_order_roots,
         :numeric_order,
         :touch,
-        :with_advisory_lock
+        :with_advisory_lock,
+        :advisory_lock_name
       )
 
       class_attribute :_ct

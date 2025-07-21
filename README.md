@@ -46,6 +46,7 @@ for a description of different tree storage algorithms.
 - [Polymorphic hierarchies with STI](#polymorphic-hierarchies-with-sti)
 - [Deterministic ordering](#deterministic-ordering)
 - [Concurrency](#concurrency)
+- [Multi-Database Support](#multi-database-support)
 - [FAQ](#faq)
 - [Testing](#testing)
 - [Change log](#change-log)
@@ -61,11 +62,11 @@ Note that closure_tree only supports ActiveRecord 7.2 and later, and has test co
 3.  Add `has_closure_tree` (or `acts_as_tree`, which is an alias of the same method) to your hierarchical model:
 
     ```ruby
-    class Tag < ActiveRecord::Base
+    class Tag < ApplicationRecord
       has_closure_tree
     end
 
-    class AnotherTag < ActiveRecord::Base
+    class AnotherTag < ApplicationRecord
       acts_as_tree
     end
     ```
@@ -82,7 +83,7 @@ Note that closure_tree only supports ActiveRecord 7.2 and later, and has test co
     You may want to also [add a column for deterministic ordering of children](#deterministic-ordering), but that's optional.
 
     ```ruby
-    class AddParentIdToTag < ActiveRecord::Migration
+    class AddParentIdToTag < ActiveRecord::Migration[7.2]
       def change
         add_column :tags, :parent_id, :integer
       end
@@ -384,7 +385,7 @@ Polymorphic models using single table inheritance (STI) are supported:
 2. Subclass the model class. You only need to add ```has_closure_tree``` to your base class:
 
 ```ruby
-class Tag < ActiveRecord::Base
+class Tag < ApplicationRecord
   has_closure_tree
 end
 class WhenTag < Tag ; end
@@ -411,7 +412,7 @@ By default, children will be ordered by your database engine, which may not be w
 If you want to order children alphabetically, and your model has a ```name``` column, you'd do this:
 
 ```ruby
-class Tag < ActiveRecord::Base
+class Tag < ApplicationRecord
   has_closure_tree order: 'name'
 end
 ```
@@ -425,7 +426,7 @@ t.integer :sort_order
 and in your model:
 
 ```ruby
-class OrderedTag < ActiveRecord::Base
+class OrderedTag < ApplicationRecord
   has_closure_tree order: 'sort_order', numeric_order: true
 end
 ```
@@ -525,13 +526,105 @@ If you are already managing concurrency elsewhere in your application, and want 
 of with_advisory_lock, pass ```with_advisory_lock: false``` in the options hash:
 
 ```ruby
-class Tag
+class Tag < ApplicationRecord
   has_closure_tree with_advisory_lock: false
 end
 ```
 
 Note that you *will eventually have data corruption* if you disable advisory locks, write to your
 database with multiple threads, and don't provide an alternative mutex.
+
+### Customizing Advisory Lock Names
+
+By default, closure_tree generates advisory lock names based on the model class name. You can customize
+this behavior in several ways:
+
+```ruby
+# Static string
+class Tag < ApplicationRecord
+  has_closure_tree advisory_lock_name: 'custom_tag_lock'
+end
+
+# Dynamic via Proc
+class Tag < ApplicationRecord
+  has_closure_tree advisory_lock_name: ->(model_class) { "#{Rails.env}_#{model_class.name.underscore}" }
+end
+
+# Delegate to model method
+class Tag < ApplicationRecord
+  has_closure_tree advisory_lock_name: :custom_lock_name
+  
+  def self.custom_lock_name
+    "tag_lock_#{current_tenant_id}"
+  end
+end
+```
+
+This is particularly useful when:
+* You need environment-specific lock names
+* You're using multi-tenancy and need tenant-specific locks
+* You want to avoid lock name collisions between similar model names
+
+## Multi-Database Support
+
+Closure Tree fully supports running with multiple databases simultaneously, including mixing different database engines (PostgreSQL, MySQL, SQLite) in the same application. This is particularly useful for:
+
+* Applications with read replicas
+* Sharding strategies
+* Testing with different database engines
+* Gradual database migrations
+
+### Database-Specific Behaviors
+
+#### PostgreSQL
+* Full support for advisory locks via `with_advisory_lock`
+* Excellent concurrency support with row-level locking
+* Best overall performance for tree operations
+
+#### MySQL
+* Advisory locks supported via `with_advisory_lock`
+* Note: MySQL's row-level locking may incorrectly report deadlocks in some cases
+* Requires MySQL 5.7.12+ to avoid hierarchy maintenance errors
+
+#### SQLite
+* **No advisory lock support** - always returns false from `with_advisory_lock`
+* Falls back to file-based locking for tests
+* Suitable for development and testing, but not recommended for production with concurrent writes
+
+### Configuration
+
+When using multiple databases, closure_tree automatically detects the correct adapter for each connection:
+
+```ruby
+class Tag < ApplicationRecord
+  connects_to database: { writing: :primary, reading: :replica }
+  has_closure_tree
+end
+
+class Category < ApplicationRecord  
+  connects_to database: { writing: :sqlite_db }
+  has_closure_tree
+end
+```
+
+Each model will use the appropriate database-specific SQL syntax and features based on its connection adapter.
+
+### Testing with Multiple Databases
+
+You can run the test suite against different databases:
+
+```bash
+# Run with PostgreSQL
+DATABASE_URL=postgres://localhost/closure_tree_test rake test
+
+# Run with MySQL  
+DATABASE_URL=mysql2://localhost/closure_tree_test rake test
+
+# Run with SQLite (default)
+rake test
+```
+
+For simultaneous multi-database testing, the test suite automatically sets up connections to all three database types when available.
 
 ## I18n
 
