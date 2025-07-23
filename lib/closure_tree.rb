@@ -1,50 +1,22 @@
 # frozen_string_literal: true
 
 require 'active_record'
+require 'zeitwerk'
+
+loader = Zeitwerk::Loader.for_gem
+loader.ignore("#{__dir__}/generators")
+loader.setup
 
 module ClosureTree
-  extend ActiveSupport::Autoload
-
-  autoload :HasClosureTree
-  autoload :HasClosureTreeRoot
-  autoload :Support
-  autoload :HierarchyMaintenance
-  autoload :Model
-  autoload :Finders
-  autoload :HashTree
-  autoload :Digraphs
-  autoload :DeterministicOrdering
-  autoload :NumericDeterministicOrdering
-  autoload :Configuration
-  autoload :AdapterSupport
-
   def self.configure
-    yield configuration
+    ActiveSupport::Deprecation.new.warn(
+      'ClosureTree.configure is deprecated and will be removed in a future version. ' \
+      'Configuration is no longer needed.'
+    )
+    yield if block_given?
   end
-
-  def self.configuration
-    @configuration ||= Configuration.new
-  end
 end
 
-ActiveSupport.on_load :active_record do
-  ActiveRecord::Base.extend ClosureTree::HasClosureTree
-  ActiveRecord::Base.extend ClosureTree::HasClosureTreeRoot
-end
-
-# Adapter injection for different database types
-ActiveSupport.on_load :active_record_postgresqladapter do
-  prepend ClosureTree::AdapterSupport
-end
-
-ActiveSupport.on_load :active_record_mysql2adapter do
-  prepend ClosureTree::AdapterSupport
-end
-
-ActiveSupport.on_load :active_record_trilogyadapter do
-  prepend ClosureTree::AdapterSupport
-end
-
-ActiveSupport.on_load :active_record_sqlite3adapter do
-  prepend ClosureTree::AdapterSupport
+ActiveSupport.on_load(:active_record) do
+  extend ClosureTree::HasClosureTree, ClosureTree::HasClosureTreeRoot
 end

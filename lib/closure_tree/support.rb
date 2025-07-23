@@ -1,12 +1,5 @@
 # frozen_string_literal: true
 
-require 'closure_tree/support_flags'
-require 'closure_tree/support_attributes'
-require 'closure_tree/numeric_order_support'
-require 'closure_tree/active_record_support'
-require 'closure_tree/hash_tree_support'
-require 'closure_tree/arel_helpers'
-
 # This class and mixins are an effort to reduce the namespace pollution to models that act_as_tree.
 module ClosureTree
   class Support
