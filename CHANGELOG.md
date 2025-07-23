@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.1.0](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.0.0...closure_tree/v9.1.0) (2025-07-23)
+
+
+### Features
+
+* migrate from ActiveSupport::Autoload to Zeitwerk ([#457](https://github.com/ClosureTree/closure_tree/issues/457)) ([d18e80c](https://github.com/ClosureTree/closure_tree/commit/d18e80cdbd4f3510377363bc7b5166f0cc1b0a6f))
+
 ## [9.0.0](https://github.com/ClosureTree/closure_tree/compare/closure_tree-v8.0.0...closure_tree/v9.0.0) (2025-07-21)
 
 
