@@ -27,6 +27,7 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency 'activerecord', '>= 7.2.0'
   gem.add_dependency 'with_advisory_lock', '>= 7.0.0'
+  gem.add_dependency 'zeitwerk', '~> 2.7'
 
   gem.add_development_dependency 'database_cleaner'
   gem.add_development_dependency 'minitest'
