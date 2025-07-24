@@ -9,11 +9,16 @@ loader.setup
 
 module ClosureTree
   def self.configure
-    ActiveSupport::Deprecation.new.warn(
-      'ClosureTree.configure is deprecated and will be removed in a future version. ' \
-      'Configuration is no longer needed.'
-    )
-    yield if block_given?
+    if block_given?
+      # Create a temporary configuration object to capture deprecated settings
+      config = Configuration.new
+      yield config
+    else
+      ActiveSupport::Deprecation.new.warn(
+        'ClosureTree.configure is deprecated and will be removed in a future version. ' \
+        'Configuration is no longer needed.'
+      )
+    end
   end
 end
 

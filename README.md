@@ -73,6 +73,8 @@ Note that closure_tree only supports ActiveRecord 7.2 and later, and has test co
 
     Make sure you check out the [large number of options](#available-options) that `has_closure_tree` accepts.
 
+    **Note:** The `acts_as_tree` alias is only created if your model doesn't already have a method with that name. This prevents conflicts with other gems like the original `acts_as_tree` gem.
+
     **IMPORTANT: Make sure you add `has_closure_tree` _after_ `attr_accessible` and
     `self.table_name =` lines in your model.**
 
@@ -156,10 +158,10 @@ Then:
 
 ```ruby
 grandparent.self_and_descendants.collect(&:name)
-=> ["Grandparent", "Parent", "First Child", "Second Child", "Third Child", "Fourth Child"]
+#=> ["Grandparent", "Parent", "First Child", "Second Child", "Third Child", "Fourth Child"]
 
 child1.ancestry_path
-=> ["Grandparent", "Parent", "First Child"]
+#=> ["Grandparent", "Parent", "First Child"]
 ```
 
 ### find_or_create_by_path
@@ -204,19 +206,16 @@ d = Tag.find_or_create_by_path %w[a b c d]
 h = Tag.find_or_create_by_path %w[e f g h]
 e = h.root
 d.add_child(e) # "d.children << e" would work too, of course
-h.ancestry_path
-=> ["a", "b", "c", "d", "e", "f", "g", "h"]
+h.ancestry_path #=> ["a", "b", "c", "d", "e", "f", "g", "h"]
 ```
 
 When it is more convenient to simply change the `parent_id` of a node directly (for example, when dealing with a form `<select>`), closure_tree will handle the necessary changes automatically when the record is saved:
 
 ```ruby
 j = Tag.find 102
-j.self_and_ancestor_ids
-=> [102, 87, 77]
+j.self_and_ancestor_ids #=> [102, 87, 77]
 j.update parent_id: 96
-j.self_and_ancestor_ids
-=> [102, 96, 95, 78]
+j.self_and_ancestor_ids #=> [102, 96, 95, 78]
 ```
 
 ### Nested hashes
@@ -233,17 +232,13 @@ c1 = d1.parent
 d2 = b.find_or_create_by_path %w(c2 d2)
 c2 = d2.parent
 
-Tag.hash_tree
-=> {a => {b => {c1 => {d1 => {}}, c2 => {d2 => {}}}, b2 => {}}}
+Tag.hash_tree #=> {a => {b => {c1 => {d1 => {}}, c2 => {d2 => {}}}, b2 => {}}}
 
-Tag.hash_tree(:limit_depth => 2)
-=> {a => {b => {}, b2 => {}}}
+Tag.hash_tree(:limit_depth => 2) #=> {a => {b => {}, b2 => {}}}
 
-b.hash_tree
-=> {b => {c1 => {d1 => {}}, c2 => {d2 => {}}}}
+b.hash_tree #=> {b => {c1 => {d1 => {}}, c2 => {d2 => {}}}}
 
-b.hash_tree(:limit_depth => 2)
-=> {b => {c1 => {}, c2 => {}}}
+b.hash_tree(:limit_depth => 2) #=> {b => {c1 => {}, c2 => {}}}
 ```
 
 **If your tree is large (or might become so), use :limit_depth.**
@@ -477,20 +472,16 @@ c = OrderedTag.create(name: 'c')
 # We have to call 'root.reload.children' because root won't be in sync with the database otherwise:
 
 a.append_sibling(b)
-root.reload.children.pluck(:name)
-=> ["a", "b"]
+root.reload.children.pluck(:name) #=> ["a", "b"]
 
 a.prepend_sibling(b)
-root.reload.children.pluck(:name)
-=> ["b", "a"]
+root.reload.children.pluck(:name) #=> ["b", "a"]
 
 a.append_sibling(c)
-root.reload.children.pluck(:name)
-=> ["b", "a", "c"]
+root.reload.children.pluck(:name) #=> ["b", "a", "c"]
 
 b.append_sibling(c)
-root.reload.children.pluck(:name)
-=> ["b", "c", "a"]
+root.reload.children.pluck(:name) #=> ["b", "c", "a"]
 ```
 
 ### Ordering Roots
