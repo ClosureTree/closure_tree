@@ -343,7 +343,7 @@ When you include ```has_closure_tree``` in your model, you can provide a hash to
 * ```tag.child?``` returns true if this is a child node. It has a parent.
 * ```tag.leaf?``` returns true if this is a leaf node. It has no children.
 * ```tag.leaves``` is scoped to all leaf nodes in self_and_descendants.
-* ```tag.depth``` returns the depth, or "generation", for this node in the tree. A root node will have a value of 0.
+* ```tag.depth``` returns the depth, or "generation", for this node in the tree. A root node will have a value of 0. Also aliased as `level`.
 * ```tag.parent``` returns the node's immediate parent. Root nodes will return nil.
 * ```tag.parent_of?(node)``` returns true if current node is parent of another one
 * ```tag.children``` is a ```has_many``` of immediate children (just those nodes whose parent is the current node).
