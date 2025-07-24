@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.1.1](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.1.0...closure_tree/v9.1.1) (2025-07-24)
+
+
+### Bug Fixes
+
+* restore proper deprecation for database_less configuration ([#459](https://github.com/ClosureTree/closure_tree/issues/459)) ([de8b402](https://github.com/ClosureTree/closure_tree/commit/de8b40233d3de5243afce7ec9de9ad26c2eee181))
+
 ## [9.1.0](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.0.0...closure_tree/v9.1.0) (2025-07-23)
 
 
