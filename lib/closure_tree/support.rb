@@ -33,6 +33,9 @@ module ClosureTree
       hierarchy_class = parent_class.const_set(short_hierarchy_class_name, Class.new(model_class.superclass))
       model_class_name = model_class.to_s
       hierarchy_class.class_eval do
+        # Rails 8.1+ requires an implicit_order_column for models without a primary key
+        self.implicit_order_column = 'ancestor_id'
+
         belongs_to :ancestor, class_name: model_class_name
         belongs_to :descendant, class_name: model_class_name
         def ==(other)
