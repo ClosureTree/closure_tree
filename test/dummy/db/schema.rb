@@ -112,6 +112,20 @@ ActiveRecord::Schema.define(version: 1) do
     t.integer 'generations', null: false
   end
 
+  # PostgreSQL schema-qualified tables
+  execute "CREATE SCHEMA IF NOT EXISTS test_schema"
+
+  create_table 'test_schema.schema_types', force: true do |t|
+    t.string 'name'
+    t.references 'parent'
+  end
+
+  create_table 'test_schema.schema_type_hierarchies', id: false, force: true do |t|
+    t.references 'ancestor', null: false
+    t.references 'descendant', null: false
+    t.integer 'generations', null: false
+  end
+
   create_table 'metal' do |t|
     t.references 'parent'
     t.string 'metal_type'

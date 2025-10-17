@@ -51,8 +51,19 @@ module ClosureTree
       # We need to use the table_name, not something like ct_class.to_s.demodulize + "_hierarchies",
       # because they may have overridden the table name, which is what we want to be consistent with
       # in order for the schema to make sense.
-      tablename = options[:hierarchy_table_name] ||
-                  "#{remove_prefix_and_suffix(table_name, model_class).singularize}_hierarchies"
+      if options[:hierarchy_table_name]
+        tablename = options[:hierarchy_table_name]
+      else
+        base_table = remove_prefix_and_suffix(table_name, model_class)
+
+        # Handle PostgreSQL schema-qualified table names (e.g., "my_schema.table_name")
+        schema, _, table = base_table.rpartition('.')
+        if schema.present?
+          tablename = "#{schema}.#{table.singularize}_hierarchies"
+        else
+          tablename = "#{table.singularize}_hierarchies"
+        end
+      end
 
       [model_class.table_name_prefix, tablename, model_class.table_name_suffix].join
     end
