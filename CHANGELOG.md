@@ -1,5 +1,17 @@
 # Changelog
 
+## [9.2.0](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.1.1...closure_tree/v9.2.0) (2025-10-17)
+
+
+### Features
+
+* add PostgreSQL schema-qualified table name support ([#462](https://github.com/ClosureTree/closure_tree/issues/462)) ([5f9006c](https://github.com/ClosureTree/closure_tree/commit/5f9006cece95a76f665cb50c2615317e3fa48586))
+
+
+### Bug Fixes
+
+* add implicit_order_column for Rails 8.1+ compatibility ([#464](https://github.com/ClosureTree/closure_tree/issues/464)) ([f384303](https://github.com/ClosureTree/closure_tree/commit/f38430334a79ea15d236f9212118dcb5e4530746))
+
 ## [9.1.1](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.1.0...closure_tree/v9.1.1) (2025-07-24)
 
 
