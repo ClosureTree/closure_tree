@@ -5,10 +5,11 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'dotenv'
-gem 'railties'
 gem 'with_advisory_lock', '>= 7'
 
-gem 'activerecord', "~> #{ENV['RAILS_VERSION'] || '8.0'}"
+rails_version = ENV['RAILS_VERSION'] || '8.0'
+gem 'activerecord', "~> #{rails_version}"
+gem 'railties', "~> #{rails_version}"
 
 platforms :mri, :truffleruby do
   # Database adapters
