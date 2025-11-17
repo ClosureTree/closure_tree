@@ -36,6 +36,10 @@ module ClosureTree
         # Rails 8.1+ requires an implicit_order_column for models without a primary key
         self.implicit_order_column = 'ancestor_id'
 
+        # Rails uses the primary key to correctly match associations when using a join to preload (e.g. via `eager_load`).
+        # The migration generator adds a unique index across these three columns so this is safe.
+        self.primary_key = [:ancestor_id, :descendant_id, :generations]
+
         belongs_to :ancestor, class_name: model_class_name
         belongs_to :descendant, class_name: model_class_name
         def ==(other)
