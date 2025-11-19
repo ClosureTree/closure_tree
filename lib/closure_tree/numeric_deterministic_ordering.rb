@@ -15,16 +15,19 @@ module ClosureTree
       return unless saved_change_to_attribute?(_ct.parent_column_name) && !@was_new_record
 
       was_parent_id = attribute_before_last_save(_ct.parent_column_name)
-      _ct.reorder_with_parent_id(was_parent_id)
+      scope_conditions = _ct.scope_values_from_instance(self)
+      _ct.reorder_with_parent_id(was_parent_id, nil, scope_conditions)
     end
 
     def _ct_reorder_siblings(minimum_sort_order_value = nil)
-      _ct.reorder_with_parent_id(_ct_parent_id, minimum_sort_order_value)
+      scope_conditions = _ct.scope_values_from_instance(self)
+      _ct.reorder_with_parent_id(_ct_parent_id, minimum_sort_order_value, scope_conditions)
       reload unless destroyed?
     end
 
     def _ct_reorder_children(minimum_sort_order_value = nil)
-      _ct.reorder_with_parent_id(_ct_id, minimum_sort_order_value)
+      scope_conditions = _ct.scope_values_from_instance(self)
+      _ct.reorder_with_parent_id(_ct_id, minimum_sort_order_value, scope_conditions)
     end
 
     def self_and_descendants_preordered

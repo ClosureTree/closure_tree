@@ -14,7 +14,8 @@ module ClosureTree
         :numeric_order,
         :touch,
         :with_advisory_lock,
-        :advisory_lock_name
+        :advisory_lock_name,
+        :scope
       )
 
       class_attribute :_ct
