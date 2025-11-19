@@ -1,9 +1,9 @@
 # Changelog
 
-## [9.2.1](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.2.0...closure_tree/v9.2.1) (2025-11-19)
+## [9.3.0](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.2.0...closure_tree/v9.3.0) (2025-11-19)
 
 
-### Bug Fixes
+### Features
 
 * eager loading of hierarchies by defining the primary key ([#465](https://github.com/ClosureTree/closure_tree/issues/465)) ([8c7e490](https://github.com/ClosureTree/closure_tree/commit/8c7e490ff89239e44aee71577288bff0e177a8d6))
 
