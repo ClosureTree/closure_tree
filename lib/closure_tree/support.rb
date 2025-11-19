@@ -23,6 +23,13 @@ module ClosureTree
       }.merge(options)
       raise ArgumentError, "name_column can't be 'path'" if options[:name_column] == 'path'
 
+      if options[:scope]
+        scope_option = options[:scope]
+        unless scope_option.is_a?(Symbol) || (scope_option.is_a?(Array) && scope_option.all? { |item| item.is_a?(Symbol) })
+          raise ArgumentError, "scope option must be a Symbol or an Array of Symbols (e.g., :user_id or [:user_id, :group_id])"
+        end
+      end
+
       return unless order_is_numeric?
 
       extend NumericOrderSupport.adapter_for_connection(connection)
@@ -109,6 +116,22 @@ module ClosureTree
       end
     end
 
+    # Builds SQL WHERE conditions for scope columns
+    # Returns a string that can be appended to a WHERE clause
+    def build_scope_where_clause(scope_conditions)
+      return '' unless scope_conditions.is_a?(Hash) && scope_conditions.any?
+
+      conditions = scope_conditions.map do |column, value|
+        if value.nil?
+          "#{connection.quote_column_name(column.to_s)} IS NULL"
+        else
+          "#{connection.quote_column_name(column.to_s)} = #{quoted_value(value)}"
+        end
+      end
+
+      " AND #{conditions.join(' AND ')}"
+    end
+
     def with_advisory_lock(&block)
       if options[:with_advisory_lock] && connection.supports_advisory_locks? && model_class.respond_to?(:with_advisory_lock)
         model_class.with_advisory_lock(advisory_lock_name) do
@@ -169,6 +192,50 @@ module ClosureTree
 
     def create!(model_class, attributes)
       create(model_class, attributes).tap(&:save!)
+    end
+
+    def scope_columns
+      return [] unless options[:scope]
+
+      scope_option = options[:scope]
+
+      case scope_option
+      when Symbol
+        [scope_option]
+      when Array
+        scope_option.select { |item| item.is_a?(Symbol) }
+      else
+        []
+      end
+    end
+
+    def scope_values_from_instance(instance)
+      return {} unless options[:scope] && instance
+
+      scope_option = options[:scope]
+      scope_hash = {}
+
+      case scope_option
+      when Symbol
+        value = instance.read_attribute(scope_option)
+        scope_hash[scope_option] = value unless value.nil?
+      when Array
+        scope_option.each do |item|
+          if item.is_a?(Symbol)
+            value = instance.read_attribute(item)
+            scope_hash[item] = value unless value.nil?
+          end
+        end
+      end
+
+      scope_hash
+    end
+
+    def apply_scope_conditions(scope, instance = nil)
+      return scope unless options[:scope] && instance
+
+      scope_values = scope_values_from_instance(instance)
+      scope_values.any? ? scope.where(scope_values) : scope
     end
   end
 end

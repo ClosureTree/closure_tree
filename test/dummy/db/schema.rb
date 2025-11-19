@@ -201,4 +201,23 @@ ActiveRecord::Schema.define(version: 1) do
   add_index 'sqlite_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
                                                                                  name: 'sqlite_tag_anc_desc_idx'
   add_index 'sqlite_tag_hierarchies', [:descendant_id], name: 'sqlite_tag_desc_idx'
+
+  create_table 'scoped_items' do |t|
+    t.string 'name'
+    t.references 'parent'
+    t.integer 'sort_order'
+    t.integer 'user_id'
+    t.integer 'group_id'
+    t.timestamps null: false
+  end
+
+  create_table 'scoped_item_hierarchies', id: false do |t|
+    t.references 'ancestor', null: false
+    t.references 'descendant', null: false
+    t.integer 'generations', null: false
+  end
+
+  add_index 'scoped_item_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
+                                                                                 name: 'scoped_item_anc_desc_idx'
+  add_index 'scoped_item_hierarchies', [:descendant_id], name: 'scoped_item_desc_idx'
 end
