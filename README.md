@@ -319,6 +319,7 @@ When you include ```has_closure_tree``` in your model, you can provide a hash to
     * ```nil``` does nothing with descendant nodes
 * ```:name_column``` used by #```find_or_create_by_path```, #```find_by_path```, and ```ancestry_path``` instance methods. This is primarily useful if the model only has one required field (like a "tag").
 * ```:order``` used to set up [deterministic ordering](#deterministic-ordering)
+* ```:scope``` restricts root nodes and sibling ordering to specific columns. Can be a single symbol or an array of symbols. Example: ```scope: :user_id``` or ```scope: [:user_id, :group_id]```. This ensures that root nodes and siblings are scoped correctly when reordering. See [Ordering Roots](#ordering-roots) for more details.
 * ```:touch``` delegates to the `belongs_to` annotation for the parent, so `touch`ing cascades to all children (the performance of this for deep trees isn't currently optimal).
 
 ## Accessing Data
@@ -491,9 +492,30 @@ table. So for instance if you have 5 nodes with no parent, they will be ordered 
 If your model represents many separate trees and you have a lot of records, this can cause performance
 problems, and doesn't really make much sense.
 
-You can disable this default behavior by passing `dont_order_roots: true` as an option to your delcaration:
+You can scope root nodes and sibling ordering by passing the `scope` option:
 
+```ruby
+class Block < ApplicationRecord
+  has_closure_tree order: 'sort_order', numeric_order: true, scope: :user_id
+end
 ```
+
+This ensures that:
+* Root nodes are scoped by the specified columns. You can filter roots like: ```Block.roots.where(user_id: 123)```
+* Sibling reordering only affects nodes with the same scope values
+* Children reordering respects the parent's scope values
+
+You can also scope by multiple columns:
+
+```ruby
+class Block < ApplicationRecord
+  has_closure_tree order: 'sort_order', numeric_order: true, scope: [:user_id, :group_id]
+end
+```
+
+Alternatively, you can disable root ordering entirely by passing `dont_order_roots: true`:
+
+```ruby
 has_closure_tree order: 'sort_order', numeric_order: true, dont_order_roots: true
 ```
 

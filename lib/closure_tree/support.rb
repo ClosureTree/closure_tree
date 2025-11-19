@@ -209,10 +209,6 @@ module ClosureTree
       end
     end
 
-    def apply_root_scope(scope)
-      scope
-    end
-
     def scope_values_from_instance(instance)
       return {} unless options[:scope] && instance
 

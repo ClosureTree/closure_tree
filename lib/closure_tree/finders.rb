@@ -72,9 +72,7 @@ module ClosureTree
       end
 
       def roots
-        base_scope = where(_ct.parent_column_name => nil)
-        scoped_roots = _ct.apply_root_scope(base_scope)
-        _ct.scope_with_order(scoped_roots)
+        _ct.scope_with_order(where(_ct.parent_column_name => nil))
       end
 
       # Returns an arbitrary node that has no parents.
