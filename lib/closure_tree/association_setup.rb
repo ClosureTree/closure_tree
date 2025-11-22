@@ -20,7 +20,7 @@ module ClosureTree
 
       has_many :children, *_ct.has_many_order_with_option, class_name: _ct.model_class.to_s,
                                                            foreign_key: _ct.parent_column_name,
-                                                           dependent: _ct.options[:dependent],
+                                                           dependent: _ct.options[:dependent] == :adopt ? :nullify : _ct.options[:dependent],
                                                            inverse_of: :parent do
         # We have to redefine hash_tree because the activerecord relation is already scoped to parent_id.
         def hash_tree(options = {})
