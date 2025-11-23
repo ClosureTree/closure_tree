@@ -35,9 +35,25 @@ module ClosureTree
       extend NumericOrderSupport.adapter_for_connection(connection)
     end
 
+    # Find the abstract base class for database connection
+    # This ensures hierarchy class uses the same database but doesn't inherit
+    # validations/callbacks from STI parent classes (issue #392)
+    def abstract_base_class
+      klass = model_class
+      while klass.superclass != ActiveRecord::Base
+        parent = klass.superclass
+        # Stop at abstract class (ApplicationRecord, MysqlRecord, etc.)
+        return parent if parent.abstract_class?
+        # Stop at connection boundary (handles non-abstract parents with custom connections)
+        return parent if parent.connection_specification_name != parent.superclass.connection_specification_name
+        klass = parent
+      end
+      ActiveRecord::Base
+    end
+
     def hierarchy_class_for_model
       parent_class = model_class.module_parent
-      hierarchy_class = parent_class.const_set(short_hierarchy_class_name, Class.new(model_class.superclass))
+      hierarchy_class = parent_class.const_set(short_hierarchy_class_name, Class.new(abstract_base_class))
       model_class_name = model_class.to_s
       hierarchy_class.class_eval do
         # Rails 8.1+ requires an implicit_order_column for models without a primary key
