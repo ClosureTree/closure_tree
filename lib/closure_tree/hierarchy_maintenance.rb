@@ -63,11 +63,13 @@ module ClosureTree
       grandparent_id = read_attribute(_ct.parent_column_name)
       children_ids = self.class.where(_ct.parent_column_name => id).pluck(:id)
 
-      children_ids.each do |child_id|
-        child = self.class.find(child_id)
-        child.update_column(_ct.parent_column_name, grandparent_id)
-        child.rebuild!
-      end
+      return if children_ids.empty?
+
+      # Update all children's parent_id in a single query
+      self.class.where(id: children_ids).update_all(_ct.parent_column_name => grandparent_id)
+
+      # Rebuild hierarchy for each child
+      self.class.where(id: children_ids).find_each(&:rebuild!)
     end
 
     def rebuild!(called_by_rebuild = false)
@@ -105,7 +107,7 @@ module ClosureTree
 
         hierarchy_table = hierarchy_class.arel_table
         delete_query = _ct.build_hierarchy_delete_query(hierarchy_table, id)
-        _ct.connection.execute(delete_query.to_sql)
+        _ct.connection.execute(_ct.to_sql_with_connection(delete_query))
       end
     end
 
