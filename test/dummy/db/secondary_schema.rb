@@ -29,4 +29,21 @@ ActiveRecord::Schema.define(version: 0) do
   add_index 'mysql_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
                                                                                 name: 'mysql_tag_anc_des_idx'
   add_index 'mysql_tag_hierarchies', [:descendant_id], name: 'mysql_tag_desc_idx'
+
+  create_table 'mysql_adoptable_tags', force: true do |t|
+    t.string   'name'
+    t.integer  'parent_id'
+    t.datetime 'created_at'
+    t.datetime 'updated_at'
+  end
+
+  create_table 'mysql_adoptable_tag_hierarchies', id: false, force: true do |t|
+    t.integer  'ancestor_id', null: false
+    t.integer  'descendant_id', null: false
+    t.integer  'generations', null: false
+  end
+
+  add_index 'mysql_adoptable_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
+                                                                                          name: 'mysql_adoptable_tag_anc_desc_idx'
+  add_index 'mysql_adoptable_tag_hierarchies', [:descendant_id], name: 'mysql_adoptable_tag_desc_idx'
 end

@@ -52,10 +52,24 @@ module ClosureTree
 
     def _ct_before_destroy
       _ct.with_advisory_lock do
+        adopt_children_to_grandparent if _ct.options[:dependent] == :adopt
         delete_hierarchy_references
         self.class.find(id).children.find_each(&:rebuild!) if _ct.options[:dependent] == :nullify
       end
       true # don't prevent destruction
+    end
+
+    def adopt_children_to_grandparent
+      grandparent_id = read_attribute(_ct.parent_column_name)
+      children_ids = self.class.where(_ct.parent_column_name => id).pluck(:id)
+
+      return if children_ids.empty?
+
+      # Update all children's parent_id in a single query
+      self.class.where(id: children_ids).update_all(_ct.parent_column_name => grandparent_id)
+
+      # Rebuild hierarchy for each child
+      self.class.where(id: children_ids).find_each(&:rebuild!)
     end
 
     def rebuild!(called_by_rebuild = false)
@@ -93,7 +107,7 @@ module ClosureTree
 
         hierarchy_table = hierarchy_class.arel_table
         delete_query = _ct.build_hierarchy_delete_query(hierarchy_table, id)
-        _ct.connection.execute(delete_query.to_sql)
+        _ct.connection.execute(_ct.to_sql_with_connection(delete_query))
       end
     end
 

@@ -220,4 +220,52 @@ ActiveRecord::Schema.define(version: 1) do
   add_index 'scoped_item_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
                                                                                  name: 'scoped_item_anc_desc_idx'
   add_index 'scoped_item_hierarchies', [:descendant_id], name: 'scoped_item_desc_idx'
+
+  create_table 'adoptable_tags' do |t|
+    t.string 'name'
+    t.references 'parent'
+    t.timestamps null: false
+  end
+
+  create_table 'adoptable_tag_hierarchies', id: false do |t|
+    t.references 'ancestor', null: false
+    t.references 'descendant', null: false
+    t.integer 'generations', null: false
+  end
+
+  add_index 'adoptable_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
+                                                                                    name: 'adoptable_tag_anc_desc_idx'
+  add_index 'adoptable_tag_hierarchies', [:descendant_id], name: 'adoptable_tag_desc_idx'
+
+  create_table 'mysql_adoptable_tags' do |t|
+    t.string 'name'
+    t.references 'parent'
+    t.timestamps null: false
+  end
+
+  create_table 'mysql_adoptable_tag_hierarchies', id: false do |t|
+    t.references 'ancestor', null: false
+    t.references 'descendant', null: false
+    t.integer 'generations', null: false
+  end
+
+  add_index 'mysql_adoptable_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
+                                                                                          name: 'mysql_adoptable_tag_anc_desc_idx'
+  add_index 'mysql_adoptable_tag_hierarchies', [:descendant_id], name: 'mysql_adoptable_tag_desc_idx'
+
+  create_table 'memory_adoptable_tags' do |t|
+    t.string 'name'
+    t.references 'parent'
+    t.timestamps null: false
+  end
+
+  create_table 'memory_adoptable_tag_hierarchies', id: false do |t|
+    t.references 'ancestor', null: false
+    t.references 'descendant', null: false
+    t.integer 'generations', null: false
+  end
+
+  add_index 'memory_adoptable_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
+                                                                                          name: 'memory_adoptable_tag_anc_desc_idx'
+  add_index 'memory_adoptable_tag_hierarchies', [:descendant_id], name: 'memory_adoptable_tag_desc_idx'
 end

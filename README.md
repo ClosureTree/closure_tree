@@ -314,6 +314,7 @@ When you include ```has_closure_tree``` in your model, you can provide a hash to
 * ```:hierarchy_table_name``` to override the hierarchy table name. This defaults to the singular name of the model + "_hierarchies", like ```tag_hierarchies```.
 * ```:dependent``` determines what happens when a node is destroyed. Defaults to ```nullify```.
     * ```:nullify``` will simply set the parent column to null. Each child node will be considered a "root" node. This is the default.
+    * ```:adopt``` will move children to their grandparent (parent's parent). If there is no grandparent, children become root nodes. This is useful for maintaining tree structure when removing intermediate nodes.
     * ```:delete_all``` will delete all descendant nodes (which circumvents the destroy hooks)
     * ```:destroy``` will destroy all descendant nodes (which runs the destroy hooks on each child node)
     * ```nil``` does nothing with descendant nodes
