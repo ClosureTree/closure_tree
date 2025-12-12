@@ -60,8 +60,8 @@ def run_adopt_tests_for(model_class)
       assert_equal p2, p3.parent
 
       hierarchy = model_class.hierarchy_class
-      initial_p2_hierarchies = hierarchy.where(ancestor_id: p2.id).count
-      initial_p3_hierarchies = hierarchy.where(descendant_id: p3.id).count
+      hierarchy.where(ancestor_id: p2.id).count
+      hierarchy.where(descendant_id: p3.id).count
 
       # Destroy p1 (root node)
       p1.destroy
@@ -210,7 +210,7 @@ def run_adopt_tests_for(model_class)
       leaf = model_class.create!(name: 'leaf', parent: p2)
 
       hierarchy = model_class.hierarchy_class
-      initial_count = hierarchy.count
+      hierarchy.count
 
       # Destroy leaf (has no children)
       leaf.destroy
@@ -255,16 +255,10 @@ def run_adopt_tests_for(model_class)
 end
 
 # Test with PostgreSQL
-if postgresql?(ApplicationRecord.connection)
-  run_adopt_tests_for(AdoptableTag)
-end
+run_adopt_tests_for(AdoptableTag) if postgresql?(ApplicationRecord.connection)
 
 # Test with MySQL
-if mysql?(MysqlRecord.connection)
-  run_adopt_tests_for(MysqlAdoptableTag)
-end
+run_adopt_tests_for(MysqlAdoptableTag) if mysql?(MysqlRecord.connection)
 
 # Test with SQLite
-if sqlite?(SqliteRecord.connection)
-  run_adopt_tests_for(MemoryAdoptableTag)
-end
+run_adopt_tests_for(MemoryAdoptableTag) if sqlite?(SqliteRecord.connection)
