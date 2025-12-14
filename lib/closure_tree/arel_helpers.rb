@@ -84,7 +84,7 @@ module ClosureTree
     # This ensures proper quoting for the specific database adapter (MySQL uses backticks, PostgreSQL uses double quotes)
     def to_sql_with_connection(arel_manager)
       collector = Arel::Collectors::SQLString.new
-      visitor = connection.send(:arel_visitor)
+      visitor = connection.visitor
       visitor.accept(arel_manager.ast, collector).value
     end
   end
