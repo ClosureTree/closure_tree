@@ -60,8 +60,6 @@ def run_adopt_tests_for(model_class)
       assert_equal p2, p3.parent
 
       hierarchy = model_class.hierarchy_class
-      hierarchy.where(ancestor_id: p2.id).count
-      hierarchy.where(descendant_id: p3.id).count
 
       # Destroy p1 (root node)
       p1.destroy
@@ -210,7 +208,6 @@ def run_adopt_tests_for(model_class)
       leaf = model_class.create!(name: 'leaf', parent: p2)
 
       hierarchy = model_class.hierarchy_class
-      hierarchy.count
 
       # Destroy leaf (has no children)
       leaf.destroy

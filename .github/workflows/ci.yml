@@ -11,6 +11,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      RAILS_VERSION: ${{ matrix.rails }}
+      RAILS_ENV: test
+      DATABASE_URL_PG: postgres://postgres:postgres@127.0.0.1:5432/closure_tree_test
+      DATABASE_URL_MYSQL: mysql2://root:root@127.0.0.1:3306/closure_tree_test
+      DATABASE_URL_SQLITE3: 'sqlite3::memory:'
+      WITH_ADVISORY_LOCK_PREFIX: ${{ github.run_id }}
 
     services:
       postgres:
@@ -46,6 +53,7 @@ jobs:
         ruby:
           - '3.4'
         rails:
+          - '7.2'
           - '8.0'
           - '8.1.1'
 
@@ -59,26 +67,12 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
           rubygems: latest
-        env:
-          RAILS_VERSION: ${{ matrix.rails }}
-          BUNDLE_GEMFILE: ${{ github.workspace }}/Gemfile
 
       - name: Setup databases
-        env:
-          RAILS_ENV: test
-          DATABASE_URL_PG: postgres://postgres:postgres@127.0.0.1:5432/closure_tree_test
-          DATABASE_URL_MYSQL: mysql2://root:root@127.0.0.1:3306/closure_tree_test
-          DATABASE_URL_SQLITE3: 'sqlite3::memory:'
         run: |
           cd test/dummy
           bundle exec rails db:setup_all
 
       - name: Run tests
-        env:
-          RAILS_ENV: test
-          DATABASE_URL_PG: postgres://postgres:postgres@127.0.0.1:5432/closure_tree_test
-          DATABASE_URL_MYSQL: mysql2://root:root@127.0.0.1:3306/closure_tree_test
-          DATABASE_URL_SQLITE3: 'sqlite3::memory:'
-          WITH_ADVISORY_LOCK_PREFIX: ${{ github.run_id }}
         run: |
           bundle exec rake test
