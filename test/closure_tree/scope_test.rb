@@ -207,4 +207,31 @@ class ScopeTest < ActiveSupport::TestCase
     assert_equal 1, root3.order_value
     assert_equal 0, root2.order_value
   end
+
+  def test_build_scope_where_clause_with_nil_value_pg
+    support = ScopedItem._ct
+    scope_conditions = { user_id: nil, group_id: 789 }
+    clause = support.build_scope_where_clause(scope_conditions)
+
+    assert_includes clause, 'IS NULL'
+    assert_includes clause, '789'
+  end
+
+  def test_build_scope_where_clause_with_nil_value_mysql
+    support = SecondaryTag._ct
+    scope_conditions = { user_id: nil, group_id: 123 }
+    clause = support.build_scope_where_clause(scope_conditions)
+
+    assert_includes clause, 'IS NULL'
+    assert_includes clause, '123'
+  end
+
+  def test_build_scope_where_clause_with_nil_value_sqlite
+    support = MemoryTag._ct
+    scope_conditions = { user_id: nil, group_id: 456 }
+    clause = support.build_scope_where_clause(scope_conditions)
+
+    assert_includes clause, 'IS NULL'
+    assert_includes clause, '456'
+  end
 end
