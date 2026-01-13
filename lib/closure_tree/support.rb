@@ -238,12 +238,12 @@ module ClosureTree
       case scope_option
       when Symbol
         value = instance.read_attribute(scope_option)
-        scope_hash[scope_option] = value unless value.nil?
+        scope_hash[scope_option] = value
       when Array
         scope_option.each do |item|
           if item.is_a?(Symbol)
             value = instance.read_attribute(item)
-            scope_hash[item] = value unless value.nil?
+            scope_hash[item] = value
           end
         end
       end
