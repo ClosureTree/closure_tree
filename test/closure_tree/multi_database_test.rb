@@ -46,13 +46,13 @@ class MultiDatabaseTest < ActiveSupport::TestCase
   end
 
   def test_mysql_with_advisory_lock
-    skip 'MySQL not configured' unless mysql?(MysqlRecord.connection)
+    skip 'MySQL not configured' unless mysql?(SecondaryRecord.connection)
 
-    tag = MysqlTag.create!(name: 'MySQL Root')
+    tag = SecondaryTag.create!(name: 'MySQL Root')
     child = nil
 
     # Advisory locks should work on MySQL
-    MysqlTag.with_advisory_lock('test_lock') do
+    SecondaryTag.with_advisory_lock('test_lock') do
       child = tag.children.create!(name: 'MySQL Child')
     end
 
@@ -80,15 +80,15 @@ class MultiDatabaseTest < ActiveSupport::TestCase
       pg_tag.children.create!(name: 'PG Child 1')
     end
 
-    mysql_tag = MysqlTag.create!(name: 'MySQL Root')
+    mysql_tag = SecondaryTag.create!(name: 'MySQL Root')
     sqlite_tag = MemoryTag.create!(name: 'SQLite Root')
 
     # Test concurrent operations only for MySQL and SQLite
     threads = []
 
     threads << Thread.new do
-      MysqlRecord.connection_pool.with_connection do
-        tag = MysqlTag.find(mysql_tag.id)
+      SecondaryRecord.connection_pool.with_connection do
+        tag = SecondaryTag.find(mysql_tag.id)
         tag.children.create!(name: 'MySQL Child 1')
       end
     end

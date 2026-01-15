@@ -36,7 +36,7 @@ class ActiveSupport::TestCase
   setup do
     # Configure DatabaseCleaner for each database connection
     DatabaseCleaner[:active_record, db: ApplicationRecord].strategy = :truncation
-    DatabaseCleaner[:active_record, db: MysqlRecord].strategy = :truncation
+    DatabaseCleaner[:active_record, db: SecondaryRecord].strategy = :truncation
     DatabaseCleaner[:active_record, db: SqliteRecord].strategy = :truncation
 
     DatabaseCleaner.start
