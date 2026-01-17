@@ -13,22 +13,22 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema.define(version: 0) do
-  create_table 'sqlite_tags', force: true do |t|
+  create_table 'lite_tags', force: true do |t|
     t.string   'name'
     t.integer  'parent_id'
     t.datetime 'created_at'
     t.datetime 'updated_at'
   end
 
-  create_table 'sqlite_tag_hierarchies', id: false, force: true do |t|
+  create_table 'lite_tag_hierarchies', id: false, force: true do |t|
     t.integer  'ancestor_id', null: false
     t.integer  'descendant_id', null: false
     t.integer  'generations', null: false
   end
 
-  add_index 'sqlite_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
-                                                                                 name: 'sqlite_tag_anc_desc_idx'
-  add_index 'sqlite_tag_hierarchies', [:descendant_id], name: 'sqlite_tag_desc_idx'
+  add_index 'lite_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
+                                                                               name: 'lite_tag_anc_desc_idx'
+  add_index 'lite_tag_hierarchies', [:descendant_id], name: 'lite_tag_desc_idx'
 
   create_table 'memory_adoptable_tags', force: true do |t|
     t.string   'name'

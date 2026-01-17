@@ -6,27 +6,27 @@ class MultiDatabaseTest < ActiveSupport::TestCase
   def setup
     super
     # Create memory tables - always recreate for clean state
-    SqliteRecord.connection.create_table :memory_tags, force: true do |t|
+    LiteRecord.connection.create_table :memory_tags, force: true do |t|
       t.string :name
       t.integer :parent_id
       t.timestamps
     end
 
-    SqliteRecord.connection.create_table :memory_tag_hierarchies, id: false, force: true do |t|
+    LiteRecord.connection.create_table :memory_tag_hierarchies, id: false, force: true do |t|
       t.integer :ancestor_id, null: false
       t.integer :descendant_id, null: false
       t.integer :generations, null: false
     end
 
-    SqliteRecord.connection.add_index :memory_tag_hierarchies, %i[ancestor_id descendant_id generations],
+    LiteRecord.connection.add_index :memory_tag_hierarchies, %i[ancestor_id descendant_id generations],
                                       unique: true, name: 'memory_tag_anc_desc_idx'
-    SqliteRecord.connection.add_index :memory_tag_hierarchies, [:descendant_id], name: 'memory_tag_desc_idx'
+    LiteRecord.connection.add_index :memory_tag_hierarchies, [:descendant_id], name: 'memory_tag_desc_idx'
   end
 
   def teardown
     # Clean up SQLite tables after each test
-    SqliteRecord.connection.drop_table :memory_tag_hierarchies, if_exists: true
-    SqliteRecord.connection.drop_table :memory_tags, if_exists: true
+    LiteRecord.connection.drop_table :memory_tag_hierarchies, if_exists: true
+    LiteRecord.connection.drop_table :memory_tags, if_exists: true
     super
   end
 
@@ -46,13 +46,13 @@ class MultiDatabaseTest < ActiveSupport::TestCase
   end
 
   def test_mysql_with_advisory_lock
-    skip 'MySQL not configured' unless mysql?(MysqlRecord.connection)
+    skip 'MySQL not configured' unless mysql?(SecondaryRecord.connection)
 
-    tag = MysqlTag.create!(name: 'MySQL Root')
+    tag = SecondaryTag.create!(name: 'MySQL Root')
     child = nil
 
     # Advisory locks should work on MySQL
-    MysqlTag.with_advisory_lock('test_lock') do
+    SecondaryTag.with_advisory_lock('test_lock') do
       child = tag.children.create!(name: 'MySQL Child')
     end
 
@@ -80,21 +80,21 @@ class MultiDatabaseTest < ActiveSupport::TestCase
       pg_tag.children.create!(name: 'PG Child 1')
     end
 
-    mysql_tag = MysqlTag.create!(name: 'MySQL Root')
+    mysql_tag = SecondaryTag.create!(name: 'MySQL Root')
     sqlite_tag = MemoryTag.create!(name: 'SQLite Root')
 
     # Test concurrent operations only for MySQL and SQLite
     threads = []
 
     threads << Thread.new do
-      MysqlRecord.connection_pool.with_connection do
-        tag = MysqlTag.find(mysql_tag.id)
+      SecondaryRecord.connection_pool.with_connection do
+        tag = SecondaryTag.find(mysql_tag.id)
         tag.children.create!(name: 'MySQL Child 1')
       end
     end
 
     threads << Thread.new do
-      SqliteRecord.connection_pool.with_connection do
+      LiteRecord.connection_pool.with_connection do
         tag = MemoryTag.find(sqlite_tag.id)
         tag.children.create!(name: 'SQLite Child 1')
       end

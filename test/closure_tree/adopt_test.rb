@@ -255,7 +255,7 @@ end
 run_adopt_tests_for(AdoptableTag) if postgresql?(ApplicationRecord.connection)
 
 # Test with MySQL
-run_adopt_tests_for(MysqlAdoptableTag) if mysql?(MysqlRecord.connection)
+run_adopt_tests_for(SecondaryAdoptableTag) if mysql?(SecondaryRecord.connection)
 
 # Test with SQLite
-run_adopt_tests_for(MemoryAdoptableTag) if sqlite?(SqliteRecord.connection)
+run_adopt_tests_for(MemoryAdoptableTag) if sqlite?(LiteRecord.connection)

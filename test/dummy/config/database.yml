@@ -11,7 +11,7 @@ test:
     url: "<%= ENV['DATABASE_URL_MYSQL'] || 'mysql2://closure_tree:closure_tree_pass@127.0.0.1:3367/closure_tree_test' %>"
     properties:
       allowPublicKeyRetrieval: true
-  sqlite:
+  lite:
     <<: *default
     adapter: sqlite3
     database: "test/dummy/db/test.sqlite3"

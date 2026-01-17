@@ -170,37 +170,37 @@ ActiveRecord::Schema.define(version: 1) do
   add_foreign_key(:tag_hierarchies, :tags, column: 'descendant_id', on_delete: :cascade)
 
   # Multi-database test models
-  create_table 'mysql_tags' do |t|
+  create_table 'secondary_tags' do |t|
     t.string 'name'
     t.references 'parent'
     t.timestamps null: false
   end
 
-  create_table 'mysql_tag_hierarchies', id: false do |t|
+  create_table 'secondary_tag_hierarchies', id: false do |t|
     t.references 'ancestor', null: false
     t.references 'descendant', null: false
     t.integer 'generations', null: false
   end
 
-  add_index 'mysql_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
-                                                                                name: 'mysql_tag_anc_desc_idx'
-  add_index 'mysql_tag_hierarchies', [:descendant_id], name: 'mysql_tag_desc_idx'
+  add_index 'secondary_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
+                                                                                    name: 'secondary_tag_anc_desc_idx'
+  add_index 'secondary_tag_hierarchies', [:descendant_id], name: 'secondary_tag_desc_idx'
 
-  create_table 'sqlite_tags' do |t|
+  create_table 'lite_tags' do |t|
     t.string 'name'
     t.references 'parent'
     t.timestamps null: false
   end
 
-  create_table 'sqlite_tag_hierarchies', id: false do |t|
+  create_table 'lite_tag_hierarchies', id: false do |t|
     t.references 'ancestor', null: false
     t.references 'descendant', null: false
     t.integer 'generations', null: false
   end
 
-  add_index 'sqlite_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
-                                                                                 name: 'sqlite_tag_anc_desc_idx'
-  add_index 'sqlite_tag_hierarchies', [:descendant_id], name: 'sqlite_tag_desc_idx'
+  add_index 'lite_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
+                                                                               name: 'lite_tag_anc_desc_idx'
+  add_index 'lite_tag_hierarchies', [:descendant_id], name: 'lite_tag_desc_idx'
 
   create_table 'scoped_items' do |t|
     t.string 'name'
@@ -237,21 +237,21 @@ ActiveRecord::Schema.define(version: 1) do
                                                                                     name: 'adoptable_tag_anc_desc_idx'
   add_index 'adoptable_tag_hierarchies', [:descendant_id], name: 'adoptable_tag_desc_idx'
 
-  create_table 'mysql_adoptable_tags' do |t|
+  create_table 'secondary_adoptable_tags' do |t|
     t.string 'name'
     t.references 'parent'
     t.timestamps null: false
   end
 
-  create_table 'mysql_adoptable_tag_hierarchies', id: false do |t|
+  create_table 'secondary_adoptable_tag_hierarchies', id: false do |t|
     t.references 'ancestor', null: false
     t.references 'descendant', null: false
     t.integer 'generations', null: false
   end
 
-  add_index 'mysql_adoptable_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
-                                                                                          name: 'mysql_adoptable_tag_anc_desc_idx'
-  add_index 'mysql_adoptable_tag_hierarchies', [:descendant_id], name: 'mysql_adoptable_tag_desc_idx'
+  add_index 'secondary_adoptable_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
+                                                                                              name: 'secondary_adoptable_tag_anc_desc_idx'
+  add_index 'secondary_adoptable_tag_hierarchies', [:descendant_id], name: 'secondary_adoptable_tag_desc_idx'
 
   create_table 'memory_adoptable_tags' do |t|
     t.string 'name'

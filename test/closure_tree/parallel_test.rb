@@ -67,9 +67,9 @@ describe 'Concurrent creation' do
     # Clean up SQLite database file if it exists
     db_file = 'test/dummy/db/test.sqlite3'
     if File.exist?(db_file)
-      SqliteRecord.connection.disconnect!
+      LiteRecord.connection.disconnect!
       File.delete(db_file)
-      SqliteRecord.connection.reconnect!
+      LiteRecord.connection.reconnect!
     end
     Tag.delete_all
     Tag.hierarchy_class.delete_all

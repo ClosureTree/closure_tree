@@ -30,7 +30,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'zeitwerk', '~> 2.7'
 
   gem.add_development_dependency 'database_cleaner'
-  gem.add_development_dependency 'minitest'
+  gem.add_development_dependency 'minitest', '~> 5.0'
   gem.add_development_dependency 'minitest-reporters'
   gem.add_development_dependency 'parallel'
   gem.add_development_dependency 'simplecov'

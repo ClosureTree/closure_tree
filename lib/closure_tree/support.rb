@@ -42,7 +42,7 @@ module ClosureTree
       klass = model_class
       while klass.superclass != ActiveRecord::Base
         parent = klass.superclass
-        # Stop at abstract class (ApplicationRecord, MysqlRecord, etc.)
+        # Stop at abstract class (ApplicationRecord, SecondaryRecord, etc.)
         return parent if parent.abstract_class?
         # Stop at connection boundary (handles non-abstract parents with custom connections)
         return parent if parent.connection_specification_name != parent.superclass.connection_specification_name
