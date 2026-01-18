@@ -175,5 +175,63 @@ class ScopeTest < ActiveSupport::TestCase
     assert_equal [:user_id], ScopedItem._ct.scope_columns
     assert_equal [:user_id, :group_id], MultiScopedItem._ct.scope_columns
   end
-end
 
+  def test_scope_values_from_instance_with_nil_value_symbol_scope
+    instance = ScopedItem.new(user_id: nil)
+    scope_values = instance._ct.scope_values_from_instance(instance)
+    assert_equal({ user_id: nil }, scope_values)
+  end
+
+  def test_scope_values_from_instance_with_nil_value_array_scope
+    instance = MultiScopedItem.new(user_id: nil, group_id: nil)
+    scope_values = instance._ct.scope_values_from_instance(instance)
+    assert_equal({ user_id: nil, group_id: nil }, scope_values)
+  end
+
+  def test_ordering_with_nil_scope_values_symbol_scope
+    root1 = ScopedItem.create!(name: 'root1', user_id: nil)
+    root2 = ScopedItem.create!(name: 'root2', user_id: 1)
+    root3 = ScopedItem.create!(name: 'root3', user_id: nil)
+
+    assert_equal 0, root1.order_value
+    assert_equal 1, root3.order_value
+    assert_equal 0, root2.order_value
+  end
+
+  def test_ordering_with_nil_scope_values_array_scope
+    root1 = MultiScopedItem.create!(name: 'root1', user_id: nil, group_id: nil)
+    root2 = MultiScopedItem.create!(name: 'root2', user_id: 1, group_id: 1)
+    root3 = MultiScopedItem.create!(name: 'root3', user_id: nil, group_id: nil)
+
+    assert_equal 0, root1.order_value
+    assert_equal 1, root3.order_value
+    assert_equal 0, root2.order_value
+  end
+
+  def test_build_scope_where_clause_with_nil_value_pg
+    support = ScopedItem._ct
+    scope_conditions = { user_id: nil, group_id: 789 }
+    clause = support.build_scope_where_clause(scope_conditions)
+
+    assert_includes clause, 'IS NULL'
+    assert_includes clause, '789'
+  end
+
+  def test_build_scope_where_clause_with_nil_value_mysql
+    support = SecondaryTag._ct
+    scope_conditions = { user_id: nil, group_id: 123 }
+    clause = support.build_scope_where_clause(scope_conditions)
+
+    assert_includes clause, 'IS NULL'
+    assert_includes clause, '123'
+  end
+
+  def test_build_scope_where_clause_with_nil_value_sqlite
+    support = MemoryTag._ct
+    scope_conditions = { user_id: nil, group_id: 456 }
+    clause = support.build_scope_where_clause(scope_conditions)
+
+    assert_includes clause, 'IS NULL'
+    assert_includes clause, '456'
+  end
+end
