@@ -52,10 +52,12 @@ jobs:
       matrix:
         ruby:
           - '3.4'
+          - '4.0'
         rails:
           - '7.2'
           - '8.0'
           - '8.1.1'
+          - 'edge'
 
     steps:
       - name: Checkout
