@@ -1,5 +1,28 @@
 # Changelog
 
+## [9.5.0](https://github.com/ClosureTree/closure_tree/compare/closure_tree-v9.3.0...closure_tree/v9.5.0) (2026-01-21)
+
+
+### Features
+
+* Add `dependent: :adopt` option for `has_closure_tree` ([#471](https://github.com/ClosureTree/closure_tree/issues/471)) ([d47d7c9](https://github.com/ClosureTree/closure_tree/commit/d47d7c93b59327112a68a7f8454a278877b6ba77))
+* add PostgreSQL schema-qualified table name support ([#462](https://github.com/ClosureTree/closure_tree/issues/462)) ([5f9006c](https://github.com/ClosureTree/closure_tree/commit/5f9006cece95a76f665cb50c2615317e3fa48586))
+* Add runtime advisory lock name customization and multi-database documentation ([#454](https://github.com/ClosureTree/closure_tree/issues/454)) ([d6ffd73](https://github.com/ClosureTree/closure_tree/commit/d6ffd7381e25a28f7a4742bfa2d9c893f0115395))
+* migrate from ActiveSupport::Autoload to Zeitwerk ([#457](https://github.com/ClosureTree/closure_tree/issues/457)) ([d18e80c](https://github.com/ClosureTree/closure_tree/commit/d18e80cdbd4f3510377363bc7b5166f0cc1b0a6f))
+* rewrite with clean api ([#451](https://github.com/ClosureTree/closure_tree/issues/451)) ([f56f2e1](https://github.com/ClosureTree/closure_tree/commit/f56f2e1a3490bb8a099cea8f80b676945fce1c2e))
+* use with_advisory_lock that support rails 8.2 ([#479](https://github.com/ClosureTree/closure_tree/issues/479)) ([bca6231](https://github.com/ClosureTree/closure_tree/commit/bca623168d3255f57e186a3bdcd39e00d38e2a7c))
+
+
+### Bug Fixes
+
+* add implicit_order_column for Rails 8.1+ compatibility ([#464](https://github.com/ClosureTree/closure_tree/issues/464)) ([f384303](https://github.com/ClosureTree/closure_tree/commit/f38430334a79ea15d236f9212118dcb5e4530746))
+* configure release-please to recognize v8.0.0 release ([#455](https://github.com/ClosureTree/closure_tree/issues/455)) ([fc34f21](https://github.com/ClosureTree/closure_tree/commit/fc34f2148570afd83608b07a3f5282e5fd475783))
+* eager loading of hierarchies by defining the primary key ([#465](https://github.com/ClosureTree/closure_tree/issues/465)) ([8c7e490](https://github.com/ClosureTree/closure_tree/commit/8c7e490ff89239e44aee71577288bff0e177a8d6))
+* hierarchy class inheritance to avoid STI validations ([#392](https://github.com/ClosureTree/closure_tree/issues/392)) ([#472](https://github.com/ClosureTree/closure_tree/issues/472)) ([73b07a6](https://github.com/ClosureTree/closure_tree/commit/73b07a6cfeec226af16f51ce7c9c6c1d6d921b3d))
+* improve api usage ([#475](https://github.com/ClosureTree/closure_tree/issues/475)) ([cde4d29](https://github.com/ClosureTree/closure_tree/commit/cde4d292236b4267ac4c0be2e2b21092a8b6298c))
+* nil scope values being excluded from scope filtering ([#476](https://github.com/ClosureTree/closure_tree/issues/476)) ([f45880e](https://github.com/ClosureTree/closure_tree/commit/f45880e9765bfa3c1f171b7386bf5a5584208ad7))
+* restore proper deprecation for database_less configuration ([#459](https://github.com/ClosureTree/closure_tree/issues/459)) ([de8b402](https://github.com/ClosureTree/closure_tree/commit/de8b40233d3de5243afce7ec9de9ad26c2eee181))
+
 ## [9.3.0](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.2.0...closure_tree/v9.3.0) (2025-11-19)
 
 
