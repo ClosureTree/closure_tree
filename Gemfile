@@ -5,7 +5,6 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'dotenv'
-gem 'with_advisory_lock', '>= 7'
 
 rails_version = ENV['RAILS_VERSION'] || '8.0'
 if rails_version == 'edge'
