@@ -1,4 +1,29 @@
-# Closure Tree
+# Closure Tree (OpsLevel Fork)
+
+This is the OpsLevel fork of [closure_tree](https://github.com/ClosureTree/closure_tree), based on upstream v9.5.0.
+
+## Fork-Specific Changes
+
+This fork adds one enhancement to the advisory lock behavior:
+
+### Advisory Lock Timeout with Error on Failure
+
+- Adds `advisory_lock_timeout_seconds` option (default: 15 seconds)
+- Raises an error when the advisory lock cannot be acquired within the timeout period
+
+The upstream version has no timeout and hangs forever if lock acquisition fails. This fork uses `with_advisory_lock!` (with bang) which raises `WithAdvisoryLock::FailedToAcquireLock` when the lock cannot be obtained, providing explicit failure behavior for lock contention issues.
+
+```ruby
+class Tag < ApplicationRecord
+  # Use default 15 second timeout
+  has_closure_tree
+
+  # Or customize the timeout
+  has_closure_tree advisory_lock_timeout_seconds: 30
+end
+```
+
+---
 
 ### Closure_tree lets your ActiveRecord models act as nodes in a [tree data structure](http://en.wikipedia.org/wiki/Tree_%28data_structure%29)
 

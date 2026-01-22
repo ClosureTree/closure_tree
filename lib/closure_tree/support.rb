@@ -19,6 +19,7 @@ module ClosureTree
         dependent: :nullify, # or :destroy, :delete_all, or :adopt -- see the README
         name_column: 'name',
         with_advisory_lock: true, # This will be overridden by adapter support
+        advisory_lock_timeout_seconds: 15,
         numeric_order: false
       }.merge(options)
       raise ArgumentError, "name_column can't be 'path'" if options[:name_column] == 'path'
@@ -153,8 +154,8 @@ module ClosureTree
     end
 
     def with_advisory_lock(&block)
-      if options[:with_advisory_lock] && connection.supports_advisory_locks? && model_class.respond_to?(:with_advisory_lock)
-        model_class.with_advisory_lock(advisory_lock_name) do
+      if options[:with_advisory_lock] && connection.supports_advisory_locks? && model_class.respond_to?(:with_advisory_lock!)
+        model_class.with_advisory_lock!(advisory_lock_name, advisory_lock_options) do
           transaction(&block)
         end
       else
