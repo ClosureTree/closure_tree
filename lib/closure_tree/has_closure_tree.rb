@@ -15,6 +15,7 @@ module ClosureTree
         :touch,
         :with_advisory_lock,
         :advisory_lock_name,
+        :advisory_lock_timeout_seconds,
         :scope
       )
 

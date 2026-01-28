@@ -1,29 +1,4 @@
-# Closure Tree (OpsLevel Fork)
-
-This is the OpsLevel fork of [closure_tree](https://github.com/ClosureTree/closure_tree), based on upstream v9.5.0.
-
-## Fork-Specific Changes
-
-This fork adds one enhancement to the advisory lock behavior:
-
-### Advisory Lock Timeout with Error on Failure
-
-- Adds `advisory_lock_timeout_seconds` option (default: 15 seconds)
-- Raises an error when the advisory lock cannot be acquired within the timeout period
-
-The upstream version has no timeout and hangs forever if lock acquisition fails. This fork uses `with_advisory_lock!` (with bang) which raises `WithAdvisoryLock::FailedToAcquireLock` when the lock cannot be obtained, providing explicit failure behavior for lock contention issues.
-
-```ruby
-class Tag < ApplicationRecord
-  # Use default 15 second timeout
-  has_closure_tree
-
-  # Or customize the timeout
-  has_closure_tree advisory_lock_timeout_seconds: 30
-end
-```
-
----
+# Closure Tree
 
 ### Closure_tree lets your ActiveRecord models act as nodes in a [tree data structure](http://en.wikipedia.org/wiki/Tree_%28data_structure%29)
 
@@ -347,6 +322,7 @@ When you include ```has_closure_tree``` in your model, you can provide a hash to
 * ```:order``` used to set up [deterministic ordering](#deterministic-ordering)
 * ```:scope``` restricts root nodes and sibling ordering to specific columns. Can be a single symbol or an array of symbols. Example: ```scope: :user_id``` or ```scope: [:user_id, :group_id]```. This ensures that root nodes and siblings are scoped correctly when reordering. See [Ordering Roots](#ordering-roots) for more details.
 * ```:touch``` delegates to the `belongs_to` annotation for the parent, so `touch`ing cascades to all children (the performance of this for deep trees isn't currently optimal).
+* ```:advisory_lock_timeout_seconds``` Raises an error when the advisory lock cannot be acquired within the timeout period
 
 ## Accessing Data
 
