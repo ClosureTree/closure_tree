@@ -137,7 +137,7 @@ describe 'Concurrent creation' do
     skip('unsupported') unless run_parallel_tests?
 
     # disable with_advisory_lock:
-    Tag.stub(:with_advisory_lock, ->(_lock_name, &block) { block.call }) do
+    Tag.stub(:with_advisory_lock, ->(_lock_name, _lock_options, &block) { block.call }) do
       run_workers
       # duplication from at least one iteration:
       assert Tag.where(name: @names).size > @iterations
