@@ -130,11 +130,16 @@ module ClosureTree
     end
 
     def prepend_child(child_node)
+      prior_parent_id = child_node._ct_parent_id
       child_node.order_value = -1
       child_node.parent = self
       child_node._ct_skip_sort_order_maintenance!
       if child_node.save
         _ct_reorder_children
+        if prior_parent_id != _ct_id
+          scope_conditions = _ct.scope_values_from_instance(child_node)
+          _ct.reorder_with_parent_id(prior_parent_id, nil, scope_conditions)
+        end
         child_node.reload
       else
         child_node
