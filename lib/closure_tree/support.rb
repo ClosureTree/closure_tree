@@ -158,9 +158,8 @@ module ClosureTree
     end
 
     def with_advisory_lock(&block)
-      if options[:with_advisory_lock] && connection.supports_advisory_locks? && model_class.respond_to?(:with_advisory_lock!)
-        lock_method = options[:advisory_lock_timeout_seconds].present? ? :with_advisory_lock! : :with_advisory_lock
-
+      lock_method = options[:advisory_lock_timeout_seconds].present? ? :with_advisory_lock! : :with_advisory_lock
+      if options[:with_advisory_lock] && connection.supports_advisory_locks? && model_class.respond_to?(lock_method)
         model_class.public_send(lock_method, advisory_lock_name, advisory_lock_options) do
           transaction(&block)
         end
