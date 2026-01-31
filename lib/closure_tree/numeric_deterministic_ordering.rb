@@ -30,6 +30,15 @@ module ClosureTree
       _ct.reorder_with_parent_id(_ct_id, minimum_sort_order_value, scope_conditions)
     end
 
+    def _ct_reorder_prior_parent_or_roots(prior_parent, was_root)
+      if prior_parent
+        prior_parent._ct_reorder_children
+      elsif was_root && !_ct.dont_order_roots
+        scope_conditions = _ct.scope_values_from_instance(self)
+        _ct.reorder_with_parent_id(nil, nil, scope_conditions)
+      end
+    end
+
     def self_and_descendants_preordered
       # TODO: raise NotImplementedError if sort_order is not numeric and not null?
       hierarchy_table = self.class.hierarchy_class.arel_table
@@ -130,11 +139,14 @@ module ClosureTree
     end
 
     def prepend_child(child_node)
+      prior_parent = child_node.parent
+      was_root = prior_parent.nil? && child_node.persisted?
       child_node.order_value = -1
       child_node.parent = self
       child_node._ct_skip_sort_order_maintenance!
       if child_node.save
         _ct_reorder_children
+        _ct_reorder_prior_parent_or_roots(prior_parent, was_root)
         child_node.reload
       else
         child_node
@@ -161,6 +173,7 @@ module ClosureTree
 
       _ct.with_advisory_lock do
         prior_sibling_parent = sibling.parent
+        sibling_was_root = prior_sibling_parent.nil? && sibling.persisted?
         reorder_from_value = if prior_sibling_parent == parent
                                [order_value, sibling.order_value].compact.min
                              else
@@ -184,7 +197,7 @@ module ClosureTree
           sibling.update_order_value(self_ov)
         end
 
-        prior_sibling_parent.try(:_ct_reorder_children) if prior_sibling_parent != parent
+        sibling._ct_reorder_prior_parent_or_roots(prior_sibling_parent, sibling_was_root) if prior_sibling_parent != parent
         sibling
       end
     end
