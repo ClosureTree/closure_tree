@@ -1,43 +1,49 @@
+# frozen_string_literal: true
+
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
 #
-# This file is the source Rails uses to define your schema when running `bin/rails
-# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
+# This file is the source Rails uses to define your schema when running `rails
+# db:schema:load`. When creating a new database, `rails db:schema:load` tends to
 # be faster and is potentially less error prone than running all of your
 # migrations from scratch. Old migrations may fail to apply correctly if those
 # migrations use external dependencies or application code.
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 0) do
-  create_table "secondary_adoptable_tag_hierarchies", id: false, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.integer "ancestor_id", null: false
-    t.integer "descendant_id", null: false
-    t.integer "generations", null: false
-    t.index ["ancestor_id", "descendant_id", "generations"], name: "secondary_adoptable_tag_anc_desc_idx", unique: true
-    t.index ["descendant_id"], name: "secondary_adoptable_tag_desc_idx"
+ActiveRecord::Schema.define(version: 0) do
+  create_table 'secondary_tags', force: true do |t|
+    t.string   'name'
+    t.integer  'parent_id'
+    t.datetime 'created_at'
+    t.datetime 'updated_at'
   end
 
-  create_table "secondary_adoptable_tags", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.datetime "created_at"
-    t.string "name"
-    t.integer "parent_id"
-    t.datetime "updated_at"
+  create_table 'secondary_tag_hierarchies', id: false, force: true do |t|
+    t.integer  'ancestor_id', null: false
+    t.integer  'descendant_id', null: false
+    t.integer  'generations', null: false
   end
 
-  create_table "secondary_tag_hierarchies", id: false, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.integer "ancestor_id", null: false
-    t.integer "descendant_id", null: false
-    t.integer "generations", null: false
-    t.index ["ancestor_id", "descendant_id", "generations"], name: "secondary_tag_anc_des_idx", unique: true
-    t.index ["descendant_id"], name: "secondary_tag_desc_idx"
+  add_index 'secondary_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
+                                                                                    name: 'secondary_tag_anc_des_idx'
+  add_index 'secondary_tag_hierarchies', [:descendant_id], name: 'secondary_tag_desc_idx'
+
+  create_table 'secondary_adoptable_tags', force: true do |t|
+    t.string   'name'
+    t.integer  'parent_id'
+    t.datetime 'created_at'
+    t.datetime 'updated_at'
   end
 
-  create_table "secondary_tags", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.datetime "created_at"
-    t.string "name"
-    t.integer "parent_id"
-    t.datetime "updated_at"
+  create_table 'secondary_adoptable_tag_hierarchies', id: false, force: true do |t|
+    t.integer  'ancestor_id', null: false
+    t.integer  'descendant_id', null: false
+    t.integer  'generations', null: false
   end
+
+  add_index 'secondary_adoptable_tag_hierarchies', %i[ancestor_id descendant_id generations], unique: true,
+                                                                                              name: 'secondary_adoptable_tag_anc_desc_idx'
+  add_index 'secondary_adoptable_tag_hierarchies', [:descendant_id], name: 'secondary_adoptable_tag_desc_idx'
 end
