@@ -31,7 +31,7 @@ module ClosureTree
         end
       end
 
-      if !options[:with_advisory_lock] && options[:advisory_lock_timeout_seconds].present?
+      if !@options[:with_advisory_lock] && @options[:advisory_lock_timeout_seconds].present?
         raise ArgumentError, "advisory_lock_timeout_seconds can't be specified when advisory_lock is disabled"
       end
 
