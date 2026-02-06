@@ -322,6 +322,7 @@ When you include ```has_closure_tree``` in your model, you can provide a hash to
 * ```:order``` used to set up [deterministic ordering](#deterministic-ordering)
 * ```:scope``` restricts root nodes and sibling ordering to specific columns. Can be a single symbol or an array of symbols. Example: ```scope: :user_id``` or ```scope: [:user_id, :group_id]```. This ensures that root nodes and siblings are scoped correctly when reordering. See [Ordering Roots](#ordering-roots) for more details.
 * ```:touch``` delegates to the `belongs_to` annotation for the parent, so `touch`ing cascades to all children (the performance of this for deep trees isn't currently optimal).
+* ```:advisory_lock_timeout_seconds``` When set, the advisory lock will raise ```WithAdvisoryLock::FailedToAcquireLock``` if the lock cannot be acquired within the timeout period. This helps callers handle timeout scenarios (e.g. retry or fail fast). If the option is not specified, the lock is waited for indefinitely until it is acquired. See [Lock wait timeouts](https://github.com/ClosureTree/with_advisory_lock?tab=readme-ov-file#lock-wait-timeouts) in the with_advisory_lock gem for details.
 
 ## Accessing Data
 

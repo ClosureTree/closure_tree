@@ -19,6 +19,7 @@ module ClosureTree
         dependent: :nullify, # or :destroy, :delete_all, or :adopt -- see the README
         name_column: 'name',
         with_advisory_lock: true, # This will be overridden by adapter support
+        advisory_lock_timeout_seconds: nil,
         numeric_order: false
       }.merge(options)
       raise ArgumentError, "name_column can't be 'path'" if options[:name_column] == 'path'
@@ -28,6 +29,10 @@ module ClosureTree
         unless scope_option.is_a?(Symbol) || (scope_option.is_a?(Array) && scope_option.all? { |item| item.is_a?(Symbol) })
           raise ArgumentError, "scope option must be a Symbol or an Array of Symbols (e.g., :user_id or [:user_id, :group_id])"
         end
+      end
+
+      if !@options[:with_advisory_lock] && @options[:advisory_lock_timeout_seconds].present?
+        raise ArgumentError, "advisory_lock_timeout_seconds can't be specified when advisory_lock is disabled"
       end
 
       return unless order_is_numeric?
@@ -153,8 +158,9 @@ module ClosureTree
     end
 
     def with_advisory_lock(&block)
-      if options[:with_advisory_lock] && connection.supports_advisory_locks? && model_class.respond_to?(:with_advisory_lock)
-        model_class.with_advisory_lock(advisory_lock_name) do
+      lock_method = options[:advisory_lock_timeout_seconds].present? ? :with_advisory_lock! : :with_advisory_lock
+      if options[:with_advisory_lock] && connection.supports_advisory_locks? && model_class.respond_to?(lock_method)
+        model_class.public_send(lock_method, advisory_lock_name, advisory_lock_options) do
           transaction(&block)
         end
       else
