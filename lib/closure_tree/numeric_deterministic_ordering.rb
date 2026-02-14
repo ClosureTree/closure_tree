@@ -12,11 +12,16 @@ module ClosureTree
     end
 
     def _ct_reorder_prior_siblings_if_parent_changed
-      return unless saved_change_to_attribute?(_ct.parent_column_name) && !@was_new_record
+      return if @was_new_record
+
+      parent_changed = saved_change_to_attribute?(_ct.parent_column_name)
+      scope_changed = _ct.scope_changed?(self)
+
+      return unless parent_changed || scope_changed
 
       was_parent_id = attribute_before_last_save(_ct.parent_column_name)
-      scope_conditions = _ct.scope_values_from_instance(self)
-      _ct.reorder_with_parent_id(was_parent_id, nil, scope_conditions)
+      previous_scope_conditions = _ct.previous_scope_values_from_instance(self)
+      _ct.reorder_with_parent_id(was_parent_id, nil, previous_scope_conditions)
     end
 
     def _ct_reorder_siblings(minimum_sort_order_value = nil)
