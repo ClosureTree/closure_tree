@@ -17,10 +17,6 @@ module ClosureTree
       @_ct_skip_cycle_detection = true
     end
 
-    def _ct_skip_sort_order_maintenance!
-      @_ct_skip_sort_order_maintenance = true
-    end
-
     def _ct_validate
       if !(defined? @_ct_skip_cycle_detection) &&
          !new_record? && # don't validate for cycles if we're a new record
@@ -38,7 +34,11 @@ module ClosureTree
     end
 
     def _ct_after_save
-      rebuild! if saved_changes[_ct.parent_column_name] || @was_new_record
+      if saved_changes[_ct.parent_column_name] || @was_new_record
+        rebuild!
+      elsif saved_changes[_ct.order_column_sym]
+        _ct_reorder_siblings(saved_changes[_ct.order_column_sym].min)
+      end
       if saved_changes[_ct.parent_column_name] && !@was_new_record
         # Resetting the ancestral collections addresses
         # https://github.com/mceachen/closure_tree/issues/68
@@ -46,7 +46,6 @@ module ClosureTree
         self_and_ancestors.reload
       end
       @was_new_record = false # we aren't new anymore.
-      @_ct_skip_sort_order_maintenance = false # only skip once.
       true # don't cancel anything.
     end
 
@@ -86,7 +85,7 @@ module ClosureTree
           SQL
         end
 
-        if _ct.order_is_numeric? && !@_ct_skip_sort_order_maintenance
+        if _ct.order_is_numeric?
           _ct_reorder_prior_siblings_if_parent_changed
           # Prevent double-reordering of siblings:
           _ct_reorder_siblings unless called_by_rebuild

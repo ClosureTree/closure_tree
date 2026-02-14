@@ -16,6 +16,7 @@ ActiveRecord::Schema.define(version: 0) do
   create_table 'secondary_tags', force: true do |t|
     t.string   'name'
     t.integer  'parent_id'
+    t.integer  'sort_order'
     t.datetime 'created_at'
     t.datetime 'updated_at'
   end

@@ -9,6 +9,7 @@ class MultiDatabaseTest < ActiveSupport::TestCase
     LiteRecord.connection.create_table :memory_tags, force: true do |t|
       t.string :name
       t.integer :parent_id
+      t.integer :sort_order
       t.timestamps
     end
 

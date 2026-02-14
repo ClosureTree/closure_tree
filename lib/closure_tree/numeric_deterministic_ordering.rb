@@ -130,16 +130,9 @@ module ClosureTree
     end
 
     def prepend_child(child_node)
-      prior_parent_id = child_node._ct_parent_id
       child_node.order_value = -1
       child_node.parent = self
-      child_node._ct_skip_sort_order_maintenance!
       if child_node.save
-        _ct_reorder_children
-        if prior_parent_id != _ct_id
-          scope_conditions = _ct.scope_values_from_instance(child_node)
-          _ct.reorder_with_parent_id(prior_parent_id, nil, scope_conditions)
-        end
         child_node.reload
       else
         child_node
@@ -166,18 +159,10 @@ module ClosureTree
 
       _ct.with_advisory_lock do
         prior_sibling_parent = sibling.parent
-        reorder_from_value = if prior_sibling_parent == parent
-                               [order_value, sibling.order_value].compact.min
-                             else
-                               order_value
-                             end
 
         sibling.order_value = order_value
         sibling.parent = parent
-        sibling._ct_skip_sort_order_maintenance!
         sibling.save # may be a no-op
-
-        _ct_reorder_siblings(reorder_from_value)
 
         # The sort order should be correct now except for self and sibling, which may need to flip:
         sibling_is_after = reload.order_value < sibling.reload.order_value

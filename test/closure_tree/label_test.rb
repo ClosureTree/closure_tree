@@ -70,12 +70,12 @@ def create_preorder_tree(suffix = '')
   Label.roots.each_with_index do |root, root_idx|
     root.order_value = root_idx
     yield(root) if block_given?
-    root.save!
+    root.update_columns(root._ct.order_column => root_idx, type: root.type)
     root.self_and_descendants.each do |ea|
-      ea.children.to_a.sort_by(&:name).each_with_index do |ea, idx|
-        ea.order_value = idx
-        yield(ea) if block_given?
-        ea.save!
+      ea.children.to_a.sort_by(&:name).each_with_index do |child, idx|
+        child.order_value = idx
+        yield(child) if block_given?
+        child.update_columns(child._ct.order_column => idx, type: child.type)
       end
     end
   end
