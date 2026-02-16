@@ -49,7 +49,7 @@ module ClosureTree
         # Scope changed without parent change - reorder old scope's siblings
         _ct_reorder_prior_siblings_if_parent_changed
         _ct_reorder_siblings
-      elsif saved_changes[_ct.order_column_sym]
+      elsif _ct.order_option? && saved_changes[_ct.order_column_sym]
         _ct_reorder_siblings(saved_changes[_ct.order_column_sym].min)
       end
       if saved_changes[_ct.parent_column_name] && !@was_new_record
