@@ -17,6 +17,13 @@ module ClosureTree
       @_ct_skip_cycle_detection = true
     end
 
+    def _ct_skip_sort_order_maintenance!
+      ActiveSupport::Deprecation.new.warn(
+        '_ct_skip_sort_order_maintenance! is deprecated and will be removed in the next major version. ' \
+        'Sort order maintenance is now handled automatically.'
+      )
+    end
+
     def _ct_validate
       if !(defined? @_ct_skip_cycle_detection) &&
          !new_record? && # don't validate for cycles if we're a new record
