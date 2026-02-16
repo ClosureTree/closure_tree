@@ -257,6 +257,45 @@ module ClosureTree
       scope_hash
     end
 
+    def previous_scope_values_from_instance(instance)
+      return {} unless options[:scope] && instance
+
+      scope_option = options[:scope]
+      scope_hash = {}
+
+      case scope_option
+      when Symbol
+        value = instance.attribute_before_last_save(scope_option)
+        scope_hash[scope_option] = value
+      when Array
+        scope_option.each do |item|
+          if item.is_a?(Symbol)
+            value = instance.attribute_before_last_save(item)
+            scope_hash[item] = value
+          end
+        end
+      end
+
+      scope_hash
+    end
+
+    def scope_changed?(instance)
+      return false unless options[:scope] && instance
+
+      scope_option = options[:scope]
+
+      case scope_option
+      when Symbol
+        instance.saved_change_to_attribute?(scope_option)
+      when Array
+        scope_option.any? do |item|
+          item.is_a?(Symbol) && instance.saved_change_to_attribute?(item)
+        end
+      else
+        false
+      end
+    end
+
     def apply_scope_conditions(scope, instance = nil)
       return scope unless options[:scope] && instance
 

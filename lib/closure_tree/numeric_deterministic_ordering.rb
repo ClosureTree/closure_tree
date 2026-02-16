@@ -12,11 +12,16 @@ module ClosureTree
     end
 
     def _ct_reorder_prior_siblings_if_parent_changed
-      return unless saved_change_to_attribute?(_ct.parent_column_name) && !@was_new_record
+      return if @was_new_record
+
+      parent_changed = saved_change_to_attribute?(_ct.parent_column_name)
+      scope_changed = _ct.scope_changed?(self)
+
+      return unless parent_changed || scope_changed
 
       was_parent_id = attribute_before_last_save(_ct.parent_column_name)
-      scope_conditions = _ct.scope_values_from_instance(self)
-      _ct.reorder_with_parent_id(was_parent_id, nil, scope_conditions)
+      previous_scope_conditions = _ct.previous_scope_values_from_instance(self)
+      _ct.reorder_with_parent_id(was_parent_id, nil, previous_scope_conditions)
     end
 
     def _ct_reorder_siblings(minimum_sort_order_value = nil)
@@ -132,9 +137,7 @@ module ClosureTree
     def prepend_child(child_node)
       child_node.order_value = -1
       child_node.parent = self
-      child_node._ct_skip_sort_order_maintenance!
       if child_node.save
-        _ct_reorder_children
         child_node.reload
       else
         child_node
@@ -161,18 +164,10 @@ module ClosureTree
 
       _ct.with_advisory_lock do
         prior_sibling_parent = sibling.parent
-        reorder_from_value = if prior_sibling_parent == parent
-                               [order_value, sibling.order_value].compact.min
-                             else
-                               order_value
-                             end
 
         sibling.order_value = order_value
         sibling.parent = parent
-        sibling._ct_skip_sort_order_maintenance!
         sibling.save # may be a no-op
-
-        _ct_reorder_siblings(reorder_from_value)
 
         # The sort order should be correct now except for self and sibling, which may need to flip:
         sibling_is_after = reload.order_value < sibling.reload.order_value

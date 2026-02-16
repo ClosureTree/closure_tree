@@ -18,7 +18,10 @@ module ClosureTree
     end
 
     def _ct_skip_sort_order_maintenance!
-      @_ct_skip_sort_order_maintenance = true
+      ActiveSupport::Deprecation.new.warn(
+        '_ct_skip_sort_order_maintenance! is deprecated and will be removed in the next major version. ' \
+        'Sort order maintenance is now handled automatically.'
+      )
     end
 
     def _ct_validate
@@ -38,7 +41,17 @@ module ClosureTree
     end
 
     def _ct_after_save
-      rebuild! if saved_changes[_ct.parent_column_name] || @was_new_record
+      scope_changed = _ct.order_is_numeric? && _ct.scope_changed?(self)
+
+      if saved_changes[_ct.parent_column_name] || @was_new_record
+        rebuild!
+      elsif scope_changed
+        # Scope changed without parent change - reorder old scope's siblings
+        _ct_reorder_prior_siblings_if_parent_changed
+        _ct_reorder_siblings
+      elsif _ct.order_option? && saved_changes[_ct.order_column_sym]
+        _ct_reorder_siblings(saved_changes[_ct.order_column_sym].min)
+      end
       if saved_changes[_ct.parent_column_name] && !@was_new_record
         # Resetting the ancestral collections addresses
         # https://github.com/mceachen/closure_tree/issues/68
@@ -46,7 +59,6 @@ module ClosureTree
         self_and_ancestors.reload
       end
       @was_new_record = false # we aren't new anymore.
-      @_ct_skip_sort_order_maintenance = false # only skip once.
       true # don't cancel anything.
     end
 
@@ -86,7 +98,7 @@ module ClosureTree
           SQL
         end
 
-        if _ct.order_is_numeric? && !@_ct_skip_sort_order_maintenance
+        if _ct.order_is_numeric?
           _ct_reorder_prior_siblings_if_parent_changed
           # Prevent double-reordering of siblings:
           _ct_reorder_siblings unless called_by_rebuild

@@ -234,4 +234,101 @@ class ScopeTest < ActiveSupport::TestCase
     assert_includes clause, 'IS NULL'
     assert_includes clause, '456'
   end
+
+  def test_reorder_previous_scope_siblings_when_scope_changes
+    # Create items in scope user_id: 1
+    item1 = ScopedItem.create!(name: 'item1', user_id: 1)
+    item2 = ScopedItem.create!(name: 'item2', user_id: 1)
+    item3 = ScopedItem.create!(name: 'item3', user_id: 1)
+
+    # Verify initial order values
+    assert_equal 0, item1.order_value
+    assert_equal 1, item2.order_value
+    assert_equal 2, item3.order_value
+
+    # Move item2 to a different scope (user_id: 2)
+    item2.update!(user_id: 2)
+
+    # Reload all items
+    item1.reload
+    item2.reload
+    item3.reload
+
+    # item2 should be first in its new scope
+    assert_equal 0, item2.order_value
+
+    # item1 and item3 should be reordered without gaps in old scope
+    assert_equal 0, item1.order_value
+    assert_equal 1, item3.order_value
+  end
+
+  def test_reorder_previous_scope_siblings_when_multiple_scope_changes
+    # Create items in scope user_id: 1, group_id: 10
+    item1 = MultiScopedItem.create!(name: 'item1', user_id: 1, group_id: 10)
+    item2 = MultiScopedItem.create!(name: 'item2', user_id: 1, group_id: 10)
+    item3 = MultiScopedItem.create!(name: 'item3', user_id: 1, group_id: 10)
+
+    # Verify initial order values
+    assert_equal 0, item1.order_value
+    assert_equal 1, item2.order_value
+    assert_equal 2, item3.order_value
+
+    # Move item2 to a different scope (user_id: 2, group_id: 10)
+    item2.update!(user_id: 2)
+
+    # Reload all items
+    item1.reload
+    item2.reload
+    item3.reload
+
+    # item2 should be first in its new scope
+    assert_equal 0, item2.order_value
+
+    # item1 and item3 should be reordered without gaps in old scope
+    assert_equal 0, item1.order_value
+    assert_equal 1, item3.order_value
+  end
+
+  def test_scope_changed_detection
+    # Test scope_changed? by checking the actual reordering behavior
+    # which implicitly tests that scope_changed? works during callbacks
+    item1 = ScopedItem.create!(name: 'item1', user_id: 1)
+    item2 = ScopedItem.create!(name: 'item2', user_id: 1)
+
+    assert_equal 0, item1.order_value
+    assert_equal 1, item2.order_value
+
+    # Change scope - if scope_changed? works, item1 will be reordered in new scope
+    item2.update!(user_id: 2)
+
+    item1.reload
+    item2.reload
+
+    # item2 should be 0 in new scope (proves scope change was detected)
+    assert_equal 0, item2.order_value
+    # item1 should remain 0 (was already 0, reordering removes gap from item2)
+    assert_equal 0, item1.order_value
+  end
+
+  def test_previous_scope_values_from_instance
+    # Test previous_scope_values by checking that OLD scope siblings are reordered
+    # which implicitly tests that previous scope values are correctly retrieved
+    item1 = ScopedItem.create!(name: 'item1', user_id: 1)
+    item2 = ScopedItem.create!(name: 'item2', user_id: 1)
+    item3 = ScopedItem.create!(name: 'item3', user_id: 1)
+
+    assert_equal 0, item1.order_value
+    assert_equal 1, item2.order_value
+    assert_equal 2, item3.order_value
+
+    # Move middle item to different scope
+    item2.update!(user_id: 2)
+
+    item1.reload
+    item3.reload
+
+    # If previous_scope_values works, item3 should now be 1 (gap filled)
+    assert_equal 0, item1.order_value
+    assert_equal 1, item3.order_value
+  end
 end

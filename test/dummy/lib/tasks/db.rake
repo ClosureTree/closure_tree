@@ -17,7 +17,12 @@ namespace :db do
       load Rails.root.join('db/secondary_schema.rb')
     end
 
-    # SQLite is in-memory so it will be created automatically
+    # Load SQLite (lite) database schema
+    ActiveRecord::Base.establish_connection(:lite)
+    ActiveRecord::Base.connection.disconnect! if ActiveRecord::Base.connection.active?
+    ActiveRecord::Base.establish_connection(:lite)
+    load Rails.root.join('db/sqlite_schema.rb')
+
     ActiveRecord::Base.establish_connection(:primary)
   end
 

@@ -3,32 +3,6 @@
 require 'test_helper'
 
 class MultiDatabaseTest < ActiveSupport::TestCase
-  def setup
-    super
-    # Create memory tables - always recreate for clean state
-    LiteRecord.connection.create_table :memory_tags, force: true do |t|
-      t.string :name
-      t.integer :parent_id
-      t.timestamps
-    end
-
-    LiteRecord.connection.create_table :memory_tag_hierarchies, id: false, force: true do |t|
-      t.integer :ancestor_id, null: false
-      t.integer :descendant_id, null: false
-      t.integer :generations, null: false
-    end
-
-    LiteRecord.connection.add_index :memory_tag_hierarchies, %i[ancestor_id descendant_id generations],
-                                      unique: true, name: 'memory_tag_anc_desc_idx'
-    LiteRecord.connection.add_index :memory_tag_hierarchies, [:descendant_id], name: 'memory_tag_desc_idx'
-  end
-
-  def teardown
-    # Clean up SQLite tables after each test
-    LiteRecord.connection.drop_table :memory_tag_hierarchies, if_exists: true
-    LiteRecord.connection.drop_table :memory_tags, if_exists: true
-    super
-  end
 
   def test_postgresql_with_advisory_lock
     skip 'PostgreSQL not configured' unless postgresql?(ApplicationRecord.connection)
