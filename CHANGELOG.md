@@ -1,5 +1,13 @@
 # Changelog
 
+## [9.6.0](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.5.0...closure_tree/v9.6.0) (2026-02-16)
+
+
+### Features
+
+* raise error when advisory lock cannot be acquired within configured timeout ([#480](https://github.com/ClosureTree/closure_tree/issues/480)) ([c030385](https://github.com/ClosureTree/closure_tree/commit/c030385297a9d3042d43354676a794b1c5757d2a))
+* sibling reordering when node changes parent or scope ([#484](https://github.com/ClosureTree/closure_tree/issues/484)) ([254ba36](https://github.com/ClosureTree/closure_tree/commit/254ba360638bf21717d214b7fd328db8ffa167e0))
+
 ## [9.5.0](https://github.com/ClosureTree/closure_tree/compare/closure_tree-v9.3.0...closure_tree/v9.5.0) (2026-01-21)
 
 
