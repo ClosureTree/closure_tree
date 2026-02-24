@@ -16,6 +16,14 @@ describe ClosureTree::HierarchyMaintenance do
     end
   end
 
+  describe '#_ct_after_save' do
+    it 'does not raise when updating a node with non-numeric order column' do
+      tag = Tag.create!(name: 'Alpha')
+      tag.update!(name: 'Beta')
+      assert_equal 'Beta', tag.reload.name
+    end
+  end
+
   describe '.cleanup!' do
     before do
       @parent = Metal.create(value: 'parent metal')
