@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.6.1](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.6.0...closure_tree/v9.6.1) (2026-03-07)
+
+
+### Bug Fixes
+
+* triggger release ([f334952](https://github.com/ClosureTree/closure_tree/commit/f3349529d20a1068588bf2e560bd0a53ac9bff2c))
+
 ## [9.6.0](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.5.0...closure_tree/v9.6.0) (2026-02-16)
 
 
