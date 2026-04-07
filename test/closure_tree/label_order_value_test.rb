@@ -38,6 +38,24 @@ class LabelOrderValueTest < ActiveSupport::TestCase
     assert_equal 1, c.reload.order_value
   end
 
+  test 'prepend_child should produce 0-based order values when reordering within the same parent' do
+    root = Label.create(name: 'root')
+    a = root.children.create(name: 'a')
+    b = root.children.create(name: 'b')
+    c = root.children.create(name: 'c')
+
+    assert_equal 0, a.order_value
+    assert_equal 1, b.order_value
+    assert_equal 2, c.order_value
+
+    # Move c to be the first child (same parent, reorder only)
+    root.prepend_child(c)
+
+    assert_equal 0, c.reload.order_value
+    assert_equal 1, a.reload.order_value
+    assert_equal 2, b.reload.order_value
+  end
+
   test 'should set order_value on roots for LabelWithoutRootOrdering' do
     root = LabelWithoutRootOrdering.create(name: 'root')
     assert_nil root.order_value

@@ -49,7 +49,8 @@ module ClosureTree
           _ct_reorder_prior_siblings_if_parent_changed
           _ct_reorder_siblings
         elsif saved_changes[_ct.order_column_sym]
-          _ct_reorder_siblings(saved_changes[_ct.order_column_sym].min)
+          min = saved_changes[_ct.order_column_sym].min
+          _ct_reorder_siblings(min.negative? ? nil : min)
         end
       end
       if saved_changes[_ct.parent_column_name] && !@was_new_record
