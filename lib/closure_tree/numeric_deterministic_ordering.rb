@@ -162,7 +162,7 @@ module ClosureTree
       # Make sure self isn't dirty, because we're going to call reload:
       save
 
-      _ct.with_advisory_lock do
+      _ct.with_advisory_lock(self) do
         prior_sibling_parent = sibling.parent
 
         sibling.order_value = order_value

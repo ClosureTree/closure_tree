@@ -34,6 +34,17 @@ module ClosureTree
       end
     end
 
+    def advisory_lock_name_for(instance = nil)
+      base = advisory_lock_name
+      return base unless instance && options[:scope]
+
+      scope_values = scope_values_from_instance(instance)
+      return base if scope_values.empty?
+
+      suffix = scope_values.values.map(&:to_s).join('_')
+      "#{base}_#{suffix}"
+    end
+
     def advisory_lock_options
       { timeout_seconds: options[:advisory_lock_timeout_seconds] }.compact
     end

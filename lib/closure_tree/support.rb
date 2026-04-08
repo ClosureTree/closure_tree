@@ -157,10 +157,10 @@ module ClosureTree
       " AND #{conditions.join(' AND ')}"
     end
 
-    def with_advisory_lock(&block)
+    def with_advisory_lock(instance = nil, &block)
       lock_method = options[:advisory_lock_timeout_seconds].present? ? :with_advisory_lock! : :with_advisory_lock
       if options[:with_advisory_lock] && connection.supports_advisory_locks? && model_class.respond_to?(lock_method)
-        model_class.public_send(lock_method, advisory_lock_name, advisory_lock_options) do
+        model_class.public_send(lock_method, advisory_lock_name_for(instance), advisory_lock_options) do
           transaction(&block)
         end
       else
