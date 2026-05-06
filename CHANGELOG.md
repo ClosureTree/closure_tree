@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.7.0](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.6.2...closure_tree/v9.7.0) (2026-05-06)
+
+
+### Features
+
+* allow advisory_lock_name proc to receive instance for per-tenant lock granularity ([#491](https://github.com/ClosureTree/closure_tree/issues/491)) ([a7a554c](https://github.com/ClosureTree/closure_tree/commit/a7a554c004fb865ab4ee721f929a8a00bb5cdc46))
+
 ## [9.6.2](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.6.1...closure_tree/v9.6.2) (2026-04-07)
 
 
