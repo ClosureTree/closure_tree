@@ -64,7 +64,7 @@ module ClosureTree
     end
 
     def _ct_before_destroy
-      _ct.with_advisory_lock do
+      _ct.with_advisory_lock(self) do
         _ct_adopt_children_to_grandparent if _ct.options[:dependent] == :adopt
         delete_hierarchy_references
         self.class.find(id).children.find_each(&:rebuild!) if _ct.options[:dependent] == :nullify
@@ -86,7 +86,7 @@ module ClosureTree
     end
 
     def rebuild!(called_by_rebuild = false)
-      _ct.with_advisory_lock do
+      _ct.with_advisory_lock(self) do
         delete_hierarchy_references unless (defined? @was_new_record) && @was_new_record
         hierarchy_class.create!(ancestor: self, descendant: self, generations: 0)
         unless root?
@@ -112,7 +112,7 @@ module ClosureTree
     end
 
     def delete_hierarchy_references
-      _ct.with_advisory_lock do
+      _ct.with_advisory_lock(self) do
         # The crazy double-wrapped sub-subselect works around MySQL's limitation of subselects on the same table that is being mutated.
         # It shouldn't affect performance of postgresql.
         # See http://dev.mysql.com/doc/refman/5.0/en/subquery-errors.html

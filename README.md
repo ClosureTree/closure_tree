@@ -560,7 +560,7 @@ class Tag < ApplicationRecord
   has_closure_tree advisory_lock_name: 'custom_tag_lock'
 end
 
-# Dynamic via Proc
+# Dynamic via Proc (1-arity: receives model class only)
 class Tag < ApplicationRecord
   has_closure_tree advisory_lock_name: ->(model_class) { "#{Rails.env}_#{model_class.name.underscore}" }
 end
@@ -568,16 +568,36 @@ end
 # Delegate to model method
 class Tag < ApplicationRecord
   has_closure_tree advisory_lock_name: :custom_lock_name
-  
+
   def self.custom_lock_name
     "tag_lock_#{current_tenant_id}"
   end
 end
 ```
 
+#### Per-instance lock names (multi-tenant / scoped models)
+
+Pass a 2-arity proc to receive both the model class and the current record instance.
+This is the recommended approach for scoped models where each tenant should have its own lock,
+avoiding unnecessary serialization across tenants.
+
+```ruby
+class Node < ApplicationRecord
+  has_closure_tree scope: :company_id,
+                   advisory_lock_name: ->(klass, instance) {
+                     company = instance&.company_id
+                     company ? "ct_#{klass.name}_#{company}" : "ct_#{klass.name}"
+                   }
+end
+```
+
+When `instance` is `nil` (class-level operations like `Node.rebuild!`), the proc should
+fall back to a model-wide name. Instance-level operations (`save`, `destroy`, `add_sibling`,
+`find_or_create_by_path`) pass the record itself so the lock is scoped to that tenant.
+
 This is particularly useful when:
 * You need environment-specific lock names
-* You're using multi-tenancy and need tenant-specific locks
+* You're using multi-tenancy and need per-tenant locks (avoiding cross-tenant contention)
 * You want to avoid lock name collisions between similar model names
 
 ## Multi-Database Support
