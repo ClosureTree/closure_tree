@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.6.2](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.6.1...closure_tree/v9.6.2) (2026-04-07)
+
+
+### Bug Fixes
+
+* prepend_child causes negative order values when reordering within same parent ([#488](https://github.com/ClosureTree/closure_tree/issues/488)) ([824d2bf](https://github.com/ClosureTree/closure_tree/commit/824d2bf4d5635fe277d423789a07fccd44696000))
+
 ## [9.6.1](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.6.0...closure_tree/v9.6.1) (2026-03-07)
 
 
