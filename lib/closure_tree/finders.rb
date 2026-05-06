@@ -20,7 +20,7 @@ module ClosureTree
       return found if found
 
       attrs = subpath.shift
-      _ct.with_advisory_lock do
+      _ct.with_advisory_lock(self) do
         # shenanigans because children.create is bound to the superclass
         # (in the case of polymorphism):
         child = children.where(attrs).first || begin
