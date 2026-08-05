@@ -161,7 +161,10 @@ module ClosureTree
       lock_method = options[:advisory_lock_timeout_seconds].present? ? :with_advisory_lock! : :with_advisory_lock
       if options[:with_advisory_lock] && connection.supports_advisory_locks? && model_class.respond_to?(lock_method)
         lock_options = advisory_lock_options
-        lock_options = lock_options.merge(transaction: true) if use_transaction_level_lock?
+        if use_transaction_level_lock?
+          connection.materialize_transactions
+          lock_options = lock_options.merge(transaction: true)
+        end
         model_class.public_send(lock_method, advisory_lock_name(instance), lock_options) do
           transaction(&block)
         end
