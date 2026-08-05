@@ -906,6 +906,16 @@ module TagExamples
       assert_equal subject, root.find_by_path(path[1..])
     end
 
+    define_method 'test_finds_by_path batches deep paths in groups of max_join_tables' do
+      path = (1..70).to_a.map(&:to_s)
+      subject = @tag_class.find_or_create_by_path(path)
+      @tag_class._ct.stub(:max_join_tables, 20) do
+        assert_database_queries_count(4) do
+          assert_equal subject, @tag_class.find_by_path(path)
+        end
+      end
+    end
+
     define_method 'test_DOT rendering for empty scope' do
       assert_equal "digraph G {\n}\n", @tag_class.to_dot_digraph(@tag_class.where('0=1'))
     end
