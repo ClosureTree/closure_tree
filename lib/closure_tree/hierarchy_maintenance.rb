@@ -140,7 +140,9 @@ module ClosureTree
 
         %i[descendant_id ancestor_id].each do |foreign_key|
           alias_name = "#{foreign_key.to_s.split('_').first}s"
-          alias_table = Arel::Table.new(table_name).alias(alias_name)
+          # Rails 8.2 made Arel::Table.new keyword-only; the model's own arel_table
+          # is equivalent and works across all supported Rails versions.
+          alias_table = arel_table.alias(alias_name)
           arel_join = hierarchy_table.join(alias_table, Arel::Nodes::OuterJoin)
                                      .on(alias_table[primary_key].eq(hierarchy_table[foreign_key]))
                                      .join_sources
