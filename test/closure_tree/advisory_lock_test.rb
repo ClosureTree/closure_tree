@@ -102,6 +102,62 @@ class AdvisoryLockTest < ActiveSupport::TestCase
     end
   end
 
+  def test_lock_held_until_surrounding_transaction_commits_on_postgres
+    skip 'PostgreSQL only' unless Tag.connection.adapter_name.match?(/postg/i)
+
+    lock_name = Tag._ct.advisory_lock_name
+    lock_block_done = Queue.new
+    commit_transaction = Queue.new
+
+    worker = Thread.new do
+      Tag.connection_pool.with_connection do
+        Tag.transaction do
+          Tag._ct.with_advisory_lock { Tag.create!(name: 'xact_lock_test') }
+          lock_block_done << true
+          commit_transaction.pop
+        end
+      end
+    end
+
+    begin
+      assert lock_block_done.pop(timeout: 10), 'worker never acquired the lock'
+      assert Tag.advisory_lock_exists?(lock_name),
+             'lock must persist until the surrounding transaction commits'
+    ensure
+      commit_transaction << true
+      unless worker.join(10)
+        worker.kill
+        worker.join(5)
+        flunk 'worker did not finish within 10s' if $!.nil?
+      end
+    end
+
+    refute Tag.advisory_lock_exists?(lock_name),
+           'lock must be released after the transaction commits'
+  end
+
+  def test_lock_released_at_block_end_without_surrounding_transaction
+    skip 'PostgreSQL only' unless Tag.connection.adapter_name.match?(/postg/i)
+
+    lock_name = Tag._ct.advisory_lock_name
+
+    worker = Thread.new do
+      Tag.connection_pool.with_connection do
+        Tag._ct.with_advisory_lock { Tag.create!(name: 'session_lock_test') }
+      end
+    end
+    begin
+      assert worker.join(10), 'worker did not finish within 10s'
+    ensure
+      unless worker.join(0)
+        worker.kill
+        worker.join(5)
+      end
+    end
+
+    refute Tag.advisory_lock_exists?(lock_name), 'lock must be released when the block returns'
+  end
+
   private
 
   def with_temporary_model(&block)

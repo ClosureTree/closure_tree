@@ -160,12 +160,20 @@ module ClosureTree
     def with_advisory_lock(instance = nil, &block)
       lock_method = options[:advisory_lock_timeout_seconds].present? ? :with_advisory_lock! : :with_advisory_lock
       if options[:with_advisory_lock] && connection.supports_advisory_locks? && model_class.respond_to?(lock_method)
-        model_class.public_send(lock_method, advisory_lock_name(instance), advisory_lock_options) do
+        lock_options = advisory_lock_options
+        lock_options = lock_options.merge(transaction: true) if use_transaction_level_lock?
+        model_class.public_send(lock_method, advisory_lock_name(instance), lock_options) do
           transaction(&block)
         end
       else
         yield
       end
+    end
+
+    private def use_transaction_level_lock?
+      return false unless connection.adapter_name.match?(/postg/i)
+
+      connection.open_transactions == 1 && connection.current_transaction.joinable?
     end
 
     def build_ancestry_attr_path(path, attributes)
