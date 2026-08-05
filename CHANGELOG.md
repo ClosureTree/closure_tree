@@ -1,5 +1,20 @@
 # Changelog
 
+## [9.8.0](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.7.0...closure_tree/v9.8.0) (2026-08-05)
+
+
+### Features
+
+* require with_advisory_lock 7.6.0 ([27d9f5e](https://github.com/ClosureTree/closure_tree/commit/27d9f5e268afb266e53fddac21100bfc67ab1d83))
+
+
+### Bug Fixes
+
+* batch find_by_large_path in groups of max_join_tables elements ([7e05aa1](https://github.com/ClosureTree/closure_tree/commit/7e05aa1cd1771278f920a3dce917da36db456c1f)), closes [#347](https://github.com/ClosureTree/closure_tree/issues/347)
+* materialize transaction before taking transaction-level advisory lock ([a2ea522](https://github.com/ClosureTree/closure_tree/commit/a2ea5223ba69195add5f6361c6fa3af2a76d37b8))
+* use model arel_table in cleanup! for Rails 8.2 compatibility ([f46abc7](https://github.com/ClosureTree/closure_tree/commit/f46abc7e540a3cc53ea17b7ffa2a9abd7724ecdd))
+* use transaction-level advisory locks inside open transactions on PostgreSQL ([b4eb3df](https://github.com/ClosureTree/closure_tree/commit/b4eb3df89dd4f7a4151a7f6204842661b219b241))
+
 ## [9.7.0](https://github.com/ClosureTree/closure_tree/compare/closure_tree/v9.6.2...closure_tree/v9.7.0) (2026-05-06)
 
 
