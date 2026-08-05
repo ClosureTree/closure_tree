@@ -16,3 +16,4 @@ tmp/
 *.iml
 .env
 coverage/
+test/dummy/log/
