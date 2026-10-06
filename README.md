@@ -5,6 +5,9 @@
 Common applications include modeling hierarchical data, like tags, threaded comments, page graphs in CMSes,
 and tracking user referrals.
 
+> Need nodes with **multiple parents**? Use the companion gem [dag_me](https://github.com/ClosureTree/dag_me),
+> which brings multi-parent directed acyclic graphs (DAGs) to ActiveRecord, powered by PostgreSQL 18+.
+
 [![CI](https://github.com/ClosureTree/closure_tree/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/ClosureTree/closure_tree/actions/workflows/ci.yml)
 [![Gem Version](https://badge.fury.io/rb/closure_tree.svg)](https://badge.fury.io/rb/closure_tree)
 
@@ -691,8 +694,9 @@ hierarchy table.
 
 No. This gem's API is based on the assumption that each node has either 0 or 1 parent.
 
-The underlying closure tree structure will support multiple parents, but there would be many
-breaking-API changes to support it. I'm open to suggestions and pull requests.
+For multiple parents, use [dag_me](https://github.com/ClosureTree/dag_me), the companion gem for
+directed acyclic graphs. It keeps a closure table updated with database triggers and rejects cycles
+inside the database. It requires PostgreSQL 18+.
 
 ### How do I use this with test fixtures?
 
