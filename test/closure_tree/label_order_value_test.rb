@@ -38,6 +38,24 @@ class LabelOrderValueTest < ActiveSupport::TestCase
     assert_equal 1, c.reload.order_value
   end
 
+  test 'should keep dirty tracking when a node is moved to another location for Label' do
+    root = Label.create(name: 'root')
+    a = root.children.create(name: 'a')
+    b = root.children.create(name: 'b')
+    c = root.children.create(name: 'c')
+
+    root2 = Label.create(name: 'root2')
+    b.update!(parent: root2, name: 'b2')
+
+    assert b.saved_change_to_name?
+    assert_equal %w[b b2], b.saved_change_to_name
+    refute b.changed?
+
+    assert_equal 0, b.order_value
+    assert_equal 0, a.reload.order_value
+    assert_equal 1, c.reload.order_value
+  end
+
   test 'prepend_child should produce 0-based order values when reordering within the same parent' do
     root = Label.create(name: 'root')
     a = root.children.create(name: 'a')

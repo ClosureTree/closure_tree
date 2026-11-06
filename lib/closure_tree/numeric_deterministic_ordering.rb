@@ -27,7 +27,12 @@ module ClosureTree
     def _ct_reorder_siblings(minimum_sort_order_value = nil)
       scope_conditions = _ct.scope_values_from_instance(self)
       _ct.reorder_with_parent_id(_ct_parent_id, minimum_sort_order_value, scope_conditions)
-      reload unless destroyed?
+      return if destroyed?
+
+      # Only the order column can have been changed by the reorder, so read it back
+      # rather than reloading, which would discard the record's dirty tracking.
+      self.order_value = self.class.where(self.class.primary_key => _ct_id).pick(_ct.order_column_sym)
+      clear_attribute_change(_ct.order_column_sym)
     end
 
     def _ct_reorder_children(minimum_sort_order_value = nil)
